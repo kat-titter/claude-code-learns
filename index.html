@@ -1,0 +1,271 @@
+<!doctype html>
+<html lang="en"><head><meta charset="utf-8">
+<style>
+  @page { size: 880px 3616px; margin: 0; }
+  :root{ --bg:#0d0d0f; --panel:#141417; --line:#2a2a30; --ink:#e9e9ec; --dim:#8b8b93; --faint:#5c5c64; }
+  *{ box-sizing:border-box; -webkit-print-color-adjust:exact; print-color-adjust:exact; }
+  html,body{ margin:0; background:var(--bg); color:var(--ink); font-family:"Menlo","Monaco","Courier New",monospace; }
+  .page{ width:880px; min-height:3616px; padding:46px 50px 38px; }
+  .flow{ width:100%; margin:6px 0 2px; }
+  .winbar{ display:flex; align-items:center; gap:8px; color:var(--dim); font-size:12px;
+    border:1px solid var(--line); border-bottom:none; border-radius:9px 9px 0 0; background:var(--panel); padding:11px 16px; }
+  .dot{ width:11px; height:11px; border-radius:50%; background:#3a3a40; }
+  .win{ border:1px solid var(--line); border-radius:0 0 9px 9px; background:#0f0f12; padding:32px 30px 26px; }
+
+  /* hero: the brain + Claude, large and clear */
+  .hero{ display:flex; align-items:center; justify-content:center; gap:30px; margin:2px 0 6px; }
+  .hero .ic{ display:flex; flex-direction:column; align-items:center; gap:8px; }
+  .hero .il{ color:var(--dim); font-size:11px; letter-spacing:1px; }
+  .hero .op{ color:var(--faint); font-size:30px; font-weight:300; margin-bottom:18px; }
+  .herocap{ text-align:center; color:var(--faint); font-size:11.5px; margin:0 0 22px; }
+
+  .hook{ color:#f3f0ea; font-size:15px; font-weight:600; letter-spacing:.3px; margin:0 0 10px; }
+  .hook .sl{ color:var(--faint); }
+  h1{ font-size:30px; line-height:1.18; margin:2px 0 8px; letter-spacing:-.3px; }
+  h1 .gt{ color:var(--faint); }
+  .sub{ color:var(--dim); font-size:13.5px; line-height:1.6; margin:0 0 22px; }
+  .sub b{ color:var(--ink); }
+  .sec{ margin:22px 0 0; }
+  .lbl{ color:var(--faint); font-size:11px; letter-spacing:2px; text-transform:uppercase; margin:0 0 9px; }
+  .cmt{ color:var(--dim); font-size:13px; line-height:1.6; white-space:pre-wrap; }
+  .cmt b{ color:var(--ink); font-weight:600; }
+  pre{ background:var(--panel); border:1px solid var(--line); border-left:3px solid #4a4a52; border-radius:7px;
+    padding:13px 15px; margin:9px 0 0; font-size:12.5px; line-height:1.62; color:#d4d4d9; white-space:pre; overflow:hidden; }
+  pre .c{ color:var(--faint); } pre .k{ color:#fff; } pre .p{ color:var(--dim); }
+  .tree{ font-size:12.5px; line-height:1.7; color:#cfcfd5; white-space:pre; }
+  .tree .c{ color:var(--faint); }
+  .rule{ display:grid; grid-template-columns:1fr auto; gap:6px 14px; font-size:13px; margin-top:6px; }
+  .rule .a{ color:#cfcfd5; } .rule .b{ color:var(--dim); text-align:right; }
+  .hr{ height:1px; background:var(--line); margin:24px 0; border:0; }
+  .foot{ color:var(--faint); font-size:11.5px; line-height:1.6; margin-top:20px; }
+  .pill{ display:inline-block; border:1px solid var(--line); border-radius:5px; padding:1px 7px; color:var(--dim); }
+  .sci{ color:#c2c2c9; font-size:13px; line-height:1.74; margin:2px 0 0; }
+  .sci b{ color:var(--ink); font-weight:600; }
+  sup.ref{ font-size:9px; line-height:0; } sup.ref a{ color:#8b8b93; text-decoration:none; padding:0 .5px; }
+  .refgroup{ color:var(--faint); font-size:10px; letter-spacing:1.5px; text-transform:uppercase; margin:2px 0 4px; }
+  ol.refs{ margin:6px 0 0; padding-left:24px; color:#9a9aa2; font-size:10.5px; line-height:1.62; }
+  ol.refs li{ margin:3.5px 0; } ol.refs li a{ color:#74747c; text-decoration:none; } ol.refs i{ color:#b4b4bc; font-style:italic; }
+  .cap{ color:var(--faint); font-size:11px; margin:7px 0 0; }
+  table.ab{ width:100%; border-collapse:collapse; font-size:12px; margin-top:8px; }
+  table.ab th, table.ab td{ border:1px solid var(--line); padding:7px 11px; text-align:left; vertical-align:top; }
+  table.ab th{ color:var(--ink); font-weight:600; background:var(--panel); }
+  table.ab td.k{ color:var(--faint); } table.ab td.s{ color:var(--dim); } table.ab td.t{ color:#d4d4d9; }
+  .valid{ border:1px solid var(--line); border-left:3px solid #4a4a52; border-radius:7px; background:#121215;
+    padding:13px 16px; margin-top:9px; color:#c2c2c9; font-size:12.5px; line-height:1.66; }
+  .valid b{ color:var(--ink); }
+</style></head>
+<body><div class="page">
+  <div class="winbar"><span class="dot"></span><span class="dot"></span><span class="dot"></span>
+    <span style="margin-left:8px">~/.claude — teach the agent to learn</span></div>
+  <div class="win">
+
+    <!-- HERO: brain + Claude, large -->
+    <div class="hero">
+      <div class="ic">
+        <svg width="74" height="62" viewBox="0 0 64 54" fill="#121215" stroke="#eaeaee" stroke-width="2.1" stroke-linecap="round" stroke-linejoin="round" aria-label="brain">
+          <path d="M32 8 C 26 3.5, 17 4.5, 15.5 11.5 C 8.5 11, 5 18.5, 9.5 23.5 C 5 27.5, 6.5 35.5, 12.5 37
+            C 13.5 44, 22 47, 27 43 C 29 46, 35 46, 37 43 C 42 47, 50.5 44, 51.5 37 C 57.5 35.5, 59 27.5, 54.5 23.5
+            C 59 18.5, 55.5 11, 48.5 11.5 C 47 4.5, 38 3.5, 32 8 Z"/>
+          <path d="M32 8 C 30 17, 34 23, 31 31 C 29 37, 33 41, 32 44" fill="none"/>
+          <path d="M20 15 c 4.5 2, 4.5 6.5, 1 10" fill="none"/>
+          <path d="M13.5 25 c 4.5 0, 6.5 3.5, 5.5 7.5" fill="none"/>
+          <path d="M44 15 c -4.5 2, -4.5 6.5, -1 10" fill="none"/>
+          <path d="M50.5 25 c -4.5 0, -6.5 3.5, -5.5 7.5" fill="none"/>
+        </svg>
+        <span class="il">your brain</span>
+      </div>
+      <div class="op">+</div>
+      <div class="ic">
+        <svg width="62" height="62" viewBox="0 0 64 64" aria-label="Claude / Anthropic">
+          <g stroke="#eaeaee" stroke-width="2.6" stroke-linecap="round"><g transform="translate(32,32)">
+            <line x1="0" y1="-9" x2="0" y2="-27"/><line x1="4.5" y1="-7.8" x2="13.5" y2="-23.4"/>
+            <line x1="7.8" y1="-4.5" x2="23.4" y2="-13.5"/><line x1="9" y1="0" x2="27" y2="0"/>
+            <line x1="7.8" y1="4.5" x2="23.4" y2="13.5"/><line x1="4.5" y1="7.8" x2="13.5" y2="23.4"/>
+            <line x1="0" y1="9" x2="0" y2="27"/><line x1="-4.5" y1="7.8" x2="-13.5" y2="23.4"/>
+            <line x1="-7.8" y1="4.5" x2="-23.4" y2="13.5"/><line x1="-9" y1="0" x2="-27" y2="0"/>
+            <line x1="-7.8" y1="-4.5" x2="-23.4" y2="-13.5"/><line x1="-4.5" y1="-7.8" x2="-13.5" y2="-23.4"/>
+          </g></g>
+        </svg>
+        <span class="il">Claude</span>
+      </div>
+    </div>
+    <p class="herocap">your agent already has the genius. this just gives it the hippocampus.</p>
+
+    <p class="hook"><span class="sl">//</span> your agent is brilliant — and forgets it all by morning</p>
+    <h1><span class="gt">$</span> let Claude&nbsp;Code learn<br>as it goes</h1>
+    <p class="sub">You explain a fix, it works — and by next session the agent has forgotten it ever happened.
+      Brilliant, and amnesiac. This saves each hard-won lesson as a small <b>Skill</b> it reaches for on its own,
+      so it stops re-making the same mistake. Built on what Claude already has (<b>memory + Skills</b>); the one
+      new trick is a Skill whose only job is to <b>write other Skills</b>. The sort of thing that looks obvious
+      about thirty seconds after you see it.</p>
+
+    <div class="sec">
+      <p class="lbl">00 · the loop</p>
+      <svg class="flow" viewBox="0 0 800 478" xmlns="http://www.w3.org/2000/svg" font-family="Menlo,Monaco,monospace">
+        <defs><marker id="ah" markerWidth="9" markerHeight="9" refX="6.5" refY="3" orient="auto"><path d="M0,0 L7,3 L0,6 Z" fill="#6c6c74"/></marker></defs>
+        <rect x="210" y="10" width="380" height="46" rx="8" fill="#141417" stroke="#2a2a30"/>
+        <text x="400" y="31" text-anchor="middle" fill="#e9e9ec" font-size="13.5">you solve a problem</text>
+        <text x="400" y="47" text-anchor="middle" fill="#7a7a82" font-size="11">$ normal coding</text>
+        <rect x="210" y="86" width="380" height="46" rx="8" fill="#141417" stroke="#2a2a30"/>
+        <text x="400" y="107" text-anchor="middle" fill="#e9e9ec" font-size="13.5">you hit a tricky gotcha</text>
+        <text x="400" y="123" text-anchor="middle" fill="#7a7a82" font-size="11">a lesson worth keeping</text>
+        <rect x="210" y="162" width="380" height="46" rx="8" fill="#16161a" stroke="#46464e" stroke-width="1.4"/>
+        <text x="400" y="183" text-anchor="middle" fill="#f3f3f5" font-size="13.5">capture-lesson</text>
+        <text x="400" y="199" text-anchor="middle" fill="#8b8b93" font-size="11">a skill that writes skills ← the twist</text>
+        <rect x="210" y="238" width="380" height="46" rx="8" fill="#141417" stroke="#2a2a30"/>
+        <text x="400" y="259" text-anchor="middle" fill="#e9e9ec" font-size="13.5">it writes a small SKILL.md</text>
+        <text x="400" y="275" text-anchor="middle" fill="#7a7a82" font-size="11">one short description = when to use it</text>
+        <rect x="210" y="314" width="380" height="46" rx="8" fill="#141417" stroke="#2a2a30"/>
+        <text x="400" y="335" text-anchor="middle" fill="#e9e9ec" font-size="13.5">saved in ~/.claude/skills/</text>
+        <text x="400" y="351" text-anchor="middle" fill="#7a7a82" font-size="11">loads only when it's relevant</text>
+        <rect x="210" y="390" width="380" height="46" rx="8" fill="#141417" stroke="#2a2a30"/>
+        <text x="400" y="411" text-anchor="middle" fill="#e9e9ec" font-size="13.5">next time, it just knows</text>
+        <text x="400" y="427" text-anchor="middle" fill="#7a7a82" font-size="11">no reminder needed</text>
+        <g stroke="#5c5c64" stroke-width="1.4" marker-end="url(#ah)">
+          <line x1="400" y1="56" x2="400" y2="83"/><line x1="400" y1="132" x2="400" y2="159"/><line x1="400" y1="208" x2="400" y2="235"/>
+          <line x1="400" y1="284" x2="400" y2="311"/><line x1="400" y1="360" x2="400" y2="387"/></g>
+        <path d="M590,413 H700 Q724,413 724,389 V57 Q724,33 700,33 H593" fill="none" stroke="#5c5c64" stroke-width="1.4" stroke-dasharray="5 4" marker-end="url(#ah)"/>
+        <text x="742" y="223" fill="#8b8b93" font-size="11" text-anchor="middle" transform="rotate(90 742 223)">it adds up · never twice</text>
+      </svg>
+    </div>
+
+    <div class="sec">
+      <p class="lbl">01 · the idea</p>
+      <div class="cmt"># a lesson told to a chat dies with the chat.
+# a lesson saved as a <b>Skill</b> comes back on its own — only when it's needed,
+# and free until then.
+# (cells that fire together wire together; chats that end together forget together.)</div>
+    </div>
+
+    <div class="sec">
+      <p class="lbl">02 · where skills live</p>
+      <div class="tree">~/.claude/skills/                <span class="c"># yours, in every project</span>
+├── capture-lesson/SKILL.md      <span class="c"># the skill that writes skills</span>
+├── macos-long-render/SKILL.md   <span class="c"># example 1</span>
+└── citations/                   <span class="c"># example 2</span>
+    ├── SKILL.md
+    └── scripts/check-citations.py
+
+&lt;project&gt;/.claude/skills/         <span class="c"># or just for one repo</span></div>
+    </div>
+
+    <div class="sec">
+      <p class="lbl">03 · a skill is just a folder + a SKILL.md &nbsp;·&nbsp; example 1</p>
+<pre><span class="c">---</span>
+name: macos-long-render
+description: Wrap long Mac renders / video encodes / training in
+  caffeinate so the Mac can't fall asleep and stall them.  <span class="k">&lt;- when to use it</span>
+  <span class="c"># write this like the moment you'd reach for it. too vague = never used.</span>
+<span class="c">---</span>
+<span class="p">## the fix</span>
+caffeinate -dimsu python3 long_job.py
+<span class="p">## how to spot it</span>
+<span class="c"># steady, then a sudden cliff overnight = it slept. (not heat.)</span></pre>
+      <p class="cap">where it came from: <i>"17s/frame seems like a lot"</i> — a real moment, mid-render.</p>
+    </div>
+
+    <div class="sec">
+      <p class="lbl">04 · example 2 &nbsp;·&nbsp; a skill can carry its own helper</p>
+<pre><span class="c">---</span>
+name: citations
+description: Add or check numbered citations in a doc (esp. HTML).
+  Check each source is real; keep the numbers lined up with the list.
+<span class="c">---</span>
+<span class="p">## the trap</span>
+<span class="c"># a 2nd numbered list in HTML restarts at 1 → footnote [33] points wrong.</span>
+<span class="p">## the fix</span>
+one list, or set start= on the next one. then run the checker:
+python3 ${CLAUDE_SKILL_DIR}/scripts/check-citations.py file.html</pre>
+      <p class="cap">where it came from: <i>"there was a citation problem."</i> Its checker later
+        confirmed an older project was actually fine — in one command.</p>
+    </div>
+
+    <div class="sec">
+      <p class="lbl">05 · the twist — a skill that writes skills</p>
+      <div class="cmt"># <b>capture-lesson</b> is itself a skill. say "remember this" — or just
+# solve something gnarly — and it writes the lesson down as a new skill
+# (or tweaks one you already have). the agent grows its own toolbox.
+# (yes, a skill that writes skills. the recursion bottoms out — we checked.)</div>
+    </div>
+
+    <hr class="hr">
+
+    <div class="sec">
+      <p class="lbl">06 · this way vs. the usual way</p>
+      <table class="ab">
+        <tr><th>&nbsp;</th><th>the usual way — one notes file per skill</th><th>this way — a small skill per lesson</th></tr>
+        <tr><td class="k">where it's kept</td><td class="s">a growing log inside the skill</td><td class="t">its own little skill</td></tr>
+        <tr><td class="k">when it loads</td><td class="s">every run, needed or not</td><td class="t">only when it's relevant</td></tr>
+        <tr><td class="k">a lesson that helps everywhere</td><td class="s">stuck inside one skill</td><td class="t">becomes its own — helps everywhere</td></tr>
+        <tr><td class="k">as it piles up</td><td class="s">gets long and noisy</td><td class="t">stays tidy; drop what you don't use</td></tr>
+        <tr><td class="k">what you keep</td><td class="s">everything, by hand</td><td class="t">just what keeps coming up</td></tr>
+      </table>
+    </div>
+
+    <div class="sec">
+      <p class="lbl">07 · where should a thing go?</p>
+      <div class="rule">
+        <span class="a">a how-to / a gotcha + its fix</span><span class="b">→ a Skill  (comes back on its own)</span>
+        <span class="a">a fact that's always true</span><span class="b">→ CLAUDE.md</span>
+        <span class="a">something about you or the project</span><span class="b">→ memory</span>
+      </div>
+      <div class="cmt" style="margin-top:12px"># then leave one memory note: "save lessons as skills" —
+# so the <b>habit</b> itself sticks across sessions.</div>
+    </div>
+
+    <hr class="hr">
+
+    <div class="sec">
+      <p class="lbl">08 · why it works — how memory actually does it</p>
+      <p class="sci">Your brain doesn't record everything. It works in two passes. A fast part (the
+        hippocampus) grabs what just happened. A slower part (the cortex) takes the bits that matter and
+        rewrites them into steady, reusable knowledge — without scribbling over what's already
+        there.<sup class="ref"><a href="#r1">1</a></sup> AI agents are now built the same way.<sup class="ref"><a href="#r2">2</a></sup>
+        The match is simple: jotting a lesson down is the fast grab; turning it into a Skill is the slow,
+        lasting copy. And the wiring is real — cells that fire together strengthen their link (Hebb's
+        rule<sup class="ref"><a href="#r3">3</a></sup>, later measured directly<sup class="ref"><a href="#r4">4</a></sup>).
+        A bug you keep hitting is that kind of repeated pattern; the Skill locks it in.</p>
+      <p class="sci"><b>The trick is not saving everything.</b> If you turned every little hiccup into its own
+        Skill you'd drown in them — and your brain doesn't do that either. A memory sticks only if it
+        repeats, or if it felt important.<sup class="ref"><a href="#r5">5</a></sup><sup class="ref"><a href="#r8">8</a></sup>
+        So jot things down cheaply, but only promote the lessons that keep coming back. If a new one fits
+        something you already know, fold it in instead of starting fresh.<sup class="ref"><a href="#r6">6</a></sup>
+        Do the tidying later, in a quiet pass, not mid-task<sup class="ref"><a href="#r7">7</a></sup> — and let
+        skills you never use fade.<sup class="ref"><a href="#r9">9</a></sup> Grab fast, keep slowly, stay light.
+        Your agent already has the genius; this just adds the part of the brain that keeps it.</p>
+    </div>
+
+    <div class="sec">
+      <p class="lbl">these aren't made-up examples</p>
+      <div class="valid">Both skills above came straight out of one normal work session — not a staged demo.
+        <i>"17s/frame seems like a lot"</i> became <b>macos-long-render</b>. <i>"there was a citation problem"</i>
+        became <b>citations</b>. The lessons were already in the conversation; the system just <b>kept them</b>
+        instead of letting them slip away at the end. That's the whole point — you capture from the chat you're
+        already having. (Revolutionary, we know: writing things down.)</div>
+    </div>
+
+    <div class="sec">
+      <p class="lbl">references</p>
+      <div class="refgroup">Learning &amp; memory neuroscience · all checked</div>
+      <ol class="refs">
+        <li id="r1">McClelland, J. L., McNaughton, B. L., &amp; O'Reilly, R. C. (1995). Why there are complementary learning systems in the hippocampus and neocortex. <i>Psychological Review</i>, 102(3), 419–457. <a href="https://doi.org/10.1037/0033-295X.102.3.419">doi:10.1037/0033-295X.102.3.419</a></li>
+        <li id="r2">Kumaran, D., Hassabis, D., &amp; McClelland, J. L. (2016). What learning systems do intelligent agents need? Complementary Learning Systems theory updated. <i>Trends in Cognitive Sciences</i>, 20(7), 512–534. <a href="https://doi.org/10.1016/j.tics.2016.05.004">doi:10.1016/j.tics.2016.05.004</a></li>
+        <li id="r3">Hebb, D. O. (1949). <i>The Organization of Behavior: A Neuropsychological Theory</i>. Wiley.</li>
+        <li id="r4">Bliss, T. V. P., &amp; Lømo, T. (1973). Long-lasting potentiation of synaptic transmission in the dentate area of the anaesthetized rabbit following stimulation of the perforant path. <i>Journal of Physiology</i>, 232(2), 331–356. <a href="https://doi.org/10.1113/jphysiol.1973.sp010273">doi:10.1113/jphysiol.1973.sp010273</a></li>
+        <li id="r5">Frey, U., &amp; Morris, R. G. M. (1997). Synaptic tagging and long-term potentiation. <i>Nature</i>, 385(6616), 533–536. <a href="https://doi.org/10.1038/385533a0">doi:10.1038/385533a0</a></li>
+        <li id="r6">Tse, D., Langston, R. F., Kakeyama, M., et al. (2007). Schemas and memory consolidation. <i>Science</i>, 316(5821), 76–82. <a href="https://doi.org/10.1126/science.1135935">doi:10.1126/science.1135935</a></li>
+        <li id="r7">Wilson, M. A., &amp; McNaughton, B. L. (1994). Reactivation of hippocampal ensemble memories during sleep. <i>Science</i>, 265(5172), 676–679. <a href="https://doi.org/10.1126/science.8036517">doi:10.1126/science.8036517</a></li>
+        <li id="r8">Redondo, R. L., &amp; Morris, R. G. M. (2011). Making memories last: the synaptic tagging and capture hypothesis. <i>Nature Reviews Neuroscience</i>, 12(1), 17–30. <a href="https://doi.org/10.1038/nrn2963">doi:10.1038/nrn2963</a></li>
+        <li id="r9">Tononi, G., &amp; Cirelli, C. (2014). Sleep and the price of plasticity: from synaptic and cellular homeostasis to memory consolidation and integration. <i>Neuron</i>, 81(1), 12–34. <a href="https://doi.org/10.1016/j.neuron.2013.12.025">doi:10.1016/j.neuron.2013.12.025</a></li>
+      </ol>
+    </div>
+
+    <p class="foot">
+      <b style="color:var(--dim)">in short:</b> a small idea on top of things Claude already does — agentic
+      <b>loops</b> and its <b>memory + Skills</b>. The neuroscience is just the <i>why</i>, not a new claim.
+      Check your skills actually trigger with the <span class="pill">skill-creator</span> plugin.
+      &nbsp;Filed under: obvious, once someone says it.
+      <br><span class="pill">#ClaudeCode</span> <span class="pill">#AgentSkills</span> <span class="pill">#neuroAI</span>
+    </p>
+  </div>
+</div></body></html>
