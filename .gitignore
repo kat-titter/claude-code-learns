@@ -1,0 +1,9 @@
+# keep the repo lightweight: HTML only, no binaries
+*.png
+*.jpg
+*.jpeg
+*.gif
+*.pdf
+*.mp4
+*.webp
+.DS_Store
