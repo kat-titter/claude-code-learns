@@ -54,4 +54,4 @@ plasticity / tagging / replay literature).
 ## Notes
 
 - Validate that a skill actually triggers with the official `skill-creator` plugin.
-- Use freely.
+- MIT licensed; see [`LICENSE`](LICENSE).
