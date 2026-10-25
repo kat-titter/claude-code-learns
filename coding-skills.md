@@ -1,6 +1,6 @@
 # An example library
 
-The author's skill library as of October 2026 (16 skills), one line each, to show the shape a library takes after a few months:
+The author's skill library as of October 2026 (17 skills), one line each, to show the shape a library takes after a few months:
 one skill per question, a personal style skill beside the general ones, checkers bundled where a claim can be measured.
 Linked skills are in this repo; the rest live in the author's `~/.claude/skills/`.
 
@@ -16,7 +16,8 @@ Linked skills are in this repo; the rest live in the author's `~/.claude/skills/
 
 | Skill | What it is for |
 |---|---|
-| `design-practice` | Composition, text, legends, axes and scale bars, interactivity, colour. Checkers: `check_design.py` (separators, repeats), `check_symbols.py` (unique symbols). |
+| `design-practice` | Composition, text, numbers on cards, interactivity, colour (figures: figure-design). Checkers: `check_design.py` (separators, repeats), `check_symbols.py` (unique symbols). |
+| `figure-design` | Figures that read at a glance: axes with labels and units, the legend outside the plot (below), nothing overlapping, one size and spacing scale; legends, channels, diagrams and mechanisms. |
 | `page-legibility-check` | Measure contrast, label collisions, overflow and tiny text at desktop and phone widths, light and dark (`check-page.sh`). |
 | `interactive-figures` | Design, build and audit interactive figures and explorables: push the system before naming the property, field notation, one calm card for every view, inertia and reduced motion, first frame without JS; `audit_interactions.py` checks targets, names, focus, click errors, motion and no-JS frames (validated on the loop-table post and its essay). |
 | `field-vocabulary` | The field's own words in anything a person reads; glossaries for treble and cell-biology decks (`check_vocab.py`). |

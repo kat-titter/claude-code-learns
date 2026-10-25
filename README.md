@@ -72,7 +72,7 @@ Adds the `capture-lesson` skill, a `yourname-style` skill for your taste, and tw
 install.sh              set up in one command
 skills/capture-lesson/  the skill that writes skills, with its hooks and checks
 templates/, *.example*  starting points: style skill, CLAUDE.md, hooks, memory, inbox
-coding-skills.md        an example library of 16 skills
+coding-skills.md        an example library of 17 skills
 index.html              the explainer
 ```
 
