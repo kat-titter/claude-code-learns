@@ -11,7 +11,7 @@ new skills worth adding. Built only on what Claude Code already has: skills, hoo
 ## 1. How it works
 
 ```mermaid
-flowchart LR
+flowchart TB
   you(["your feedback"]) --> hook["feedback hook"]
   self(["the agent's own surprise"]) --> cap
   hook --> cap{{"capture-lesson"}}
