@@ -89,7 +89,8 @@ The watch's footprint line tracks the cost (Oct 2026, one library: about 11 KB o
   (`$CLAUDE_STYLE_SKILL`, else the one `*-style` folder, else `my-style`).
 - **One command to install** that merges settings without overwriting, backs up what it touches, and has a dry run.
 - **A README that fits on one screen**: one line of what it does, a diagram GitHub renders (Mermaid, short labels),
-  three short bullets, install, a small file tree. Detail lives in the skill and the explainer (claude-code-learns'
+  three short bullets, install, a small file tree. Draw the diagram top to bottom so it fits the ~830 px README
+  column at full size (left to right shrank to 65%), and parse it first: `style` and `end` are Mermaid keywords. Detail lives in the skill and the explainer (claude-code-learns'
   README went from 124 lines to 58, 2026-10-25: "too long, wordy. more simple, clear").
 
 ## Provenance
