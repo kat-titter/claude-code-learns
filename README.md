@@ -12,20 +12,33 @@ new skills worth adding. Built only on what Claude Code already has: skills, hoo
 
 ```mermaid
 flowchart TB
-  you(["your feedback"]) --> hook["feedback hook"]
-  self(["the agent's own surprise"]) --> cap
-  hook --> cap{{"capture-lesson"}}
-  stop["end-of-session hook"] --> inbox[("lessons inbox")]
-  inbox -->|"recurs"| cap
-  cap -->|"for anyone"| general["general skill"]
-  cap -->|"your taste"| taste["your style skill"]
-  cap -->|"one project"| memory[("project memory")]
-  general --> next(["next session"])
-  taste --> next
-  memory --> next
-  week[["weekly check"]] -->|"proposals, on your yes"| cap
-  classDef core fill:#a8175f,stroke:#a8175f,color:#ffffff
+  you(["You"])
+  agent(["Claude Code"])
+  hook["feedback hook"]
+  stop["end-of-session hook"]
+  inbox[("lessons inbox")]
+  cap{{"capture-lesson"}}
+  week[["weekly check"]]
+  subgraph lib ["your library"]
+    general["general skills"]
+    taste["your style skill"]
+    memory[("project memory")]
+  end
+  you -->|"corrects, prefers"| hook
+  hook -->|"flags"| cap
+  agent -->|"notices its own slip"| cap
+  stop -->|"logs what was missed"| inbox
+  inbox -->|"if it recurs"| cap
+  cap -->|"for anyone"| general
+  cap -->|"your taste"| taste
+  cap -->|"one project"| memory
+  lib -->|"loads when a task matches"| agent
+  week -->|"proposes; you approve"| cap
+  classDef default fill:#eef8f1,stroke:#3a9d6a,color:#163a26
+  classDef core fill:#c9ecd7,stroke:#237a4b,stroke-width:2px,color:#0f3320,font-weight:bold
   class cap core
+  style lib fill:#f7fbf8,stroke:#9fd3b5,color:#163a26
+  linkStyle default stroke:#3a9d6a
 ```
 
 - **Learns fast**: a correction becomes a guideline in the same turn.
