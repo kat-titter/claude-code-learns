@@ -77,6 +77,10 @@ read; installing, editing and committing wait for the person's yes.
 - **Incremental by default.** State files and dates keep each pass to what changed since the last one.
 - **Progressive loading.** Descriptions are carried every session, so keep them sharp; bodies load when a task
   matches; references load when a step asks for them. Memory keeps one fact per note and one line per note in its index.
+- **Keep the always-loaded layer for habits.** CLAUDE.md and the memory index load every session, so they hold only
+  what every session needs (heads-up before downloads, plain talk, the routing habit); taste moves to the style skill
+  and a memory note a skill now covers is archived. Case: 2026-10-25, the index went from 51 lines to 36 and CLAUDE.md
+  from restating capture-lesson to five habits and one routing paragraph.
 - **Batch the upkeep.** Capture in the turn; organize in one pass after a long session or once a week.
 
 The watch's footprint line tracks the cost (Oct 2026, one library: about 11 KB of descriptions carried for 15 skills,
