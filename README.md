@@ -34,11 +34,10 @@ flowchart TB
   cap -->|"one project"| memory
   lib -->|"loads when a task matches"| agent
   week -->|"proposes; you approve"| cap
-  classDef default fill:#eef8f1,stroke:#3a9d6a,color:#163a26
-  classDef core fill:#c9ecd7,stroke:#237a4b,stroke-width:2px,color:#0f3320,font-weight:bold
+  classDef default fill:#dafbe1,stroke:#1a7f37,color:#116329
+  classDef core fill:#aceebb,stroke:#1a7f37,stroke-width:2px,color:#116329,font-weight:bold
   class cap core
-  style lib fill:#f7fbf8,stroke:#9fd3b5,color:#163a26
-  linkStyle default stroke:#3a9d6a
+  style lib fill:none,stroke:#8c959f,stroke-dasharray:4 3
 ```
 
 - **Learns fast**: a correction becomes a guideline in the same turn.
@@ -47,11 +46,11 @@ flowchart TB
 
 ## 2. Install
 
-```bash
+```
 git clone https://github.com/kat-titter/claude-code-learns && cd claude-code-learns
 ```
 
-```bash
+```
 ./install.sh --name yourname
 ```
 

@@ -9,13 +9,13 @@
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500&family=IBM+Plex+Sans:wght@400;500;600&display=swap">
 <style>
 :root{
-  --bg:#fafafa; --panel:#f0f0f2; --line:#d9d9de; --ink:#16161a; --dim:#4f4f58; --acc:#a8175f; --bar:#b9b9c2;
+  --bg:#fafafa; --panel:#f0f0f2; --line:#d9d9de; --ink:#16161a; --dim:#4f4f58; --acc:#1a7f37; --bar:#8a8a94;
   --mono:"IBM Plex Mono",ui-monospace,Menlo,monospace; --sans:"IBM Plex Sans",-apple-system,"Helvetica Neue",Arial,sans-serif;
   color-scheme:light;
 }
 @media (prefers-color-scheme:dark){ :root:not([data-theme="light"]){
-  --bg:#0d0d0f; --panel:#16161a; --line:#2c2c33; --ink:#ececf0; --dim:#a9a9b3; --acc:#f07bb2; --bar:#4a4a54; color-scheme:dark }}
-:root[data-theme="dark"]{ --bg:#0d0d0f; --panel:#16161a; --line:#2c2c33; --ink:#ececf0; --dim:#a9a9b3; --acc:#f07bb2; --bar:#4a4a54; color-scheme:dark }
+  --bg:#0d0d0f; --panel:#16161a; --line:#2c2c33; --ink:#ececf0; --dim:#a9a9b3; --acc:#3fb950; --bar:#6b6b75; color-scheme:dark }}
+:root[data-theme="dark"]{ --bg:#0d0d0f; --panel:#16161a; --line:#2c2c33; --ink:#ececf0; --dim:#a9a9b3; --acc:#3fb950; --bar:#6b6b75; color-scheme:dark }
 *{box-sizing:border-box}
 body{margin:0;background:var(--bg);color:var(--ink);font:16px/1.6 var(--sans)}
 main{max-width:760px;margin:0 auto;padding:32px 16px 64px}
@@ -53,7 +53,7 @@ ul.tight{margin:0 0 12px;padding-left:20px;max-width:66ch} ul.tight li{margin:4p
 sup.ref{font-size:.7em;line-height:0}
 sup.ref a{color:var(--acc);text-decoration:none}
 ol.refs{padding-left:22px;font-size:.88rem;color:var(--dim)} ol.refs li{margin:6px 0} ol.refs a{color:var(--dim)}
-a{color:var(--ink)}
+a{color:var(--ink);text-decoration-color:var(--acc);text-underline-offset:2px}
 footer{margin-top:44px;padding-top:14px;border-top:1px solid var(--line);font-size:.85rem;color:var(--dim);display:flex;flex-wrap:wrap;gap:6px 24px}
 footer a{color:var(--dim)}
 @media (max-width:520px){ pre{white-space:pre-wrap;overflow-wrap:anywhere} ol.loop li{grid-template-columns:1fr;gap:0} .bars{grid-template-columns:1fr 3.8rem} .bars span:first-child{grid-column:1/-1;margin-top:4px} }
