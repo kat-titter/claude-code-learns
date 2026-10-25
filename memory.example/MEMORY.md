@@ -1,0 +1,3 @@
+- [Who I am](user_profile.md) — scientist and engineer; plain writing; figures must be legible in light and dark
+- [Downloads need a heads-up](feedback_heads_up.md) — say size and time before any download or long job
+- [Lab notebook site](project_lab_notebook.md) — static site in ~/notebook, published from main; build with make

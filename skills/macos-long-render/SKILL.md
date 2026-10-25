@@ -6,8 +6,8 @@ when_to_use: Before kicking off any unattended macOS compute expected to run mor
 
 ## Wrap long unattended jobs in `caffeinate`
 
-Any local job that runs unattended for more than ~1–2 hours on a Mac **must** be
-wrapped in `caffeinate`, or macOS will sleep / idle-throttle the process —
+Wrap any local job that runs unattended for more than ~1–2 hours on a Mac in
+`caffeinate`; otherwise macOS can sleep or idle-throttle the process,
 especially overnight — and it crawls to a near-halt.
 
 ```bash
@@ -39,8 +39,21 @@ across the whole run, then reason about the *instantaneous* rate per window
   as the chip heats up. Not a cliff. Mitigation = better cooling / lower load,
   not caffeinate.
 
-**Takeaway:** don't conclude "this hardware is slow" from a long wall-clock until
-you've ruled out sleep/idle. The fix is almost always `caffeinate`.
+**Takeaway:** rule out sleep and idle before reading a long wall-clock as slow hardware.
+The fix is almost always `caffeinate`.
+
+## Diagnose: a shared, overloaded machine
+
+When a job crawls while the Mac is awake, look at what else is running before blaming the job:
+- `sysctl -n vm.loadavg` against `sysctl -n hw.ncpu`, and `sysctl vm.swapusage`. A load several times the core count
+  or swap near full means the job is waiting (Datum Line, 2026-10-19: load 35 on 10 cores, 13 GB swap; a 5-minute
+  analysis took over an hour while another project ran a parallel batch).
+- `ps -Ao pid,etime,pcpu,rss,command -r | head` shows who holds the CPU; a tiny RSS on a big job means it was swapped out.
+- Give numeric jobs one BLAS thread on a shared machine (`OPENBLAS_NUM_THREADS=1 VECLIB_MAXIMUM_THREADS=1
+  OMP_NUM_THREADS=1`): threaded BLAS fights other jobs and runs slower.
+- Run one copy at a time; a reproducibility check can run its two copies one after the other.
+- Another session's work stays the user's call: report it and ask before pausing it.
+- Same pattern elsewhere: a Whisper transcription stalled at 20% CPU while other jobs ran (treble, 2026-10-19).
 
 ## Estimating ETAs
 

@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 """
 Stop-hook: scan the just-finished session for correction moments and log them as
-candidates in ~/.claude/lessons-inbox.md (the fast store). Never fails the turn.
+candidates in <config>/lessons-inbox.md (~/.claude unless installed elsewhere) (the fast store). Never fails the turn.
 
 Reads the hook JSON on stdin (expects transcript_path). Extracts recent USER
 messages, matches correction signals, de-dupes by content hash, appends candidates.
@@ -9,16 +9,21 @@ Promotion to a real Skill happens later, via the capture-lesson skill.
 """
 import sys, os, json, re, hashlib, datetime
 
-HOME = os.path.expanduser("~")
-INBOX = os.path.join(HOME, ".claude", "lessons-inbox.md")
-SEEN  = os.path.join(HOME, ".claude", ".corrections-seen")
+# the Claude config folder this skill is installed in: <config>/skills/capture-lesson/scripts/<this file>
+CONFIG = os.path.dirname(os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__)))))
+INBOX = os.path.join(CONFIG, "lessons-inbox.md")
+SEEN  = os.path.join(CONFIG, ".corrections-seen")
 
 # higher-precision correction signals (avoid common words like "fix"/"instead")
 SIGNAL = re.compile(
     r"(that'?s wrong|not right|incorrect|you forgot|you missed|doesn'?t work|"
     r"isn'?t working|that'?s not (right|what)|not what i (meant|asked)|i meant|"
-    r"seems? like a lot|too (slow|long|much|many|big)|why is it|no sass|"
+    r"seems? like a lot|too (slow|long|much|many|big|dense)|why is it|why (are|does|taking)|taking so long|no sass|"
+    r"should (be|have|use|show)|\bdon'?t use\b|\bdont\b|\bplease (no|use|keep|focus)\b|\bfrom now on\b|\bkeep .{0,30} separate\b|"
     r"^\s*(no|nope)\b)", re.I)
+# text the harness injects as a "user" turn: summaries, skill bodies, task notifications, reminders
+HARNESS = re.compile(r"This session is being continued|Base directory for this skill|<task-notification>|"
+                     r"<system-reminder>|<command-name>|\[SYSTEM NOTIFICATION")
 
 def fail_safe(fn):
     try: fn()
@@ -58,7 +63,7 @@ def run():
     new = []
     for t in texts_from_transcript(tpath):
         t = t.strip()
-        if not t or not SIGNAL.search(t):
+        if not t or HARNESS.search(t) or not SIGNAL.search(t):
             continue
         h = hashlib.sha1(t.encode("utf-8")).hexdigest()[:12]
         if h in seen:

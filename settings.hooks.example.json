@@ -1,0 +1,12 @@
+{
+  "hooks": {
+    "UserPromptSubmit": [
+      { "hooks": [ { "type": "command",
+        "command": "python3 ~/.claude/skills/capture-lesson/scripts/feedback-nudge.py" } ] }
+    ],
+    "Stop": [
+      { "hooks": [ { "type": "command",
+        "command": "python3 ~/.claude/skills/capture-lesson/scripts/scan-corrections.py" } ] }
+    ]
+  }
+}

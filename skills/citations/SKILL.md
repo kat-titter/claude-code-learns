@@ -4,7 +4,7 @@ description: Add or verify numbered citations / references / a bibliography in a
 when_to_use: Whenever a document gains citations/references, or a numbered reference list's indexing needs to be trusted — especially in HTML, where separate ordered lists silently desync the numbers.
 ---
 
-## 1. Verify before you cite — never from memory
+## 1. Cite from the source you just checked
 
 Even canonical papers get volume/issue/pages/year wrong from memory. For each
 source, web-verify: authors, year, exact title, journal, **volume(issue), pages,
@@ -35,7 +35,7 @@ visible numbering continues. The first list needs no `start=` (it defaults to 1)
 The failure mode is a 2nd+ `<ol>` **missing** `start=`: it silently restarts at 1,
 so #r32 then shows "1".
 
-## 4. Verify the indexing — don't eyeball it
+## 4. Verify the indexing with the checker
 
 ```bash
 python3 ${CLAUDE_SKILL_DIR}/scripts/check-citations.py path/to/file.html
