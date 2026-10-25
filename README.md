@@ -14,26 +14,26 @@ new skills worth adding. Built only on what Claude Code already has: skills, hoo
 flowchart TB
   you(["You"])
   agent(["Claude Code"])
-  hook["feedback hook"]
-  stop["end-of-session hook"]
-  inbox[("lessons inbox")]
-  cap{{"capture-lesson"}}
-  week[["weekly check"]]
-  subgraph lib ["your library"]
-    general["general skills"]
-    taste["your style skill"]
-    memory[("project memory")]
+  nudge["feedback-nudge.py"]
+  scan["scan-corrections.py"]
+  inbox[("lessons-inbox.md")]
+  cap{{"capture-lesson/SKILL.md"}}
+  watch[["skills-watch.py"]]
+  subgraph lib [" "]
+    general["citations/SKILL.md"]
+    taste["my-style/SKILL.md"]
+    memory[("memory/MEMORY.md")]
   end
-  you -->|"corrects, prefers"| hook
-  hook -->|"flags"| cap
-  agent -->|"notices its own slip"| cap
-  stop -->|"logs what was missed"| inbox
+  you -->|"corrects, prefers"| nudge
+  nudge -->|"each prompt:<br/>flags feedback"| cap
+  agent -->|"notices<br/>its own slip"| cap
+  scan -->|"session end:<br/>logs what was missed"| inbox
   inbox -->|"if it recurs"| cap
   cap -->|"for anyone"| general
   cap -->|"your taste"| taste
   cap -->|"one project"| memory
-  lib -->|"loads when a task matches"| agent
-  week -->|"proposes; you approve"| cap
+  lib -->|"loads when<br/>a task matches"| agent
+  watch -->|"weekly: proposes,<br/>you approve"| cap
   classDef default fill:#dafbe1,stroke:#1a7f37,color:#116329
   classDef core fill:#aceebb,stroke:#1a7f37,stroke-width:2px,color:#116329,font-weight:bold
   class cap core
