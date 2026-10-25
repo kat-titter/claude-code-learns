@@ -1,6 +1,6 @@
 # An example library
 
-The author's skill library as of October 2026, one line each, to show the shape a library takes after a few months:
+The author's skill library as of October 2026 (16 skills), one line each, to show the shape a library takes after a few months:
 one skill per question, a personal style skill beside the general ones, checkers bundled where a claim can be measured.
 Linked skills are in this repo; the rest live in the author's `~/.claude/skills/`.
 
@@ -29,6 +29,7 @@ Linked skills are in this repo; the rest live in the author's `~/.claude/skills/
 | Skill | What it is for |
 |---|---|
 | `controlled-comparisons` | Same dose, same groups and chance, named and negative controls, leakage checks, spread over splits, fair luck baselines, true scale bars, structures from the record (`constant_within_group.py`). |
+| `storytelling` | The arc, openings and closings for anything with a reader: And-But-Therefore, concrete before abstract, one question carried through, a close that answers or calls back. The medium skills link here. |
 | [`citations`](skills/citations/SKILL.md) | Numbered references checked against the real source, with in-text markers kept in sync (`check-citations.py`). |
 | `humanize-science-writing` | Long-form science writing that reads human and travels, with a reviewer for cohesion, legibility, argument and AI-style signals (`review_prose.py`). |
 | `viral-tweet` | High-reach posts and threads: hooks, specifics, reply velocity, links in replies; voice from the author's profile. |
