@@ -19,7 +19,7 @@ Linked skills are in this repo; the rest live in the author's `~/.claude/skills/
 | `work-practice` | How any multi-step task runs: read the gist and serve it, small steps each finished and integrated everywhere, a note carried to every place it holds, the fastest check that can fail, running jobs watched for stalls, each piece of work done once, a fresh session with a handoff brief when one serves better. |
 | [`prompt-practice`](skills/prompt-practice/SKILL.md) | Every prompt as a brief: dictated or terse prompts rewritten silently (outcome, deliverable, context, the field's words, prior work, a check that can fail), and briefs, system prompts and generator prompts written to Anthropic's guidance. Hook: `prompt-nudge.py` on dictated or terse prompts. |
 | `github-practice` | Focused commits with a short title and a why, the no-reply identity set once per machine, a branch and PR per change, nothing private or binary in history, a one-screen README and a filled About box, private to public as audit, filter-repo rewrite, lease-guarded push and live check. |
-| `code-organization` | One home per helper (the second copy moves to a shared module), comparisons and benchmarks outside the live program, superseded experiments in an archive, a README file table that matches the tree. |
+| `code-practice` | One home per helper (the second copy moves to a shared module), comparisons and benchmarks outside the live program, superseded experiments in an archive, a README file table that matches the tree. |
 
 ## Pages, figures, decks
 

@@ -65,7 +65,7 @@ Every guideline should have one obvious home, so the next lesson knows where to 
   then extend the line that already answers the question. A new section is for a new sub-question; a new skill for a
   new question someone would ask, planned from public examples of the domain (work-practice, "Build on what exists").
   Grep the lesson's key words too: a parallel session may have captured it minutes ago
-  (2026-10-25: code-organization landed while work-practice was gaining the same do-it-once lesson).
+  (2026-10-25: code-practice landed while work-practice was gaining the same do-it-once lesson).
 - **Edit on a clean diff.** Keep the skills folder in a local git repo (`git init`, no remote). Before editing, run
   `git status --short` and `git diff` there: an uncommitted change is another session's work in progress, so leave
   those files to it. After editing, commit only your own files, so each session's change is one diff and a clobbered
