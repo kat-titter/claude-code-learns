@@ -106,7 +106,7 @@ read; installing, editing and committing wait for the person's yes.
 - **Batch the upkeep.** Capture in the turn; organize in one pass after a long session or once a week.
 
 The watch's footprint line tracks the cost (2026-10-26, one library of 20 skills: 15 KB of descriptions carried every
-session, 201 KB of bodies waiting on disk).
+session, 185 KB of bodies waiting on disk).
 
 ## 9. Share it so anyone can use it
 
