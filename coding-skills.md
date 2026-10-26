@@ -1,6 +1,6 @@
 # An example library
 
-The author's skill library as of October 2026 (21 skills), one line each, to show the shape a library takes after a few months:
+The author's skill library as of October 2026 (22 skills), one line each, to show the shape a library takes after a few months:
 one skill per question, a personal style skill beside the general ones, checkers bundled where a claim can be measured.
 Linked skills are in this repo; the rest live in the author's `~/.claude/skills/`.
 
@@ -30,7 +30,8 @@ Linked skills are in this repo; the rest live in the author's `~/.claude/skills/
 | `page-legibility-check` | Measure contrast, label collisions, overflow and tiny text at desktop and phone widths, light and dark (`check-page.sh`). |
 | `interactive-figures` | Design, build and audit interactive figures and explorables: push the system before naming the property, field notation, one calm card for every view, inertia and reduced motion, first frame without JS; `audit_interactions.py` checks targets, names, focus, click errors, motion and no-JS frames (validated on the loop-table post and its essay). |
 | `field-vocabulary` | The field's own words in anything a person reads; glossaries for treble and cell-biology decks (`check_vocab.py`). |
-| `html-slide-deck` | One-file HTML decks: views, talk and PDF layers, stable rebuilds, printing, rendering, publishing to GitHub Pages and verifying it live (five scripts). |
+| [`html-docs`](skills/html-docs/SKILL.md) | One-file HTML documents with light interactivity: pick the medium (page, Artifact, shared doc, deck), section ids, print rules, term cards, folds, click-to-step, a layer key; work by section id and render; `light-audit.py` (static weight and interactivity check, calibrated on 11 pages). |
+| [`html-slide-deck`](skills/html-slide-deck/SKILL.md) | One-file HTML decks: views, talk and PDF layers, stable rebuilds, printing, rendering, publishing to GitHub Pages and verifying it live (five scripts). |
 | `pitch-deck-story` | What goes on a five-minute pitch: story order, one idea per slide, numbers that read, fair comparisons, appendix boards, timed script and Q&A. |
 | `verify-animated-page` | Verify canvas/WebGL/rAF pages in the browser pane: fresh captures, focus-safe tests, synthetic clocks (`raf_probe.js`). |
 

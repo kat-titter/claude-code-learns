@@ -76,8 +76,9 @@ check, paste `skills/capture-lesson/weekly-watch.md` into a weekly scheduled tas
 install.sh              set up in one command
 skills/capture-lesson/  the skill that writes skills, with its hooks and checks
 skills/prompt-practice/ every prompt as a brief, with its hook
+skills/html-*/          example general skills: lightly interactive HTML docs and decks, with checkers
 templates/, *.example*  starting points: style skill, CLAUDE.md, hooks, memory, inbox
-coding-skills.md        an example library of 21 skills
+coding-skills.md        an example library of 22 skills
 index.html              the explainer
 ```
 

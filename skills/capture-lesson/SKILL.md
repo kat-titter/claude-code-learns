@@ -63,7 +63,8 @@ Then update the index (`coding-skills.md`) and say the update in one line of the
 Every guideline should have one obvious home, so the next lesson knows where to go and the reader finds it once.
 - **Find the owner before writing.** Scan descriptions and headings (`grep -n '^## ' ~/.claude/skills/*/SKILL.md`),
   then extend the line that already answers the question. A new section is for a new sub-question; a new skill for a
-  new question someone would ask. Grep the lesson's key words too: a parallel session may have captured it minutes ago
+  new question someone would ask, planned from public examples of the domain (work-practice, "Build on what exists").
+  Grep the lesson's key words too: a parallel session may have captured it minutes ago
   (2026-10-25: code-organization landed while work-practice was gaining the same do-it-once lesson).
 - **Edit on a clean diff.** Keep the skills folder in a local git repo (`git init`, no remote). Before editing, run
   `git status --short` and `git diff` there: an uncommitted change is another session's work in progress, so leave
@@ -109,8 +110,8 @@ read; installing, editing and committing wait for the person's yes.
   from restating capture-lesson to five habits and one routing paragraph.
 - **Batch the upkeep.** Capture in the turn; organize in one pass after a long session or once a week.
 
-The watch's footprint line tracks the cost (2026-10-26, one library of 20 skills: 15 KB of descriptions carried every
-session, 185 KB of bodies waiting on disk).
+The watch's footprint line tracks the cost (2026-10-26, one library of 22 skills: 17 KB of descriptions carried every
+session, 213 KB of bodies waiting on disk).
 
 ## 9. Share it so anyone can use it
 

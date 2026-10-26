@@ -2,7 +2,7 @@
 # Install claude-code-learns into your Claude Code config (~/.claude, or $CLAUDE_CONFIG_DIR).
 #   ./install.sh --name yourname --dry-run     show what it would do
 #   ./install.sh --name yourname               do it
-#   ./install.sh --name yourname --examples    also copy the two example skills (citations, macos-long-render)
+#   ./install.sh --name yourname --examples    also copy the example skills (citations, macos-long-render, html-docs, html-slide-deck)
 # Safe to re-run: capture-lesson and prompt-practice are refreshed, files you wrote are left alone, settings.json is
 # backed up before the three hooks are merged in, and a hook that is already there is not added twice.
 set -e
@@ -28,7 +28,7 @@ say "Installing into $C (personal style skill: $STYLE)"
 # 1. the skill that writes skills, with its four scripts and the weekly prompt; the skill that turns prompts into briefs
 for s in capture-lesson prompt-practice; do run mkdir -p "$C/skills/$s"; run cp -R "$HERE/skills/$s/." "$C/skills/$s/"; done
 if [ "$EXAMPLES" = 1 ]; then
-  for s in citations macos-long-render; do run mkdir -p "$C/skills/$s"; run cp -R "$HERE/skills/$s/." "$C/skills/$s/"; done
+  for s in citations macos-long-render html-docs html-slide-deck; do run mkdir -p "$C/skills/$s"; run cp -R "$HERE/skills/$s/." "$C/skills/$s/"; done
 fi
 
 # 2. your personal layer, only if you do not have one yet
@@ -57,7 +57,7 @@ fi
 if [ ! -e "$C/coding-skills.md" ]; then
   if [ "$DRY" = 1 ]; then say "  would write $C/coding-skills.md"; else
     printf '# Skills index\n\n| Skill | What it is for |\n|---|---|\n| `capture-lesson` | Turn feedback into guidance; tend the library; weekly watch. |\n| `prompt-practice` | Turn every prompt into a brief: terse prompts rewritten, briefs and generator prompts written well. |\n| `%s` | My taste and way of working, kept apart from the general skills. |\n' "$STYLE" > "$C/coding-skills.md"
-    [ "$EXAMPLES" = 1 ] && printf '| `citations` | Numbered references checked against the real source. |\n| `macos-long-render` | Keep long Mac jobs awake; tell idle from thermal slowdowns. |\n' >> "$C/coding-skills.md"; fi
+    [ "$EXAMPLES" = 1 ] && printf '| `citations` | Numbered references checked against the real source. |\n| `macos-long-render` | Keep long Mac jobs awake; tell idle from thermal slowdowns. |\n| `html-docs` | One-file HTML docs with light interactivity; light-audit.py. |\n| `html-slide-deck` | One-file HTML decks: views, layers, print, publish. |\n' >> "$C/coding-skills.md"; fi
 fi
 
 # 6. the three hooks, merged into settings.json
