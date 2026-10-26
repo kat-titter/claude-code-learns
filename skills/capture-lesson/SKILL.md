@@ -54,7 +54,7 @@ Every guideline should have one obvious home, so the next lesson knows where to 
 - **Find the owner before writing.** Scan descriptions and headings (`grep -n '^## ' ~/.claude/skills/*/SKILL.md`),
   then extend the line that already answers the question. A new section is for a new sub-question; a new skill for a
   new question someone would ask. Grep the lesson's key words too: a parallel session may have captured it minutes ago
-  (2026-10-25: code-organization landed while incremental-work was gaining the same do-it-once lesson).
+  (2026-10-25: code-organization landed while work-practice was gaining the same do-it-once lesson).
 - **Compress as you go.** A second case folds into the existing line ("caught again in X, 2026-10-24") rather than a
   new paragraph. Long references, glossaries and checkers live in `references/` and `scripts/`, read only when used.
 - **Refactor when the signs show** (the audit reports them): two descriptions that fire on the same prompt, merge;
