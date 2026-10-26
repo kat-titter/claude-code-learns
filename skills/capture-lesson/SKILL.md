@@ -65,6 +65,10 @@ Every guideline should have one obvious home, so the next lesson knows where to 
   then extend the line that already answers the question. A new section is for a new sub-question; a new skill for a
   new question someone would ask. Grep the lesson's key words too: a parallel session may have captured it minutes ago
   (2026-10-25: code-organization landed while work-practice was gaining the same do-it-once lesson).
+- **Edit on a clean diff.** Keep the skills folder in a local git repo (`git init`, no remote). Before editing, run
+  `git status --short` and `git diff` there: an uncommitted change is another session's work in progress, so leave
+  those files to it. After editing, commit only your own files, so each session's change is one diff and a clobbered
+  edit comes back from history. (2026-10-26: a bullet landed in design-practice at 07:27, midway through splitting it.)
 - **Compress as you go.** A second case folds into the existing line ("caught again in X, 2026-10-24") rather than a
   new paragraph. Long references, glossaries and checkers live in `references/` and `scripts/`, read only when used.
 - **Refactor when the signs show** (the audit reports them): two descriptions that fire on the same prompt, merge;
@@ -73,7 +77,7 @@ Every guideline should have one obvious home, so the next lesson knows where to 
   design-practice folded to one owner each); personal taste in a general skill, move it to `<name>-style`; a name that no
   longer says what the skill does, rename and fix links; a line no task has needed in months, archive it.
 - **Refactor in one pass**: `python3 ${CLAUDE_SKILL_DIR}/scripts/audit-skills.py --lines`, make the changes, sync the
-  index, re-run the audit. Check modification times first in case another session is editing the same skills.
+  index, re-run the audit, commit.
 
 ## 7. Watch the field, weekly
 
