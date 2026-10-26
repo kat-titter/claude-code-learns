@@ -73,8 +73,8 @@ Claude Code already has: Skills, hooks, memory and scheduled tasks.</p>
   A lesson that fits an existing skill is folded into it.</p></div>
   <div><h3>Notices its own mistakes</h3><p>Hooks flag feedback, and the agent treats its own surprise and debugging as
   signals. It asks whether each lesson applies beyond the task, and audits the library weekly.</p></div>
-  <div><h3>Stays light</h3><p>Every session carries only skill descriptions and one memory index. Bodies and notes
-  load when a task calls for them, and scripts do the reading.</p></div>
+  <div><h3>Stays light</h3><p>Every session carries only skill descriptions, each short with its use case first, and
+  one memory index. Bodies and notes load when a task calls for them, and scripts do the reading.</p></div>
 </div>
 
 <h2><span>00</span>the loop</h2>
@@ -83,7 +83,7 @@ Claude Code already has: Skills, hooks, memory and scheduled tasks.</p>
   <li><b>generalize</b><span>which family of problems is this? write for the siblings</span></li>
   <li><b>route</b><span>a general skill, your style skill, project memory, or CLAUDE.md</span></li>
   <li><b>write</b><span>the gist in one line: what to do, the example, the date</span></li>
-  <li><b>validate</b><span>it triggers on realistic prompts and handles a second case</span></li>
+  <li><b>validate</b><span>it parses, triggers on realistic prompts and handles a second case</span></li>
   <li><b>organize</b><span>one home per guideline; merge, split and compress on signals</span></li>
   <li><b>watch</b><span>weekly: new skills upstream, gaps, health and footprint</span></li>
 </ol>
@@ -112,12 +112,14 @@ description: Keep long Mac jobs awake (renders, training, batch) so they don't s
 - Wrap the job in caffeinate: `caffeinate -dimsu python3 job.py`.
   A steady rate that drops off a cliff overnight is sleep, not heat.
   <span class="c">(2026-06-28: "17s/frame seems like a lot")</span></code></pre>
-<p>The description is the trigger, so it names the use case and the words people say. Each guideline says what to do,
-with the example and the reason: guidance the agent can weigh, not rules. A second case folds into the same line.</p>
+<p>The description is the trigger, so it opens with the use case and ends with the words people say. Each guideline
+says what to do, with the example and the reason: guidance the agent can weigh, not rules, and only what the agent
+does not already know. A second case folds into the same line.</p>
 
 <h2><span>04</span>validate</h2>
 <ul class="tight">
-  <li>Three realistic prompts select it (or run the skill-creator plugin's evals).</li>
+  <li>The frontmatter parses (<code>claude plugin validate</code>); one that doesn't loads with no description.</li>
+  <li>Three realistic prompts select it in a fresh session (or run the skill-creator plugin's evals).</li>
   <li>It handles a sibling case; a bundled checker proves it on a second input.</li>
   <li>It traces to a real moment. Anything that doesn't stays in the inbox.</li>
 </ul>
@@ -148,13 +150,13 @@ Footprint                  what loads every session against what waits on disk
 Proposed                   at most five changes, most useful first</code></pre>
 
 <h2><span>07</span>stays light</h2>
-<p>What a session carries against what waits until it is needed, in the author's library (October 2026):</p>
+<p>What a session carries against what waits until it is needed, in the author's library (2026-10-26, 20 skills):</p>
 <div class="key"><span><i class="on"></i>carried every session</span><span><i></i>loaded when a task needs it</span></div>
-<div class="bars" role="img" aria-label="Skill descriptions 10.8 KB carried; skill bodies 111.7 KB on demand; memory index 8.4 KB carried; memory notes 207 KB on demand">
-  <span>skill descriptions</span><i class="on" style="width:5.2%"></i><span class="v">10.8 KB</span>
-  <span>skill bodies</span><i style="width:54%"></i><span class="v">112 KB</span>
-  <span>memory index</span><i class="on" style="width:4.1%"></i><span class="v">8.4 KB</span>
-  <span>memory notes</span><i style="width:100%"></i><span class="v">207 KB</span>
+<div class="bars" role="img" aria-label="Skill descriptions 15.1 KB carried; skill bodies 201 KB on demand; memory index 10.8 KB carried; memory notes 224 KB on demand">
+  <span>skill descriptions</span><i class="on" style="width:6.7%"></i><span class="v">15.1 KB</span>
+  <span>skill bodies</span><i style="width:89.7%"></i><span class="v">201 KB</span>
+  <span>memory index</span><i class="on" style="width:4.8%"></i><span class="v">10.8 KB</span>
+  <span>memory notes</span><i style="width:100%"></i><span class="v">224 KB</span>
 </div>
 <p>Memory keeps one fact per note and one line per note in its index. Scripts read every file; the agent reads their
 short reports and only the files they name.</p>

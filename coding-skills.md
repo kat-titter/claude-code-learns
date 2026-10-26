@@ -1,6 +1,6 @@
 # An example library
 
-The author's skill library as of October 2026 (17 skills), one line each, to show the shape a library takes after a few months:
+The author's skill library as of October 2026 (20 skills), one line each, to show the shape a library takes after a few months:
 one skill per question, a personal style skill beside the general ones, checkers bundled where a claim can be measured.
 Linked skills are in this repo; the rest live in the author's `~/.claude/skills/`.
 
@@ -11,6 +11,14 @@ Linked skills are in this repo; the rest live in the author's `~/.claude/skills/
 |---|---|
 | [`capture-lesson`](skills/capture-lesson/SKILL.md) | Turn feedback into guidance in the same turn, routed to a general skill, the `<name>-style` skill, or project memory; tend the library (`audit-skills.py`); weekly watch for new skills and gaps (`skills-watch.py`). Hooks: `feedback-nudge.py` on each prompt, `scan-corrections.py` at session end. |
 | `kat-style` | The author's personal layer (kept private): how guidance is written, writing voice, design taste, science standards, how updates are given. |
+
+## How work runs
+
+| Skill | What it is for |
+|---|---|
+| `work-practice` | How any multi-step task runs: read the gist and serve it, small steps each finished and integrated everywhere, a note carried to every place it holds, the fastest check that can fail, running jobs watched for stalls, each piece of work done once, a fresh session with a handoff brief when one serves better. |
+| `github-practice` | Focused commits with a short title and a why, the no-reply identity set once per machine, a branch and PR per change, nothing private or binary in history, a one-screen README and a filled About box, private to public as audit, filter-repo rewrite, lease-guarded push and live check. |
+| `code-organization` | One home per helper (the second copy moves to a shared module), comparisons and benchmarks outside the live program, superseded experiments in an archive, a README file table that matches the tree. |
 
 ## Pages, figures, decks
 
