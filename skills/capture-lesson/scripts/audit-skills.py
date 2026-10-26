@@ -56,7 +56,7 @@ for p in skills:
         home = os.path.join(os.path.dirname(d), other) if other else d          # a script of another skill is checked there
         if not os.path.exists(os.path.join(home, s.split()[0].rstrip('`.,)'))): notes.append(f'names {s} but the file is missing')
     prov = body.split('## Provenance')[0]
-    neg = [l.strip() for l in prov.splitlines() if PROHIBIT.search(l)]
+    neg = [l.strip() for l in prov.splitlines() if PROHIBIT.search(re.sub(r'"[^"]*"|“[^”]*”|`[^`]*`', '', l))]  # quotes and code are provenance, not advice
     if neg: notes.append(f'{len(neg)} line(s) phrased as prohibitions, e.g. "{neg[0][:90]}"' + (''.join(f'\n      > {l[:160]}' for l in neg) if a.lines else ''))
     if name != a.personal:
         pers = [l.strip() for l in prov.splitlines() if PERSONAL.search(l) and a.personal not in l and not l.startswith('Provenance')]   # pointers and provenance are fine

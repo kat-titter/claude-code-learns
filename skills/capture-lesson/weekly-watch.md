@@ -32,6 +32,12 @@ Append a section "## Proposed" to this week's report with at most five items, mo
 change, where (file and section), why (the evidence from the report), and the drafted text. If nothing is worth doing,
 write one line saying so.
 
+## Aberrant behaviour
+Flag, in at most five lines, patterns that mean guidance exists but is not working: the same correction given three or
+more times in the window (the guideline is missing from what loads, or worded too weakly), sessions that started
+sessions the person did not ask for (`list_sessions` with linked sessions), and every-session load that grew more than
+a third since the last report. For each, name the file and the patch you would make.
+
 ## Scope
 This run reads, judges and writes the report only. Installing skills or plugins, editing any SKILL.md, committing,
 pushing and sending messages all wait for the person to say yes in a normal session.

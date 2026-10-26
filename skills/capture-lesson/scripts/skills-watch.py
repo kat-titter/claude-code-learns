@@ -124,11 +124,13 @@ for line in lines:
     if m and m.group(1) >= since.isoformat():
         recent.append(line.strip())
 vocab = {n: set(words(s['desc'] + ' ' + s['when'] + ' ' + n.replace('-', ' '))) for n, s in local.items()}
+_cm = os.path.join(CONFIG, 'CLAUDE.md')
+if os.path.exists(_cm): vocab['CLAUDE.md'] = set(words(open(_cm, encoding='utf-8').read()))  # habits live here too
 unmatched, routed = [], Counter()
 for line in recent:
     ws = set(words(line))
     named = [n for n in local if n in line]                     # a line that already names its skill is routed
-    best = max(local, key=lambda n: len(ws & vocab[n]), default=None)
+    best = max(vocab, key=lambda n: len(ws & vocab[n]), default=None)
     if named:
         routed[named[0]] += 1
     elif best and len(ws & vocab[best]) >= 2:
