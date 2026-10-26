@@ -15,6 +15,7 @@ flowchart TB
   you(["You"])
   agent(["Claude Code"])
   nudge["feedback-nudge.py"]
+  pnudge["prompt-nudge.py"]
   scan["scan-corrections.py"]
   inbox[("lessons-inbox.md")]
   cap{{"capture-lesson/SKILL.md"}}
@@ -26,6 +27,8 @@ flowchart TB
   end
   you -->|"corrects, prefers"| nudge
   nudge -->|"each prompt:<br/>flags feedback"| cap
+  you -->|"dictates, terse"| pnudge
+  pnudge -->|"brief first:<br/>outcome, context, check"| agent
   agent -->|"notices<br/>its own slip"| cap
   scan -->|"session end:<br/>logs what was missed"| inbox
   inbox -->|"if it recurs"| cap
@@ -42,6 +45,7 @@ flowchart TB
 
 - **Learns fast**: a correction becomes a guideline in the same turn.
 - **Notices mistakes**: hooks catch feedback; the agent flags its own surprises.
+- **Reads you right**: a terse or dictated prompt becomes a brief before work starts (`prompt-practice`).
 - **Stays light**: only skill descriptions load each session; the rest waits on disk.
 
 ## 2. Install
@@ -54,8 +58,8 @@ git clone https://github.com/kat-titter/claude-code-learns && cd claude-code-lea
 ./install.sh --name yourname
 ```
 
-Adds the `capture-lesson` skill, a `yourname-style` skill for your taste, and two hooks. For the weekly check, paste
-`skills/capture-lesson/weekly-watch.md` into a weekly scheduled task.
+Adds `capture-lesson`, `prompt-practice`, a `yourname-style` skill for your taste, and three hooks. For the weekly
+check, paste `skills/capture-lesson/weekly-watch.md` into a weekly scheduled task.
 
 > [!TIP]
 > `./install.sh --name yourname --dry-run` shows every change first. Re-running is safe.
@@ -71,8 +75,9 @@ Adds the `capture-lesson` skill, a `yourname-style` skill for your taste, and tw
 ```
 install.sh              set up in one command
 skills/capture-lesson/  the skill that writes skills, with its hooks and checks
+skills/prompt-practice/ every prompt as a brief, with its hook
 templates/, *.example*  starting points: style skill, CLAUDE.md, hooks, memory, inbox
-coding-skills.md        an example library of 20 skills
+coding-skills.md        an example library of 21 skills
 index.html              the explainer
 ```
 

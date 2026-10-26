@@ -2,7 +2,9 @@
   "hooks": {
     "UserPromptSubmit": [
       { "hooks": [ { "type": "command",
-        "command": "python3 ~/.claude/skills/capture-lesson/scripts/feedback-nudge.py" } ] }
+        "command": "python3 ~/.claude/skills/capture-lesson/scripts/feedback-nudge.py" } ] },
+      { "hooks": [ { "type": "command",
+        "command": "python3 ~/.claude/skills/prompt-practice/scripts/prompt-nudge.py" } ] }
     ],
     "Stop": [
       { "hooks": [ { "type": "command",

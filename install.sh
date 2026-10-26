@@ -3,8 +3,8 @@
 #   ./install.sh --name yourname --dry-run     show what it would do
 #   ./install.sh --name yourname               do it
 #   ./install.sh --name yourname --examples    also copy the two example skills (citations, macos-long-render)
-# Safe to re-run: capture-lesson is refreshed, files you wrote are left alone, settings.json is backed up before the two
-# hooks are merged in, and a hook that is already there is not added twice.
+# Safe to re-run: capture-lesson and prompt-practice are refreshed, files you wrote are left alone, settings.json is
+# backed up before the three hooks are merged in, and a hook that is already there is not added twice.
 set -e
 NAME=my; DRY=0; EXAMPLES=0
 while [ $# -gt 0 ]; do
@@ -25,9 +25,8 @@ run() { if [ "$DRY" = 1 ]; then say "  would run: $*"; else "$@"; fi; }
 
 say "Installing into $C (personal style skill: $STYLE)"
 
-# 1. the skill that writes skills, with its four scripts and the weekly prompt
-run mkdir -p "$C/skills/capture-lesson"
-run cp -R "$HERE/skills/capture-lesson/." "$C/skills/capture-lesson/"
+# 1. the skill that writes skills, with its four scripts and the weekly prompt; the skill that turns prompts into briefs
+for s in capture-lesson prompt-practice; do run mkdir -p "$C/skills/$s"; run cp -R "$HERE/skills/$s/." "$C/skills/$s/"; done
 if [ "$EXAMPLES" = 1 ]; then
   for s in citations macos-long-render; do run mkdir -p "$C/skills/$s"; run cp -R "$HERE/skills/$s/." "$C/skills/$s/"; done
 fi
@@ -57,23 +56,24 @@ fi
 # 5. a one-page index of the library, only if you have none yet
 if [ ! -e "$C/coding-skills.md" ]; then
   if [ "$DRY" = 1 ]; then say "  would write $C/coding-skills.md"; else
-    printf '# Skills index\n\n| Skill | What it is for |\n|---|---|\n| `capture-lesson` | Turn feedback into guidance; tend the library; weekly watch. |\n| `%s` | My taste and way of working, kept apart from the general skills. |\n' "$STYLE" > "$C/coding-skills.md"
+    printf '# Skills index\n\n| Skill | What it is for |\n|---|---|\n| `capture-lesson` | Turn feedback into guidance; tend the library; weekly watch. |\n| `prompt-practice` | Turn every prompt into a brief: terse prompts rewritten, briefs and generator prompts written well. |\n| `%s` | My taste and way of working, kept apart from the general skills. |\n' "$STYLE" > "$C/coding-skills.md"
     [ "$EXAMPLES" = 1 ] && printf '| `citations` | Numbered references checked against the real source. |\n| `macos-long-render` | Keep long Mac jobs awake; tell idle from thermal slowdowns. |\n' >> "$C/coding-skills.md"; fi
 fi
 
-# 6. the two hooks, merged into settings.json
-python3 - "$C/settings.json" "$C/skills/capture-lesson/scripts" "$DRY" <<'PY'
+# 6. the three hooks, merged into settings.json
+python3 - "$C/settings.json" "$C/skills" "$DRY" <<'PY'
 import json, os, shutil, sys
-path, scripts, dry = sys.argv[1], sys.argv[2], sys.argv[3] == '1'
+path, skills, dry = sys.argv[1], sys.argv[2], sys.argv[3] == '1'
 s = json.load(open(path)) if os.path.exists(path) else {}
 hooks = s.setdefault('hooks', {})
-want = {'UserPromptSubmit': 'feedback-nudge.py', 'Stop': 'scan-corrections.py'}
+want = [('UserPromptSubmit', 'capture-lesson', 'feedback-nudge.py'), ('Stop', 'capture-lesson', 'scan-corrections.py'),
+        ('UserPromptSubmit', 'prompt-practice', 'prompt-nudge.py')]
 added = []
-for event, script in want.items():
+for event, skill, script in want:
     have = json.dumps(hooks.get(event, []))
     if script in have:
         continue
-    hooks.setdefault(event, []).append({'hooks': [{'type': 'command', 'command': f'python3 {scripts}/{script}'}]})
+    hooks.setdefault(event, []).append({'hooks': [{'type': 'command', 'command': f'python3 {skills}/{skill}/scripts/{script}'}]})
     added.append(f'{event} -> {script}')
 if not added:
     print('  hooks already in place')
