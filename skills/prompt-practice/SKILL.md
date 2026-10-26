@@ -8,8 +8,9 @@ when_to_use: On a short, dictated, typo'd or abstract request before the first t
 
 A prompt is a brief for a capable colleague who just walked in: they know their craft and nothing of this project.
 The work is the same in both directions. An incoming prompt gets rewritten, silently, into the brief it implies; an
-outgoing prompt is written as that brief from the start. The gist itself is read as work-practice §1 says, and the
-words follow field-vocabulary; this skill turns both into a prompt.
+outgoing prompt is written as that brief from the start. A session brief ends with its stopping point: finish this
+task, report, and list follow-ups as proposals (work-practice §7). The gist itself is read as work-practice §1 says,
+and the words follow field-vocabulary; this skill turns both into a prompt.
 
 ## 1. Rewrite an incoming prompt into its brief
 
