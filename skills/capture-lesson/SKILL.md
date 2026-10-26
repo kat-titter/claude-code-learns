@@ -35,7 +35,10 @@ each control by what was in the well"; one page's separator dots become a taste 
 - **What to do, the example, the reason**, in one line where it fits: "Separate items with space, weight or alignment
   (treble: '58:32 17 tracks' read cleaner without the dot)." Positive phrasing; judgement over rules.
 - **General wording, real examples**, labelled as examples. The full story goes in provenance or a linked reference.
-- **Description = trigger**: the use case and the phrases people actually say, plus `when_to_use`.
+- **Only what Claude lacks.** Each line earns its tokens: a fact, a taste or a case Claude would not know; an
+  explanation of what it already knows goes (Anthropic's authoring guide: "Does this paragraph justify its token cost?").
+- **Description = trigger**: third person, what it does and then when, the key use case first; the phrases people
+  actually say go in `when_to_use`.
 - **Connect the elements into one chain**: an opening that names the sections in the order the work runs, each
   section opening on why it follows the last, and cross-references by section number instead of repeats
   (github-practice, 2026-10-26: commit, share, keep out, front page, then going public, which reuses each step;
@@ -49,6 +52,9 @@ an existing section needs only the audit's pass.
 - **Triggers**: three realistic prompts select it (or run skill-creator's evals, with the skill against without).
 - **Generalizes**: it handles a sibling case; a bundled checker proves it on a second input where possible.
 - **Traces to a real moment**; a lesson without one stays in the inbox.
+- **Parses**: `claude plugin validate ~/.claude/skills` (Claude Code 2.1.233+); a skill whose frontmatter fails to
+  parse loads with an empty description, so nothing can match it. Test triggers in a fresh session, since the authoring
+  context hides gaps (skill-creator's description tuning measures the hit rate).
 
 Then update the index (`coding-skills.md`) and say the update in one line of the reply.
 
@@ -83,8 +89,16 @@ read; installing, editing and committing wait for the person's yes.
 - **Scripts read, the model judges.** The audit and the watch scan every file and hand over a short report; open only
   the files it names. Read diffs and headings, not whole skills.
 - **Incremental by default.** State files and dates keep each pass to what changed since the last one.
-- **Progressive loading.** Descriptions are carried every session, so keep them sharp; bodies load when a task
-  matches; references load when a step asks for them. Memory keeps one fact per note and one line per note in its index.
+- **Progressive loading, as Claude Code does it** (code.claude.com/docs/en/skills, read 2026-10-26). Every skill's
+  name is listed each session; its description and `when_to_use` share one entry capped at 1,536 characters, and
+  when the listing passes its budget (1% of the context window) descriptions drop, least-used skills first. So keep
+  each entry well under the cap (work-practice ran to 1,577 and lost its tail), and turn off unused plugins with
+  `/plugin` (own skills: `skillOverrides` set to `"name-only"`). A body loads on invocation and is not re-read;
+  after compaction only its first 5,000 tokens come back, so the guidance that matters most sits at the top and the
+  long tail moves to `references/`, linked one level deep. Memory keeps one fact per note and one line per note in
+  its index.
+- **A rule that must hold every time goes in a hook**; guidance applied with judgement is worded for the whole task
+  ("run the tests after every edit"), since the skill is read once per session.
 - **Keep the always-loaded layer for habits.** CLAUDE.md and the memory index load every session, so they hold only
   what every session needs (heads-up before downloads, plain talk, the routing habit); taste moves to the style skill
   and a memory note a skill now covers is archived. Case: 2026-10-25, the index went from 51 lines to 36 and CLAUDE.md
