@@ -40,6 +40,8 @@ each control by what was in the well"; one page's separator dots become a taste 
 
 ## 5. Validate
 
+Check in proportion to the change: a new skill or a rewritten description gets the trigger check; a line folded into
+an existing section needs only the audit's pass.
 - **Triggers**: three realistic prompts select it (or run skill-creator's evals, with the skill against without).
 - **Generalizes**: it handles a sibling case; a bundled checker proves it on a second input where possible.
 - **Traces to a real moment**; a lesson without one stays in the inbox.
@@ -51,12 +53,14 @@ Then update the index (`coding-skills.md`) and say the update in one line of the
 Every guideline should have one obvious home, so the next lesson knows where to go and the reader finds it once.
 - **Find the owner before writing.** Scan descriptions and headings (`grep -n '^## ' ~/.claude/skills/*/SKILL.md`),
   then extend the line that already answers the question. A new section is for a new sub-question; a new skill for a
-  new question someone would ask.
+  new question someone would ask. Grep the lesson's key words too: a parallel session may have captured it minutes ago
+  (2026-10-25: code-organization landed while incremental-work was gaining the same do-it-once lesson).
 - **Compress as you go.** A second case folds into the existing line ("caught again in X, 2026-10-24") rather than a
   new paragraph. Long references, glossaries and checkers live in `references/` and `scripts/`, read only when used.
 - **Refactor when the signs show** (the audit reports them): two descriptions that fire on the same prompt, merge;
   one skill answering several questions or past ~200 lines, split by task; the same guideline in two skills, keep it
-  in its owner and link from the other; personal taste in a general skill, move it to `<name>-style`; a name that no
+  in its owner and link from the other (2026-10-26: six repeats across skills and five copies of "each fact once" inside
+  design-practice folded to one owner each); personal taste in a general skill, move it to `<name>-style`; a name that no
   longer says what the skill does, rename and fix links; a line no task has needed in months, archive it.
 - **Refactor in one pass**: `python3 ${CLAUDE_SKILL_DIR}/scripts/audit-skills.py --lines`, make the changes, sync the
   index, re-run the audit. Check modification times first in case another session is editing the same skills.
