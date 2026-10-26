@@ -100,6 +100,8 @@ Build passes that rewrite a stored HTML file are powerful and drift easily. Thes
 1. Commit the built page and the printed PDF together.
 2. Push, then `scripts/verify-live.sh https://USER.github.io/REPO index.html deck.pdf --private private/script.html`.
    It waits until each file is served byte-identical (cache-busted) and confirms private paths return 404.
+   List only files Pages serves as they are: its Jekyll build turns Markdown into pages, so a `.md` path 404s and the
+   wait never ends; compare those on `raw.githubusercontent.com` at the pushed commit (claude-code-learns, 2026-10-26).
 3. Report the commit, the match and the 404, with the two links.
 
 ## Long runs on a shared machine
