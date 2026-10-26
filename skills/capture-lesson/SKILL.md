@@ -36,6 +36,10 @@ each control by what was in the well"; one page's separator dots become a taste 
   (treble: '58:32 17 tracks' read cleaner without the dot)." Positive phrasing; judgement over rules.
 - **General wording, real examples**, labelled as examples. The full story goes in provenance or a linked reference.
 - **Description = trigger**: the use case and the phrases people actually say, plus `when_to_use`.
+- **Connect the elements into one chain**: an opening that names the sections in the order the work runs, each
+  section opening on why it follows the last, and cross-references by section number instead of repeats
+  (github-practice, 2026-10-26: commit, share, keep out, front page, then going public, which reuses each step;
+  "skill elements should be clearly connected, polish").
 - **Provenance**: the moment and the words it came from.
 
 ## 5. Validate
