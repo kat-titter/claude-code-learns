@@ -75,7 +75,9 @@ Every guideline should have one obvious home, so the next lesson knows where to 
 - **Refactor when the signs show** (the audit reports them): two descriptions that fire on the same prompt, merge;
   one skill answering several questions or past ~200 lines, split by task; the same guideline in two skills, keep it
   in its owner and link from the other (2026-10-26: six repeats across skills and five copies of "each fact once" inside
-  design-practice folded to one owner each); personal taste in a general skill, move it to `<name>-style`; a name that no
+  design-practice folded to one owner each); personal taste in a general skill, move it to `<name>-style`; a style skill holds taste as
+  cross-project preferences with one tagged example each, so project facts go to that project's memory, method to
+  the general skill and every-session habits to CLAUDE.md (2026-10-26: kat-style went from 268 lines to 138); a name that no
   longer says what the skill does, rename and fix links; a line no task has needed in months, archive it.
 - **Refactor in one pass**: `python3 ${CLAUDE_SKILL_DIR}/scripts/audit-skills.py --lines`, make the changes, sync the
   index, re-run the audit, commit.
