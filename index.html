@@ -6,26 +6,26 @@
 <title>claude-code-learns</title>
 <meta name="description" content="Claude Code that keeps what you teach it: feedback becomes skills, the library organizes itself, and a weekly check finds new skills that fill a gap.">
 <link rel="preconnect" href="https://fonts.googleapis.com">
-<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500&family=IBM+Plex+Sans:wght@400;500;600&display=swap">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500&family=Archivo:wght@400;500;600&display=swap">
 <style>
 :root{
-  --bg:#fafafa; --panel:#f0f0f2; --line:#d9d9de; --ink:#16161a; --dim:#4f4f58; --acc:#1a7f37; --bar:#8a8a94;
-  --mono:"IBM Plex Mono",ui-monospace,Menlo,monospace; --sans:"IBM Plex Sans",-apple-system,"Helvetica Neue",Arial,sans-serif;
+  --bg:#ffffff; --panel:#f3f5f6; --line:#dfe3e5; --ink:#14171a; --dim:#666e72; --acc:#0f8f6c; --acc-text:#0a7457; --bar:#949c9f;
+  --mono:"IBM Plex Mono",ui-monospace,Menlo,monospace; --sans:Archivo,"Helvetica Neue",Helvetica,Arial,sans-serif;
   color-scheme:light;
 }
 @media (prefers-color-scheme:dark){ :root:not([data-theme="light"]){
-  --bg:#0d0d0f; --panel:#16161a; --line:#2c2c33; --ink:#ececf0; --dim:#a9a9b3; --acc:#3fb950; --bar:#6b6b75; color-scheme:dark }}
-:root[data-theme="dark"]{ --bg:#0d0d0f; --panel:#16161a; --line:#2c2c33; --ink:#ececf0; --dim:#a9a9b3; --acc:#3fb950; --bar:#6b6b75; color-scheme:dark }
+  --bg:#0e1112; --panel:#171b1d; --line:#2a2f33; --ink:#f6f7f7; --dim:#949c9f; --acc:#3fe0a0; --acc-text:#3fe0a0; --bar:#666e72; color-scheme:dark }}
+:root[data-theme="dark"]{ --bg:#0e1112; --panel:#171b1d; --line:#2a2f33; --ink:#f6f7f7; --dim:#949c9f; --acc:#3fe0a0; --acc-text:#3fe0a0; --bar:#666e72; color-scheme:dark }
 *{box-sizing:border-box}
 body{margin:0;background:var(--bg);color:var(--ink);font:16px/1.6 var(--sans)}
 main{max-width:760px;margin:0 auto;padding:32px 16px 64px}
 .top{display:flex;justify-content:space-between;align-items:baseline;gap:16px;font-family:var(--mono);font-size:.82rem;color:var(--dim)}
 .top a{color:var(--dim)}
 h1{font-family:var(--mono);font-weight:500;font-size:clamp(1.6rem,4.6vw,2.2rem);line-height:1.2;margin:28px 0 12px;letter-spacing:-.01em}
-h1 b{color:var(--acc);font-weight:500}
+h1 b{color:var(--acc-text);font-weight:500}
 .lede{margin:0 0 28px;max-width:62ch}
 h2{font-family:var(--mono);font-weight:500;font-size:1rem;margin:44px 0 10px;padding-top:14px;border-top:1px solid var(--line)}
-h2 span{color:var(--acc);margin-right:12px}
+h2 span{color:var(--acc-text);margin-right:12px}
 p{margin:0 0 12px;max-width:66ch}
 .three{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,210px),1fr));gap:20px 28px;margin:8px 0 0}
 .three h3{font-family:var(--mono);font-weight:500;font-size:.95rem;margin:0 0 4px}
@@ -33,7 +33,7 @@ p{margin:0 0 12px;max-width:66ch}
 ol.loop{list-style:none;padding:0;margin:6px 0 0;display:grid;gap:6px;counter-reset:s}
 ol.loop li{display:grid;grid-template-columns:7.5rem 1fr;gap:12px;counter-increment:s}
 ol.loop b{font-family:var(--mono);font-weight:500}
-ol.loop b::before{content:counter(s) "  ";color:var(--acc)}
+ol.loop b::before{content:counter(s) "  ";color:var(--acc-text)}
 table{border-collapse:collapse;width:100%;font-size:.93rem;margin:6px 0 12px}
 th,td{text-align:left;vertical-align:top;padding:7px 10px 7px 0;border-bottom:1px solid var(--line)}
 th{font-family:var(--mono);font-weight:500;font-size:.8rem;color:var(--dim)}
@@ -51,7 +51,7 @@ ul.tight{margin:0 0 12px;padding-left:20px;max-width:66ch} ul.tight li{margin:4p
 .key i{display:inline-block;width:12px;height:12px;border-radius:2px;vertical-align:-1px;margin-right:6px;background:var(--bar)}
 .key i.on{background:var(--acc)}
 sup.ref{font-size:.7em;line-height:0}
-sup.ref a{color:var(--acc);text-decoration:none}
+sup.ref a{color:var(--acc-text);text-decoration:none}
 ol.refs{padding-left:22px;font-size:.88rem;color:var(--dim)} ol.refs li{margin:6px 0} ol.refs a{color:var(--dim)}
 a{color:var(--ink);text-decoration-color:var(--acc);text-underline-offset:2px}
 footer{margin-top:44px;padding-top:14px;border-top:1px solid var(--line);font-size:.85rem;color:var(--dim);display:flex;flex-wrap:wrap;gap:6px 24px}

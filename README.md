@@ -40,10 +40,10 @@ flowchart TB
   watch -->|"weekly: proposes,<br/>you approve"| cap
   agent -->|"each skill use"| usage
   usage -->|"unused skills"| cap
-  classDef default fill:#dafbe1,stroke:#1a7f37,color:#116329
-  classDef core fill:#aceebb,stroke:#1a7f37,stroke-width:2px,color:#116329,font-weight:bold
+  classDef default fill:#f3f5f6,stroke:#dfe3e5,color:#14171a
+  classDef core fill:#fbeaf3,stroke:#be1e74,stroke-width:1.5px,color:#14171a,font-weight:bold
   class cap core
-  style lib fill:none,stroke:#8c959f,stroke-dasharray:4 3
+  style lib fill:none,stroke:#949c9f,stroke-dasharray:4 3
 ```
 
 - **Learns fast**: a correction becomes a guideline in the same turn.
