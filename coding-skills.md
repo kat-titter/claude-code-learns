@@ -9,7 +9,7 @@ Linked skills are in this repo; the rest live in the author's `~/.claude/skills/
 
 | Skill | What it is for |
 |---|---|
-| [`capture-lesson`](skills/capture-lesson/SKILL.md) | Turn feedback into guidance in the same turn, routed to a general skill, the `<name>-style` skill, or project memory; tend the library (`audit-skills.py`); weekly watch for new skills and gaps (`skills-watch.py`). Hooks: `feedback-nudge.py` on each prompt, `scan-corrections.py` at session end. |
+| [`capture-lesson`](skills/capture-lesson/SKILL.md) | Turn feedback into guidance in the same turn, routed to a general skill, the `<name>-style` skill, or project memory; tend the library (`audit-skills.py`); weekly watch for new skills and gaps (`skills-watch.py`). Hooks: `feedback-nudge.py` on each prompt, `scan-corrections.py` at session end, `skill-usage-log.py` on each skill use. |
 | `kat-style` | The author's personal layer (kept private): how guidance is written, writing voice, design taste, science standards, how updates are given. |
 
 ## How work runs

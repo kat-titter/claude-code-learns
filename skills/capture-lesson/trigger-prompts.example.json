@@ -1,0 +1,16 @@
+{
+ "capture-lesson": [
+  ["no, that's the wrong colour for the legend. from now on keep legends outside the plot", true],
+  ["can you audit my skills folder and merge the ones that overlap?", true],
+  ["you forgot to run the tests again. remember this for next time", true],
+  ["write a skill that converts csv files to parquet", false],
+  ["fix the failing test in parser_test.py", false]
+ ],
+ "prompt-practice": [
+  ["um so basically make the thing faster like the render thing from yesterday", true],
+  ["write a subagent brief for reviewing the auth module", true],
+  ["improve this prompt for an image generator: a cat on a hill", true],
+  ["what does this regex do: ^a.*z$", false],
+  ["rename the variable foo to user_count in utils.py", false]
+ ]
+}

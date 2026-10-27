@@ -1,7 +1,7 @@
 ---
 name: capture-lesson
-description: Turn feedback into reusable guidance, automatically, and keep the skill library organized, compact and current. Use the moment the user corrects you, states a preference or a style note, points out a mistake, says "no / that's wrong / actually it's X / you forgot Y / from now on / please use…", shows surprise at a result ("17s seems like a lot", "why is it taking so long?"), when you debug your own output, when a mistake recurs, or when they say "remember this". Also use when asked to organize, refactor, clean up, merge, split or audit skills, or to check for new skills that fill a gap. Routes each lesson to a general skill, the user's personal style skill, or project memory, folded into the section that owns it as a short positive guideline with an example.
-when_to_use: Any time feedback lands in a conversation (the feedback hook adds a reminder when a message reads like feedback); after a long session; when the user asks to organize or refactor skills; when the audit reports drift or repeats; in the weekly skills watch.
+description: Turns feedback into reusable guidance and keeps the skill library organized, compact and current. Use the moment the user corrects Claude or states a preference or style note ("no", "that's wrong", "you forgot", "from now on", "remember this"), and when asked to audit, organize, merge, split or clean up skills.
+when_to_use: In the turn feedback lands (the feedback hook adds a reminder); after a long session; in the weekly skills watch; when the audit reports drift or repeats.
 ---
 
 # Capture lessons, tend the library
@@ -9,12 +9,25 @@ when_to_use: Any time feedback lands in a conversation (the feedback hook adds a
 Feedback is the signal worth keeping. This skill turns it into guidance the next session uses on its own, and keeps the
 library small, general and easy to trigger as it grows.
 
+## Gotchas
+
+- `claude plugin validate ~/.claude/skills` prints "Validation passed" with zero components checked (2.1.285): parse
+  each frontmatter with a YAML parser instead (§5).
+- Corrections credited to "the skill loaded last" are mostly about the task, since a skill stays loaded all session
+  (one citations load collected 40 notes about an unrelated project): route by topic.
+- A description dropped from an overflowing listing can't trigger; the skill shows as a bare name (seen 2026-10-26).
+  Check the listing or `/skill-doctor` after adding skills (§8).
+- Importing a hook script to reuse its patterns runs its stdin reader and hangs at 0% CPU: copy the patterns, or keep
+  hook entry points under `if __name__ == "__main__"`.
+
 ## 1. Notice
 
 Feedback arrives as corrections ("you forgot"), preferences ("from now on"), style notes, surprise ("why is it taking
 so long?"), or your own debugging. Two hooks help: `scripts/feedback-nudge.py` (UserPromptSubmit) adds one line of
 context when a message reads like feedback; `scripts/scan-corrections.py` (Stop) logs candidates to the lessons inbox
-at session end, skipping text the harness injects. Act on the feedback first, then capture it in the same turn.
+at session end, skipping text the harness injects. A third, `scripts/skill-usage-log.py` (PreToolUse on `Skill`, and
+UserPromptExpansion for a typed `/name`), logs each skill use; `--report [DAYS]` lists the unused ones for the audit.
+Act on the feedback first, then capture it in the same turn.
 
 ## 2. Generalize: the family, then the case
 
@@ -52,9 +65,11 @@ an existing section needs only the audit's pass.
 - **Triggers**: three realistic prompts select it (or run skill-creator's evals, with the skill against without).
 - **Generalizes**: it handles a sibling case; a bundled checker proves it on a second input where possible.
 - **Traces to a real moment**; a lesson without one stays in the inbox.
-- **Parses**: `claude plugin validate ~/.claude/skills` (Claude Code 2.1.233+); a skill whose frontmatter fails to
-  parse loads with an empty description, so nothing can match it. Test triggers in a fresh session, since the authoring
-  context hides gaps (skill-creator's description tuning measures the hit rate).
+- **Parses**: load each frontmatter with a YAML parser (`yaml.safe_load`) and check `name` matches the folder; a skill
+  whose frontmatter fails to parse loads with an empty description, so nothing can match it. (`claude plugin validate
+  ~/.claude/skills` reported "passed" on 2.1.285 with zero components checked, so it proves nothing here.) Test
+  triggers in a fresh session, since the authoring context hides gaps (skill-creator's description tuning measures
+  the hit rate).
 
 Then update the index (`coding-skills.md`) and say the update in one line of the reply.
 
@@ -81,6 +96,31 @@ Every guideline should have one obvious home, so the next lesson knows where to 
   longer says what the skill does, rename and fix links; a line no task has needed in months, archive it.
 - **Refactor in one pass**: `python3 ${CLAUDE_SKILL_DIR}/scripts/audit-skills.py --lines`, make the changes, sync the
   index, re-run the audit, commit.
+
+## 6b. Each skill passes the rubric
+
+The audit rubric (2026-10-26), checked against code.claude.com/docs/en/skills and the Agent Skills best-practices
+page the same day. `audit-skills.py` and a YAML parse catch the mechanical items; the rest is a read.
+- **Frontmatter**: `name` lowercase-hyphen, 64 characters at most, no "claude" or "anthropic", same as the folder;
+  `description` a third-person trigger with the key use first and the phrases people say, under 1,024 characters and
+  well under the 1,536 shared with `when_to_use` (aim for about 600 together).
+- **Body**: under 500 lines; everything that matters inside the first 5,000 tokens; a `## Gotchas` list near the top
+  holding real failures, each with its fix; one term per concept across the library (Gotchas, not traps or pitfalls).
+- **Only what Claude lacks**, line by line: would removing it cause a mistake? Long cases go to `references/` one level
+  deep, with a contents list on any file over 100 lines.
+- **Freedom matches fragility**: exact commands for fragile steps, intent for judgement calls. Deterministic steps are
+  bundled scripts, named with `${CLAUDE_SKILL_DIR}`, that exit 0 on `--help` and explain a missing input or library in
+  one line; the skill says whether to run or read each.
+- **Side effects and hard rules**: a one-shot action with side effects gets `disable-model-invocation: true`; guidance
+  that must fire before a push or publish stays model-invocable and leaves the hard rule to a hook.
+- **Current behaviour in the body**: what a date or version superseded moves to an "Old patterns" section.
+- **Portable only when uploaded**: a skill bound for claude.ai or Cowork keeps to `name`, `description`, `license`,
+  `compatibility`, `metadata` and `allowed-tools`, or the upload fails.
+- **Evals for a changed description**: three prompts that should trigger and two that should not, the old description
+  against the new: `python3 ${CLAUDE_SKILL_DIR}/scripts/trigger-evals.py PROMPTS.json --baseline <rev>` (run it; it
+  wraps skill-creator's `run_eval.py` in scratch projects with the real skill off; the format is in
+  `trigger-prompts.example.json`, and `<rev>` is a commit in the skills folder's git history). Turning a skill off
+  only measures what its body changes.
 
 ## 7. Watch the field, weekly
 
@@ -120,7 +160,8 @@ session, 213 KB of bodies waiting on disk).
 
 - **Keep the general layer free of the person**: no names, home paths or private projects in general skills and
   scripts. These scripts find their config folder from where they are installed and the style skill by name
-  (`$CLAUDE_STYLE_SKILL`, else the one `*-style` folder, else `my-style`).
+  (`$CLAUDE_STYLE_SKILL`, else the shortest `*-style` folder when every other one extends it, as `jo-style` and
+  `jo-visual-house-style` do, else `my-style`).
 - **One command to install** that merges settings without overwriting, backs up what it touches, and has a dry run.
 - **A README that fits on one screen**: one line of what it does, a diagram GitHub renders (Mermaid, short labels),
   three short bullets, install, a small file tree. Draw the diagram top to bottom so it fits the ~830 px README

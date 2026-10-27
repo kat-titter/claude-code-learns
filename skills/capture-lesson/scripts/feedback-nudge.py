@@ -9,12 +9,16 @@ import json, os, re, sys
 CONFIG = os.path.dirname(os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__)))))
 
 def style_skill(skills_dir=os.path.join(CONFIG, 'skills')):
-    """The personal style skill: $CLAUDE_STYLE_SKILL, else the one skill folder named <name>-style, else my-style."""
+    """The personal style skill: $CLAUDE_STYLE_SKILL, else the shortest <name>-style folder when
+    every other *-style folder extends it, else my-style."""
     name = os.environ.get('CLAUDE_STYLE_SKILL')
     if name:
         return name
-    found = sorted(d for d in os.listdir(skills_dir) if d.endswith('-style')) if os.path.isdir(skills_dir) else []
-    return found[0] if len(found) == 1 else 'my-style'
+    found = sorted((d for d in os.listdir(skills_dir) if d.endswith('-style')), key=len) if os.path.isdir(skills_dir) else []
+    # one person's skill can have siblings (jo-style, jo-visual-house-style): the shortest is the style skill
+    if found and all(d.startswith(found[0][:-len('style')]) for d in found):
+        return found[0]
+    return 'my-style'
 
 FEEDBACK = re.compile(
     r"(that'?s (wrong|not)|not (right|quite|what i)|you (forgot|missed)|i meant|instead\b|should (be|have|use|show|look|go)|"
