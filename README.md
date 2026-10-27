@@ -20,6 +20,7 @@ flowchart TB
   inbox[("lessons-inbox.md")]
   cap{{"capture-lesson/SKILL.md"}}
   watch[["skills-watch.py"]]
+  usage["skill-usage-log.py"]
   subgraph lib [" "]
     general["citations/SKILL.md"]
     taste["my-style/SKILL.md"]
@@ -37,6 +38,8 @@ flowchart TB
   cap -->|"one project"| memory
   lib -->|"loads when<br/>a task matches"| agent
   watch -->|"weekly: proposes,<br/>you approve"| cap
+  agent -->|"each skill use"| usage
+  usage -->|"unused skills"| cap
   classDef default fill:#dafbe1,stroke:#1a7f37,color:#116329
   classDef core fill:#aceebb,stroke:#1a7f37,stroke-width:2px,color:#116329,font-weight:bold
   class cap core
@@ -69,6 +72,10 @@ check, paste `skills/capture-lesson/weekly-watch.md` into a weekly scheduled tas
 - One home per guideline; a new case extends the line that is already there.
 - Each guideline is one line: what to do, an example, the date.
 - `audit-skills.py` flags repeats, overlaps and long skills to merge or split.
+- Each skill passes a rubric (capture-lesson §6b): frontmatter that parses, a description written as a trigger,
+  real failures listed as Gotchas near the top.
+- `skill-usage-log.py --report` lists skills nobody used; `trigger-evals.py` tests a changed description against the
+  old one.
 
 ## 4. Files
 
