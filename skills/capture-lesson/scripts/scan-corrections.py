@@ -80,4 +80,5 @@ def run():
     with open(SEEN, "w", encoding="utf-8") as f:
         f.write("\n".join(sorted(seen)))
 
-fail_safe(run)
+if __name__ == "__main__":
+    fail_safe(run)

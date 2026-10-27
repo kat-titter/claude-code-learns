@@ -120,7 +120,8 @@ session, 213 KB of bodies waiting on disk).
 
 - **Keep the general layer free of the person**: no names, home paths or private projects in general skills and
   scripts. These scripts find their config folder from where they are installed and the style skill by name
-  (`$CLAUDE_STYLE_SKILL`, else the one `*-style` folder, else `my-style`).
+  (`$CLAUDE_STYLE_SKILL`, else the shortest `*-style` folder when every other one extends it, as `jo-style` and
+  `jo-visual-house-style` do, else `my-style`).
 - **One command to install** that merges settings without overwriting, backs up what it touches, and has a dry run.
 - **A README that fits on one screen**: one line of what it does, a diagram GitHub renders (Mermaid, short labels),
   three short bullets, install, a small file tree. Draw the diagram top to bottom so it fits the ~830 px README

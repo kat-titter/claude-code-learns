@@ -13,12 +13,16 @@ import argparse, os, re, glob
 CONFIG = os.path.dirname(os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__)))))
 
 def style_skill(skills_dir=os.path.join(CONFIG, 'skills')):
-    """The personal style skill: $CLAUDE_STYLE_SKILL, else the one skill folder named <name>-style, else my-style."""
+    """The personal style skill: $CLAUDE_STYLE_SKILL, else the shortest <name>-style folder when
+    every other *-style folder extends it, else my-style."""
     name = os.environ.get('CLAUDE_STYLE_SKILL')
     if name:
         return name
-    found = sorted(d for d in os.listdir(skills_dir) if d.endswith('-style')) if os.path.isdir(skills_dir) else []
-    return found[0] if len(found) == 1 else 'my-style'
+    found = sorted((d for d in os.listdir(skills_dir) if d.endswith('-style')), key=len) if os.path.isdir(skills_dir) else []
+    # one person's skill can have siblings (jo-style, jo-visual-house-style): the shortest is the style skill
+    if found and all(d.startswith(found[0][:-len('style')]) for d in found):
+        return found[0]
+    return 'my-style'
 
 ap = argparse.ArgumentParser()
 ap.add_argument('dirs', nargs='*', default=[os.path.join(CONFIG, 'skills')])
@@ -58,7 +62,7 @@ for p in skills:
     prov = body.split('## Provenance')[0]
     neg = [l.strip() for l in prov.splitlines() if PROHIBIT.search(re.sub(r'"[^"]*"|“[^”]*”|`[^`]*`', '', l))]  # quotes and code are provenance, not advice
     if neg: notes.append(f'{len(neg)} line(s) phrased as prohibitions, e.g. "{neg[0][:90]}"' + (''.join(f'\n      > {l[:160]}' for l in neg) if a.lines else ''))
-    if name != a.personal:
+    if name != a.personal and not name.startswith(a.personal[:-len('style')]):   # the person's sibling skills are personal too
         pers = [l.strip() for l in prov.splitlines() if PERSONAL.search(l) and a.personal not in l and not l.startswith('Provenance')]   # pointers and provenance are fine
         if pers: notes.append(f'{len(pers)} line(s) of personal taste outside {a.personal}, e.g. "{pers[0][:90]}"' + (''.join(f'\n      > {l[:160]}' for l in pers) if a.lines else ''))
     if index and name not in index: notes.append('missing from the index')
