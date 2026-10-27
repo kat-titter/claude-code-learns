@@ -118,8 +118,8 @@ does not already know. A second case folds into the same line.</p>
 
 <h2><span>04</span>validate</h2>
 <ul class="tight">
-  <li>The frontmatter parses (<code>claude plugin validate</code>); one that doesn't loads with no description.</li>
-  <li>Three realistic prompts select it in a fresh session (or run the skill-creator plugin's evals).</li>
+  <li>The frontmatter parses in a YAML parser (<code>claude plugin validate</code> can pass with nothing checked); one that doesn't loads with no description.</li>
+  <li>Three realistic prompts select it in a fresh session (or run <code>trigger-evals.py</code>, old description against new).</li>
   <li>It handles a sibling case; a bundled checker proves it on a second input.</li>
   <li>It traces to a real moment. Anything that doesn't stays in the inbox.</li>
 </ul>
