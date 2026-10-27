@@ -22,7 +22,7 @@ SIGNAL = re.compile(
     r"should (be|have|use|show)|\bdon'?t use\b|\bdont\b|\bplease (no|use|keep|focus)\b|\bfrom now on\b|\bkeep .{0,30} separate\b|"
     r"^\s*(no|nope)\b)", re.I)
 # text the harness injects as a "user" turn: summaries, skill bodies, task notifications, reminders
-HARNESS = re.compile(r"This session is being continued|Base directory for this skill|<task-notification>|"
+HARNESS = re.compile(r"This session is being continued|The user sent a new message while you were working|Base directory for this skill|<task-notification>|"
                      r"<system-reminder>|<command-name>|\[SYSTEM NOTIFICATION")
 
 def fail_safe(fn):

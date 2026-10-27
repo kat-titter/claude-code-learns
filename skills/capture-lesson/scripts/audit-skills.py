@@ -102,5 +102,5 @@ for jac, i, j in repeats[:10]:
           (f'\n      > {lines_[j][1][:150]}' if a.lines else ''))
 if os.path.exists(a.inbox):
     inbox = open(a.inbox).read().splitlines()
-    noise = [l for l in inbox if re.search(r'This session is being continued|Base directory for this skill|<task-notification>|<system-reminder>', l)]
+    noise = [l for l in inbox if re.search(r'This session is being continued|The user sent a new message while you were working|Base directory for this skill|<task-notification>|<system-reminder>', l)]
     print(f'\ninbox: {len(inbox)} lines, {len(noise)} harness-noise lines to archive')

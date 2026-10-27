@@ -127,16 +127,23 @@ vocab = {n: set(words(s['desc'] + ' ' + s['when'] + ' ' + n.replace('-', ' '))) 
 _cm = os.path.join(CONFIG, 'CLAUDE.md')
 if os.path.exists(_cm): vocab['CLAUDE.md'] = set(words(open(_cm, encoding='utf-8').read()))  # habits live here too
 unmatched, routed = [], Counter()
+after = {}   # effect: feedback that arrived after the skill's last update
 for line in recent:
     ws = set(words(line))
     named = [n for n in local if n in line]                     # a line that already names its skill is routed
     best = max(vocab, key=lambda n: len(ws & vocab[n]), default=None)
     if named:
-        routed[named[0]] += 1
+        routed[named[0]] += 1; _hit = named[0]
     elif best and len(ws & vocab[best]) >= 2:
-        routed[best] += 1
+        routed[best] += 1; _hit = best
     else:
         unmatched.append(line)
+        _hit = None
+    if _hit and _hit in local:
+        _d = re.search(r'(20\d\d-\d\d-\d\d)', line).group(1)
+        _sk = os.path.join(a.skills, _hit, 'SKILL.md')
+        if os.path.exists(_sk) and _d > dt.date.fromtimestamp(os.path.getmtime(_sk)).isoformat():
+            after.setdefault(_hit, []).append(line)
 recurring = [w for w, c in Counter(w for l in unmatched for w in set(words(l))).most_common(12) if c >= 2]
 fills = []
 for name, desc, have in [(u['name'], u['desc'], u['have']) for u in upstream_new] + \
@@ -186,7 +193,11 @@ for k in new_offer:
     md.append(f'- **{k}** (new in a plugin marketplace): {offer_desc[k][:240]}')
 if not changed and not new_offer and not first and before_offer is not None:
     md.append('- nothing new since the last run')
-md += report + ['', '## Gaps in the library', '']
+md += report + ['', '## Effect', '']
+md.append('Feedback dated after the skill it belongs to was last updated: the update has not settled it yet.' if after else 'No feedback arrived after the last update of the skill it belongs to.')
+for _n, _ls in sorted(after.items(), key=lambda kv: -len(kv[1])):
+    md.append(f'- **{_n}**: {len(_ls)} line(s), e.g. {_ls[0][:140]}')
+md += ['', '## Gaps in the library', '']
 md.append(f'{len(recent)} feedback lines in the window; ' + (', '.join(f'{n} {c}' for n, c in routed.most_common()) or 'none routed') + '.')
 if unmatched:
     md.append(f'{len(unmatched)} lines match no skill' + (f"; words that recur among them: {', '.join(recurring)}." if recurring else '.'))
