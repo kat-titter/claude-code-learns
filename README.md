@@ -58,7 +58,7 @@ git clone https://github.com/kat-titter/claude-code-learns && cd claude-code-lea
 ./install.sh --name yourname
 ```
 
-Adds `capture-lesson`, `prompt-practice`, a `yourname-style` skill for your taste, and three hooks. For the weekly
+Adds `capture-lesson`, `prompt-practice`, a `yourname-style` skill for your taste, and four hooks. For the weekly
 check, paste `skills/capture-lesson/weekly-watch.md` into a weekly scheduled task.
 
 > [!TIP]

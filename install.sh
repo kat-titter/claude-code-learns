@@ -4,7 +4,7 @@
 #   ./install.sh --name yourname               do it
 #   ./install.sh --name yourname --examples    also copy the example skills (citations, macos-long-render, html-docs, html-slide-deck)
 # Safe to re-run: capture-lesson and prompt-practice are refreshed, files you wrote are left alone, settings.json is
-# backed up before the three hooks are merged in, and a hook that is already there is not added twice.
+# backed up before the four hooks are merged in, and a hook that is already there is not added twice.
 set -e
 NAME=my; DRY=0; EXAMPLES=0
 while [ $# -gt 0 ]; do
@@ -25,7 +25,7 @@ run() { if [ "$DRY" = 1 ]; then say "  would run: $*"; else "$@"; fi; }
 
 say "Installing into $C (personal style skill: $STYLE)"
 
-# 1. the skill that writes skills, with its four scripts and the weekly prompt; the skill that turns prompts into briefs
+# 1. the skill that writes skills, with its scripts and the weekly prompt; the skill that turns prompts into briefs
 for s in capture-lesson prompt-practice; do run mkdir -p "$C/skills/$s"; run cp -R "$HERE/skills/$s/." "$C/skills/$s/"; done
 if [ "$EXAMPLES" = 1 ]; then
   for s in citations macos-long-render html-docs html-slide-deck; do run mkdir -p "$C/skills/$s"; run cp -R "$HERE/skills/$s/." "$C/skills/$s/"; done
@@ -60,21 +60,27 @@ if [ ! -e "$C/coding-skills.md" ]; then
     [ "$EXAMPLES" = 1 ] && printf '| `citations` | Numbered references checked against the real source. |\n| `macos-long-render` | Keep long Mac jobs awake; tell idle from thermal slowdowns. |\n| `html-docs` | One-file HTML docs with light interactivity; light-audit.py. |\n| `html-slide-deck` | One-file HTML decks: views, layers, print, publish. |\n' >> "$C/coding-skills.md"; fi
 fi
 
-# 6. the three hooks, merged into settings.json
+# 6. the four hooks, merged into settings.json
 python3 - "$C/settings.json" "$C/skills" "$DRY" <<'PY'
 import json, os, shutil, sys
 path, skills, dry = sys.argv[1], sys.argv[2], sys.argv[3] == '1'
 s = json.load(open(path)) if os.path.exists(path) else {}
 hooks = s.setdefault('hooks', {})
-want = [('UserPromptSubmit', 'capture-lesson', 'feedback-nudge.py'), ('Stop', 'capture-lesson', 'scan-corrections.py'),
-        ('UserPromptSubmit', 'prompt-practice', 'prompt-nudge.py')]
+# (event, matcher, skill, script); the usage log needs two events: PreToolUse sees the model's Skill calls,
+# UserPromptExpansion sees a typed /name
+want = [('UserPromptSubmit', None, 'capture-lesson', 'feedback-nudge.py'), ('Stop', None, 'capture-lesson', 'scan-corrections.py'),
+        ('UserPromptSubmit', None, 'prompt-practice', 'prompt-nudge.py'),
+        ('PreToolUse', 'Skill', 'capture-lesson', 'skill-usage-log.py'), ('UserPromptExpansion', None, 'capture-lesson', 'skill-usage-log.py')]
 added = []
-for event, skill, script in want:
+for event, matcher, skill, script in want:
     have = json.dumps(hooks.get(event, []))
     if script in have:
         continue
-    hooks.setdefault(event, []).append({'hooks': [{'type': 'command', 'command': f'python3 {skills}/{skill}/scripts/{script}'}]})
-    added.append(f'{event} -> {script}')
+    entry = {'hooks': [{'type': 'command', 'command': f'python3 {skills}/{skill}/scripts/{script}'}]}
+    if matcher:
+        entry = {'matcher': matcher, **entry}
+    hooks.setdefault(event, []).append(entry)
+    added.append(f'{event}{f"({matcher})" if matcher else ""} -> {script}')
 if not added:
     print('  hooks already in place')
 elif dry:
@@ -92,3 +98,4 @@ say "  - Weekly watch: in the Claude desktop app, add a weekly scheduled task wi
 say "    $C/skills/capture-lesson/weekly-watch.md. Without the app, cron can run the script alone:"
 say "    0 9 * * 1  python3 $C/skills/capture-lesson/scripts/skills-watch.py"
 say "  - Check the library any time: python3 $C/skills/capture-lesson/scripts/audit-skills.py"
+say "    and see which skills get used: python3 $C/skills/capture-lesson/scripts/skill-usage-log.py --report"

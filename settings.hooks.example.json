@@ -9,6 +9,14 @@
     "Stop": [
       { "hooks": [ { "type": "command",
         "command": "python3 ~/.claude/skills/capture-lesson/scripts/scan-corrections.py" } ] }
+    ],
+    "PreToolUse": [
+      { "matcher": "Skill", "hooks": [ { "type": "command",
+        "command": "python3 ~/.claude/skills/capture-lesson/scripts/skill-usage-log.py" } ] }
+    ],
+    "UserPromptExpansion": [
+      { "hooks": [ { "type": "command",
+        "command": "python3 ~/.claude/skills/capture-lesson/scripts/skill-usage-log.py" } ] }
     ]
   }
 }
