@@ -10,6 +10,11 @@ Even canonical papers get volume/issue/pages/year wrong from memory. For each
 source, web-verify: authors, year, exact title, journal, **volume(issue), pages,
 DOI**. Confirm the DOI resolves. A neuroscience/technical audience *will* notice.
 
+**Research briefs link every name.** In a brief that names organisations and people (investors, programmes, funders,
+contacts), link each name to the page the research actually read: the fund's site in the table, the person's profile on
+their bold line, bare site paths turned into links, and the first plain mention per section. Leave parked or unverified
+domains unlinked. (An investor brief, 2026-10-25: "investor/incubator/funder links to each".)
+
 ## 2. Numbered-citation markup (house style)
 
 ```html
@@ -19,6 +24,14 @@ list:     <ol class="refs">
               vol(iss), pp–pp. <a href="https://doi.org/...">doi:...</a></li>
           </ol>
 ```
+
+## 2b. A person's own publication list (resume, CV, personal site)
+
+Make the person's place in each author list visible at a glance: compact the list to first author, the person, last
+author ("Lee J, …, **Author A**, …, Chen M"), bold their name, and tag each kind with its own mark so the eye sorts
+them ([Paper], <Poster>, {Talk}). Shorten everything around a title and keep the title itself verbatim: titles are
+what readers search and cite. Link the title to its DOI or page. (A resume page, 2026-10-25: "much less text.
+highlight author position in poster/paper")
 
 ## 3. The indexing gotcha (why this skill exists)
 
