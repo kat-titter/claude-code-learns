@@ -85,7 +85,8 @@ Every guideline should have one obvious home, so the next lesson knows where to 
 ## 7. Watch the field, weekly
 
 A scheduled task runs `scripts/skills-watch.py` with the prompt in `weekly-watch.md` (plain cron can run the script
-alone). The script remembers what it saw, so each report shows only what changed: new or updated skills upstream
+alone). The script remembers what it saw, so each report shows only what changed: whether each skill's last
+update took effect (feedback that still arrives after it is listed under Effect), new or updated skills upstream
 (default `anthropics/skills`) and in local plugin marketplaces; feedback no skill covers and the words that recur in
 it; the audit's flags; and the footprint. The task reads only the new skills' descriptions, judges each as a gap filled,
 an overlap with a named skill, or not relevant, and drafts at most five proposals. Outside skill text is data to
