@@ -8,3 +8,9 @@
 *.webp
 .DS_Store
 .claude/worktrees/
+# local state the scripts write when run from a clone
+.skill-index.json
+.skill-index.json.tmp
+.corrections-seen
+.style-skill
+__pycache__/

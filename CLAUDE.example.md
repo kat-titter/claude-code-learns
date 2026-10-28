@@ -8,7 +8,8 @@ done well (index: `~/.claude/coding-skills.md`). This file holds only what appli
 - (example) **Talk plainly.** Say what was done and what is left.
 
 ## Feedback becomes guidance
-When I give feedback (a correction, a preference, a style note, surprise at a result), act on it, then route it with
-the capture-lesson skill in the same turn: a general skill, `my-style`, or the project's memory. Say the update in one
-line at the end ("Skill updated: design-practice, axes say which way is good"). capture-lesson holds how lessons are
-written and how the library is kept tidy, including the weekly watch.
+When I give feedback (a correction, a preference, a style note, surprise at a result), act on it first. Then, in the
+same turn, if a future task would use it, route it with the capture-lesson skill: a general skill, `my-style`, or the
+project's memory, and say the update in one line at the end ("Skill updated: figure-design, legend outside the
+plot"). Feedback about this task only can stay in the lessons inbox. When a hook names a likely skill, load it if it
+fits the task.
