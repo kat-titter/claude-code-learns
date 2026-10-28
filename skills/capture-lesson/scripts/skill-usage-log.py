@@ -9,14 +9,16 @@ Never fails the turn.
 
 Summary: python3 skill-usage-log.py --report [DAYS]
 """
-import collections, datetime, json, os, sys
+import collections, datetime, os, re, sys
 
-CONFIG = os.path.dirname(os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__)))))
+sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
+from lessonlib import CONFIG, read_hook_input
+
 LOG = os.path.join(CONFIG, "skill-usage.log")
 
 
 def log():
-    d = json.load(sys.stdin)
+    d = read_hook_input(sys.stdin)
     ev = d.get("hook_event_name")
     if ev == "PreToolUse" and d.get("tool_name") == "Skill":
         name, how = (d.get("tool_input") or {}).get("skill", ""), "model"
@@ -24,7 +26,7 @@ def log():
         name, how = d.get("command_name", ""), "typed"
     else:
         return
-    if name:
+    if name and not re.search(r'-skill-[0-9a-f]{8}$', name):     # a trigger eval's scratch copy
         now = datetime.datetime.now().astimezone().isoformat(timespec="seconds")
         with open(LOG, "a") as f:
             f.write(f"{now}\t{name}\t{how}\t{d.get('session_id', '')}\n")
@@ -35,13 +37,17 @@ def report(days):
     uses = collections.Counter()
     try:
         for line in open(LOG):
-            t, name, how, *_ = line.rstrip("\n").split("\t")
-            if datetime.datetime.fromisoformat(t) >= since:
-                uses[name] += 1
+            try:
+                t, name, how, *_ = line.rstrip("\n").split("\t")
+                if datetime.datetime.fromisoformat(t) >= since:
+                    uses[name] += 1
+            except ValueError:
+                continue        # a torn or hand-edited line
     except FileNotFoundError:
         print(f"no log yet at {LOG}")
-    skills = sorted(s for s in os.listdir(os.path.join(CONFIG, "skills"))
-                    if os.path.isfile(os.path.join(CONFIG, "skills", s, "SKILL.md")))
+    sk = os.path.join(CONFIG, "skills")
+    skills = sorted(s for s in (os.listdir(sk) if os.path.isdir(sk) else [])
+                    if os.path.isfile(os.path.join(sk, s, "SKILL.md")))
     print(f"skill uses in the last {days} days ({LOG})")
     for s in sorted(skills, key=lambda s: (-uses[s], s)):
         print(f"{uses[s]:5}  {s}{'   <- unused' if not uses[s] else ''}")
