@@ -1,8 +1,13 @@
 ---
 name: macos-long-render
-description: Wrap long-running local jobs on macOS (video/ffmpeg renders, model training, multi-hour GPU/MPS or batch jobs) in caffeinate so the Mac can't sleep or idle-throttle them mid-run. Also use to diagnose a local job that ran far slower than estimated or crawled overnight.
-when_to_use: Before kicking off any unattended macOS compute expected to run more than ~1-2 hours, and when investigating why a render/training/batch job took far longer than its ETA (to tell sleep/idle-throttle from thermal throttling).
+description: Wraps long local jobs on macOS (ffmpeg renders, model training, multi-hour GPU/MPS or batch runs) in caffeinate so the Mac cannot sleep or idle-throttle them, and diagnoses a job that crawled. Use before starting unattended compute expected to run over an hour or two, or when a run took far longer than its ETA or slowed overnight.
+when_to_use: Before any overnight or unattended render; when telling sleep or idle-throttling apart from thermal throttling or a busy machine.
 ---
+
+## Gotchas
+
+- A render that ran fine for hours crawls overnight (the last 9% at about 36 times slower): the Mac slept or idle-throttled; wrap it in caffeinate.
+- Blaming thermals when the machine slept: read the power log first (Diagnose).
 
 ## Wrap long unattended jobs in `caffeinate`
 
@@ -46,14 +51,14 @@ The fix is almost always `caffeinate`.
 
 When a job crawls while the Mac is awake, look at what else is running before blaming the job:
 - `sysctl -n vm.loadavg` against `sysctl -n hw.ncpu`, and `sysctl vm.swapusage`. A load several times the core count
-  or swap near full means the job is waiting (Datum Line, 2026-10-19: load 35 on 10 cores, 13 GB swap; a 5-minute
+  or swap near full means the job is waiting (a deck build, 2026-10-19: load 35 on 10 cores, 13 GB swap; a 5-minute
   analysis took over an hour while another project ran a parallel batch).
 - `ps -Ao pid,etime,pcpu,rss,command -r | head` shows who holds the CPU; a tiny RSS on a big job means it was swapped out.
 - Give numeric jobs one BLAS thread on a shared machine (`OPENBLAS_NUM_THREADS=1 VECLIB_MAXIMUM_THREADS=1
   OMP_NUM_THREADS=1`): threaded BLAS fights other jobs and runs slower.
 - Run one copy at a time; a reproducibility check can run its two copies one after the other.
 - Another session's work stays the user's call: report it and ask before pausing it.
-- Same pattern elsewhere: a Whisper transcription stalled at 20% CPU while other jobs ran (treble, 2026-10-19).
+- Same pattern elsewhere: a Whisper transcription stalled at 20% CPU while other jobs ran (a music app, 2026-10-19).
 
 ## Estimating ETAs
 

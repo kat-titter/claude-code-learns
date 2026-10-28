@@ -3,7 +3,10 @@
 # HTML file, pattern-keyed fixes, generated boards) drifts silently; the second build is where that shows.
 # Usage: stable-build.sh OUTPUT_FILE -- build command and args...
 set -u
+case "${1:-}" in -h|--help) sed -n '2,4s/^# \{0,1\}//p' "$0"; exit 0;; esac
+[ $# -ge 2 ] || { echo "usage: stable-build.sh OUTPUT_FILE -- build command and args... (no build command given)" >&2; exit 2; }
 OUT="$1"; shift; [ "$1" = "--" ] && shift
+[ $# -ge 1 ] || { echo "stable-build.sh: no build command after --" >&2; exit 2; }
 TMP=$(mktemp -t stable)
 "$@" > /dev/null || { echo "build 1 failed" >&2; exit 2; }
 cp "$OUT" "$TMP"

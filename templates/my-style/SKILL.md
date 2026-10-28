@@ -1,6 +1,6 @@
 ---
 name: my-style
-description: My personal taste and way of working, kept apart from the general skills so those stay usable by anyone. Apply alongside any general skill whenever the work is for me: pages, figures, decks, writing, code, posts, reports, status updates.
+description: My personal taste and way of working, kept apart from the general skills so those stay usable by anyone. Apply alongside any general skill whenever the work is for me, such as pages, figures, decks, writing, code, posts, reports and status updates.
 when_to_use: Any task that produces something I will read, see, publish or reuse. Read it next to the general skill for the task.
 ---
 

@@ -7,14 +7,19 @@ Usage: deck-stats.py DECK.pdf [--css-width 1280] [--floor 15] [--pages 1-18] [--
 Needs PyMuPDF (see render-pages.py). Chrome prints CSS pixels at 0.75 pt, so px = pt * css_width / page_width_pt.
 Print the stage view (the talk as presented) and the reader's PDF separately if the deck has two layers.
 """
-import argparse, re, sys
+import argparse, os, re, sys
+if sys.argv[1:2] in (['-h'], ['--help']):
+    print(__doc__); sys.exit(0)
 try:
     import fitz
 except ImportError:
     sys.exit('PyMuPDF missing: python3 -m venv ~/.cache/pdfenv && ~/.cache/pdfenv/bin/pip install pymupdf')
-ap = argparse.ArgumentParser(); ap.add_argument('pdf'); ap.add_argument('--css-width', type=float, default=1280)
+ap = argparse.ArgumentParser(usage='deck-stats.py DECK.pdf [--css-width 1280] [--floor 15] [--pages 1-18] [--labels L]')
+ap.add_argument('pdf'); ap.add_argument('--css-width', type=float, default=1280)
 ap.add_argument('--floor', type=float, default=15); ap.add_argument('--pages', default=''); ap.add_argument('--labels', default='')
 a = ap.parse_args()
+if not os.path.isfile(a.pdf):
+    sys.exit(f'no such PDF: {a.pdf}')
 d = fitz.open(a.pdf)
 labels = a.labels.split(',') if a.labels else [str(k + 1) for k in range(len(d))]
 lo, hi = (int(x) for x in a.pages.split('-')) if a.pages else (1, len(d))

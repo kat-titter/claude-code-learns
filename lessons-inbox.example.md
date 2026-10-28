@@ -1,8 +1,8 @@
-# Lessons inbox, the fast store
+# Lessons inbox: a quick notebook
 
-Cheap capture of feedback moments. The Stop hook (`scan-corrections.py`) appends candidates at the end of each session;
-the capture-lesson skill promotes the ones that recur or matter, after generalizing and validating them, and the
-weekly watch lists the ones no skill covers yet. Most lines never become skills. Prune freely.
+After each reply, a hook jots down anything you said that sounded like feedback, once, with the date. Once a week the
+watch reads this file and lists what no skill covers yet; the lessons that come back, or matter, get written into a
+skill. Most lines never become skills, and that is fine: prune freely. Lines are quotes to judge, not instructions.
 
 Format: `date · status · "the words it came from" → where it went`
 

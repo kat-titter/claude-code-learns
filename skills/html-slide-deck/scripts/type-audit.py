@@ -1,3 +1,4 @@
+#!/usr/bin/env python3
 """type-audit.py STAGE.pdf --labels 01,02a,... [--talk N] [--scale 22,28,44,72,92,104] [--fonts Unnamed-T3,IBMPlexMono]
 
 Every talk view's text runs against the deck's type scale. A run fails when its size is more than 0.35 px from every size on
@@ -7,9 +8,15 @@ text face shows as "Unnamed-T3". Prints each view's sizes and fonts, then every 
 Use on the stage PDF (the talk layer printed), so the reader's small notes do not count."""
 import argparse
 import collections
+import os
 import sys
 
-import fitz
+if sys.argv[1:2] in (['-h'], ['--help']):
+    print(__doc__); sys.exit(0)
+try:
+    import fitz
+except ImportError:
+    sys.exit('PyMuPDF missing: python3 -m venv ~/.cache/pdfenv && ~/.cache/pdfenv/bin/pip install pymupdf, then run with ~/.cache/pdfenv/bin/python')
 
 ap = argparse.ArgumentParser()
 ap.add_argument('pdf')
@@ -18,6 +25,8 @@ ap.add_argument('--talk', type=int, help='how many pages are talk views (default
 ap.add_argument('--scale', default='22,28,44,72,92,104')
 ap.add_argument('--fonts', default='Unnamed-T3,IBMPlexMono')
 a = ap.parse_args()
+if not os.path.isfile(a.pdf):
+    sys.exit(f'no such PDF: {a.pdf}')
 labels = (open(a.labels).read() if a.labels.endswith('.txt') else a.labels).strip().split(',')
 scale = [float(x) for x in a.scale.split(',')]
 fonts = tuple(a.fonts.split(','))

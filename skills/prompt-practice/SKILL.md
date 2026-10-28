@@ -1,7 +1,7 @@
 ---
 name: prompt-practice
-description: Turn every prompt into a great one, automatically - the person's own (short, dictated, typo'd or abstract) and the ones Claude writes for others (subagent and session briefs, scheduled tasks, system prompts, image, music and voice generator prompts). Rewrites a prompt into a brief with its outcome, deliverable, context, the field's words and grammar, the prior work to build on and a check that can fail, following Anthropic's prompting guidance (clear and direct, the why, examples, structure, positive framing). Use when a request is short, dictated or vague; when writing any brief or prompt for another agent or model; when someone says "rewrite / improve / fix my prompt", "make this a better prompt", "write the brief", "what should I ask?". A hook adds a one-line nudge to dictated or terse prompts.
-when_to_use: On a short, dictated, typo'd or abstract request before the first tool call; before sending a subagent prompt, a session brief, a scheduled task or a workflow; when writing a system prompt or an LLM call in code; when writing an image, music or voice generator prompt; when a session has needed two corrections on the same point; when asked to rewrite or improve a prompt.
+description: Turns a short, dictated, typo'd or vague request into a clear brief before work starts, and writes strong prompts for others - subagent and session briefs, scheduled tasks, system prompts, and image, music or voice generator prompts. Use when a request is terse or dictated, when writing any brief or prompt, or when asked to "rewrite", "improve" or "fix my prompt".
+when_to_use: Before the first tool call on a dictated or terse request; before sending a subagent prompt, session brief or workflow; when a session needed two corrections on the same point. A hook adds a one-line nudge to dictated prompts.
 ---
 
 # Prompt practice
@@ -9,8 +9,15 @@ when_to_use: On a short, dictated, typo'd or abstract request before the first t
 A prompt is a brief for a capable colleague who just walked in: they know their craft and nothing of this project.
 The work is the same in both directions. An incoming prompt gets rewritten, silently, into the brief it implies; an
 outgoing prompt is written as that brief from the start. A session brief ends with its stopping point: finish this
-task, report, and list follow-ups as proposals (work-practice §7). The gist itself is read as work-practice §1 says,
-and the words follow field-vocabulary; this skill turns both into a prompt.
+task, report, and list follow-ups as proposals the person picks from, rather than starting them. The gist is the core
+intent plus the direction the work is heading, and the words are the ones practitioners use rather than terms coined
+during the work; this skill turns both into a prompt.
+
+## Gotchas
+
+- Asking the person to confirm a rewritten brief costs a round trip: act on the likelier reading and say which in a few words.
+- A subagent brief that omits the skills that apply: name them, since a running session may not have them loaded.
+- A brief without a check that can fail: add the one fastest check before sending it.
 
 ## 1. Rewrite an incoming prompt into its brief
 
@@ -21,7 +28,7 @@ Before the first tool call, fill six slots from the prompt and from what is alre
 | Outcome | what exists when this is done, and the direction the work is heading after it | the prompt, the session so far |
 | Deliverable | the artifact (file, page, commit, answer, render) and who reads or uses it | the prompt, the project's habits |
 | Context | what the person already has and decided | memory, project notes and PROGRESS files, sibling sessions' notes, `git log` |
-| Words | the field's terms and grammar; a dictated slip becomes the term it aimed at | field-vocabulary, the project's glossary |
+| Words | the field's terms and grammar; a dictated slip becomes the term it aimed at | the field's own docs and papers, the project's glossary |
 | Prior work | what already does most of it | the person's own repos and sessions first, then docs, libraries, papers, published prompts |
 | Check | the fastest test that can fail and shows it is done | tests, a script, a measurement, a screenshot to compare |
 
@@ -73,8 +80,8 @@ Image, music and voice models read a different grammar from a chat model.
 - **Start from a prompt that worked.** Keep each good prompt beside its output (a render, a cover, a take) and change
   one element at a time, so the effect of each change is visible.
 - **A prompt grammar is data.** When prompts are generated, keep the parts as lists and the rule that joins them, so
-  the combinations are countable and any output traces back to its parts (431 subject sets x 6 orders x 28 moods x
-  18 lights = 1,303,344 prompts, design-practice).
+  the combinations are countable and any output traces back to its parts (in one generative series, 431 subject sets x
+  6 orders x 28 moods x 18 lights = 1,303,344 prompts).
 
 ## 4. Build on others' work
 
@@ -86,7 +93,7 @@ Image, music and voice models read a different grammar from a chat model.
 
 ## 5. Automation
 
-`scripts/prompt-nudge.py` runs on every prompt (a `UserPromptSubmit` hook). When the prompt reads as dictated or terse
+`${CLAUDE_SKILL_DIR}/scripts/prompt-nudge.py` runs on every prompt (a `UserPromptSubmit` hook). When the prompt reads as dictated or terse
 (it starts in lowercase or ends without punctuation, 3 to 300 words), it adds one line of context asking for the
 silent rewrite of §1; otherwise it stays quiet, and it always lets the prompt through. Install it next to any other
 `UserPromptSubmit` hook in `~/.claude/settings.json`:
@@ -95,7 +102,7 @@ silent rewrite of §1; otherwise it stays quiet, and it always lets the prompt t
 {"type": "command", "command": "python3 ~/.claude/skills/prompt-practice/scripts/prompt-nudge.py"}
 ```
 
-The nudge costs about 80 tokens on the prompts it fires on; this skill's body loads only when a brief or generator
+The nudge is one line of about 200 characters (about 50 tokens) on the prompts it fires on; this skill's body loads only when a brief or generator
 prompt is being written, or when asked.
 
 ## Provenance

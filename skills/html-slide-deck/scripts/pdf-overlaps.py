@@ -1,3 +1,4 @@
+#!/usr/bin/env python3
 """pdf-overlaps.py DECK.pdf [--labels 01,02a,...]: text that sits on other text in a printed deck.
 
 The reader's layer prints captions and notes the stage never shows, so a stage check misses them landing on a card,
@@ -5,9 +6,15 @@ a legend or a figure label. This reads every text run of the PDF and reports pai
 drawn twice in the same place (a text shadow, a duplicate layer) is skipped. Exits 1 when any pair overlaps.
 """
 import argparse
+import os
 import sys
 
-import fitz
+if sys.argv[1:2] in (['-h'], ['--help']):
+    print(__doc__); sys.exit(0)
+try:
+    import fitz
+except ImportError:
+    sys.exit('PyMuPDF missing: python3 -m venv ~/.cache/pdfenv && ~/.cache/pdfenv/bin/pip install pymupdf, then run with ~/.cache/pdfenv/bin/python')
 
 
 def runs(page):
@@ -47,6 +54,8 @@ def main():
     ap.add_argument('pdf')
     ap.add_argument('--labels', default='', help='comma-separated page names, e.g. 01,02a,02b')
     args = ap.parse_args()
+    if not os.path.isfile(args.pdf):
+        sys.exit(f'no such PDF: {args.pdf}')
     doc = fitz.open(args.pdf)
     labels = [s for s in args.labels.split(',') if s]
     total = 0
