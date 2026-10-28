@@ -1,8 +1,13 @@
 ---
 name: citations
-description: Add or verify numbered citations / references / a bibliography in a document, especially HTML or web reports. Use when citing scientific papers or sources, building a reference list, formatting footnotes/endnotes, or when citation numbering needs to be trustworthy. Enforces two things that bite repeatedly — verify each source's real bibliographic details before citing, and keep in-text markers in sync with the reference list.
-when_to_use: Whenever a document gains citations/references, or a numbered reference list's indexing needs to be trusted — especially in HTML, where separate ordered lists silently desync the numbers.
+description: Adds or verifies numbered citations and reference lists in documents, especially HTML reports, so every source is real and every in-text marker matches its entry. Use when citing papers or sources, building a bibliography or footnotes, listing someone's publications, or when reference numbering must be trusted.
+when_to_use: Whenever a document gains citations; before publishing anything with a reference list; when markers and the list may have drifted apart.
 ---
+
+## Gotchas
+
+- A second `<ol>` without `start=` restarts at 1, so a superscript lands on the wrong reference: run the checker (§3, §4).
+- Volume, issue, pages and year cited from memory are often wrong, even for famous papers: check each against the source (§1).
 
 ## 1. Cite from the source you just checked
 
@@ -33,7 +38,7 @@ them ([Paper], <Poster>, {Talk}). Shorten everything around a title and keep the
 what readers search and cite. Link the title to its DOI or page. (A resume page, 2026-10-25: "much less text.
 highlight author position in poster/paper")
 
-## 3. The indexing gotcha (why this skill exists)
+## 3. The indexing trap (why this skill exists)
 
 HTML `<ol>` auto-numbers, and **restarts at 1 in every separate `<ol>`**. If you
 split references into grouped lists, the *visible* number desyncs from the `#rN`

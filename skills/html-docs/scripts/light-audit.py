@@ -189,9 +189,13 @@ def audit(path, deck=False):
 
 
 def main():
+    if sys.argv[1:2] in (['-h'], ['--help']):
+        print(__doc__); sys.exit(0)
     args = [a for a in sys.argv[1:] if not a.startswith('--')]
     if not args:
-        sys.exit(__doc__)
+        sys.exit('usage: light-audit.py PAGE.html [PAGE2.html ...] [--deck] [--json] (no page given; --help for more)')
+    if not Path(args[0]).exists():
+        sys.exit(f'no such file: {args[0]}')
     deck, as_json = '--deck' in sys.argv, '--json' in sys.argv
     out = {}
     for a in args:

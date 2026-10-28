@@ -13,7 +13,7 @@ a list item that visibly shows N.
 
 Usage:  python3 check-citations.py file.html      (exit 0 = clean, 1 = problems)
 """
-import sys, re
+import os, re, sys
 
 def main(path):
     html = open(path, encoding="utf-8").read()
@@ -64,6 +64,10 @@ def main(path):
     return 0
 
 if __name__ == "__main__":
+    if sys.argv[1:2] in (["-h"], ["--help"]):
+        print(__doc__); sys.exit(0)
     if len(sys.argv) != 2:
         print("usage: check-citations.py file.html"); sys.exit(2)
+    if not os.path.isfile(sys.argv[1]):
+        sys.exit(f"no such file: {sys.argv[1]}")
     sys.exit(main(sys.argv[1]))

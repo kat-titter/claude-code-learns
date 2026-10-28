@@ -1,13 +1,18 @@
 ---
 name: html-docs
-description: Make, edit and share a document as one HTML page (a report, brief, explainer, white paper, proposal, method doc or one-pager) with light interactivity - hover or tap notes on terms, folds for depth, figures that step on click, a layer key for a second reader - that still reads whole as a still page and prints whole as a PDF. Also picks the medium (HTML page, private Artifact, shared editable doc, deck or Office file) and sets how to work on one with Claude by section ids, renders and comments. Use when writing or revising an HTML doc, choosing between a page, an Artifact, a doc or a deck, adding tooltips, folds or toggles to a page, printing a page to PDF, or when a page feels heavy, app-like, jumpy or hard to print.
-when_to_use: Starting any document meant to be read in a browser; before adding interactivity to a doc or deck; choosing where a document should live; before sharing or publishing a page; when a reader says a page is heavy, cluttered, hard to use on a phone or prints badly.
+description: Makes and shares a document as one HTML page - report, brief, explainer, white paper, proposal or one-pager - with light interactivity (hover notes, folds, step-through figures) that still reads whole and prints whole as a PDF. Use when writing or revising an HTML doc, choosing between a page, an Artifact, a shared doc or a deck, or when a page feels heavy, app-like or prints badly.
+when_to_use: Starting any document meant to be read in a browser; before adding interactivity to a doc; before sharing or publishing a page.
 ---
 
 # HTML docs, lightly interactive
 
 An HTML doc is one file that reads like a document, prints like a paper and answers the reader's hand lightly. The
 deck is its sibling (html-slide-deck); this skill holds what both share. Guidelines, each with a case.
+
+## Gotchas
+
+- Folds and hover notes that hide content print blank: print with every fold open and every note inline (§5).
+- Hover-only notes stay shut on a phone: each one opens on tap too (§3).
 
 ## 1 · Pick the medium first
 
@@ -20,7 +25,7 @@ deck is its sibling (html-slide-deck); this skill holds what both share. Guideli
 | A .docx or .pptx | only when someone asks for that file |
 
 - **Often two at once**: the editable doc for the words, and the styled page beside it for the look. Example: a private
-  Datum Line brief, an editable doc with a page in the project's style published beside it (2026-10-25).
+  investor brief, an editable doc with a page in the project's style published beside it (2026-10-25).
 - **HTML first, the PDF beside it.** A PDF alone does not reflow on a phone, is harder to make accessible and goes
   stale; publish the page and print the PDF from it (GDS, 2018).
 - **Decide before the first line**, since moving a page into a doc later loses the layout, and a doc into a page loses
@@ -33,7 +38,7 @@ deck is its sibling (html-slide-deck); this skill holds what both share. Guideli
 - **One self-contained file, no build step.** Inline CSS, figures as inline SVG, at most one font link; a library, when
   one earns its place, loads from a CDN with its version in the URL. It opens straight from disk, and a footer links
   to its source (Willison, 2025). Photographs go beside the page as compressed files rather than data URIs: a deck with 3.7 MB of embedded images
-  weighs 4.5 MB on every load and every diff (Datum Line, 2026-10-26).
+  weighs 4.5 MB on every load and every diff (a pitch deck, 2026-10-26).
 - **Masthead, then a contents rail** once the doc runs past about three screens: title, a one-line lead, date and byline;
   the rail is anchor links to each section.
 - **Every section carries an id** (`<section id="method">`). Deep links work, and an edit can name its target ("tighten
@@ -58,9 +63,9 @@ behind one. When the reader should push a system and watch it answer, that is an
 | **Anchor and copy** | sharing a spot, reusing code | a link on each heading; a copy button on each code block |
 
 - **About one ask per screen.** A light doc carries under about 40 KB of script, in plain DOM calls rather than a
-  framework; thirty hand-written lines beat a library. Example: the Narcan deck runs on 40 KB with no library and passes the audit clean.
+  framework; thirty hand-written lines beat a library. Example: a policy deck runs on 40 KB with no library and passes the audit clean.
 - **Every hover has a tap and a focus twin.** Put each note in a focusable term with its card; a `title` attribute
-  shows only to a mouse. Example: three dotted terms in the vanitas_veritas web doc kept their explanation only in `title` (2026-10-26).
+  shows only to a mouse. Example: three dotted terms in a web essay kept their explanation only in `title` (2026-10-26).
 - **HTML before script**: `<details>`, anchor links, `:target`, `scroll-margin-top`; script only for what markup can't do.
 - **Motion answers the reader**: at most one orchestrated moment per page, the rest moving in response to a click or
   hover (frontend-design). Reduced motion and print show each animation at its end state.
@@ -76,9 +81,11 @@ behind one. When the reader should push a system and watch it answer, that is an
 - **Start from a page by name.** "Built like the white paper" lets Claude reuse that page's code and look instead of
   inventing a new one (Willison's remix pattern).
 - **One visible change per pass**, small enough to steer. A round that touches every section gets a plan first and a
-  before and after render (`slide-diff.py` works on any page's PDF).
-- **One source.** When a build writes the page, edit the source and rebuild twice to confirm it is stable
-  (`stable-build.sh`).
+  before and after render (`render-pages.py` each printed PDF, then `slide-diff.py` the two PNG folders; works on any
+  page).
+- **One source.** When a build writes the page, edit the source and rebuild. Rebuild twice and compare
+  (`stable-build.sh`) only when a build pass changed, not on every edit or publish (html-slide-deck, Edit passes that
+  stay put).
 - **Comments where the reader is.** On an Artifact or a shared doc, comment on the spot; Claude answers in that thread
   and republishes to the same link.
 
@@ -97,11 +104,11 @@ checks: interactive-figures' `audit_interactions.py` (targets, focus, clicks, no
 
 Calibrated on 11 pages, 2026-10-26:
 
-- **Clean**: the Narcan deck, the reference for density.
+- **Clean**: a 40 KB policy deck, the reference for density.
 - **Section ids missing**: a white paper (9 headings), a public explainer (14 headings, and no print rules).
-- **Title-only notes**: the vanitas_veritas web doc (3 terms), with 47 KB of script.
-- **Embedded images**: the Datum Line deck (3.7 MB).
-- **An explorable, not a doc**: the every-line-is-a-loop essay (653 KB of script, 47 buttons), which interactive-figures governs.
+- **Title-only notes**: a web essay (3 terms), with 47 KB of script.
+- **Embedded images**: a pitch deck (3.7 MB).
+- **An explorable, not a doc**: an interactive essay (653 KB of script, 47 buttons), which interactive-figures governs.
 
 ## Public examples this follows
 
@@ -116,7 +123,7 @@ Calibrated on 11 pages, 2026-10-26:
 ## Related
 
 html-slide-deck (decks: views, talk and PDF layers, publishing scripts), interactive-figures (explorables),
-design-practice (composition, hover cards, cache-busting, colour), page-legibility-check, storytelling (the arc), github-practice
+design-practice (composition, colour), app-design (hover cards, controls, cache-busting), page-legibility-check, storytelling (the arc), github-practice
 (Pages, READMEs).
 
 ## Provenance

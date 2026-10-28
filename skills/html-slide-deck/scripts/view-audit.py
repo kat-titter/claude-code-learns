@@ -1,11 +1,51 @@
-"""view-audit.py INDEX OUTDIR (a one-file deck whose slides are <template id="tN"> mounted in shadow roots, as this skill builds): every talk view mounted as the deck mounts it (stage layer), after its motion settles; lists each
-visible icon (an svg with a 24x24 viewBox) with its rendered size and the visible text beside it, and every visible text
-run's rendered font size. Writes OUTDIR/audit.json."""
-import json, subprocess, sys
+#!/usr/bin/env python3
+"""view-audit.py INDEX OUTDIR [--labels 01,02a,...] (a one-file deck whose slides are <template id="tN"> mounted in shadow
+roots, as this skill builds): every view mounted as the deck mounts it (stage layer), after its motion settles; lists
+each visible icon (an svg with a 24x24 viewBox) with its rendered size and the visible text beside it, and every visible
+text run's rendered font size. Writes OUTDIR/audit.json.
+
+Views come from the deck's META list (slide k has as many views as its `steps` lists are long), named 01, 02a, 02b ...;
+--labels renames them in order. Without META, one view per template. CHROME overrides the Chrome path."""
+import argparse, html, json, os, re, subprocess, sys
 from pathlib import Path
-s = open(sys.argv[1]).read(); out = Path(sys.argv[2]); out.mkdir(exist_ok=True)
-VIEWS = [('01', 0, 0), ('02a', 1, 0), ('02b', 1, 1), ('02c', 1, 2), ('03a', 2, 0), ('03b', 2, 1), ('04a', 3, 0), ('04b', 3, 1), ('04c', 3, 2),
-         ('05', 4, 0), ('06', 5, 0), ('07', 6, 0), ('08', 7, 0), ('09', 8, 0), ('10', 9, 0)]
+if sys.argv[1:2] in (['-h'], ['--help']):
+    print(__doc__); sys.exit(0)
+ap = argparse.ArgumentParser(usage='view-audit.py INDEX.html OUTDIR [--labels L]')
+ap.add_argument('index'); ap.add_argument('out'); ap.add_argument('--labels', default='')
+a = ap.parse_args()
+if not Path(a.index).is_file():
+    sys.exit(f'no such deck: {a.index}')
+s = open(a.index).read(); out = Path(a.out).resolve(); out.mkdir(exist_ok=True)
+CH = os.environ.get('CHROME', '/Applications/Google Chrome.app/Contents/MacOS/Google Chrome')
+if not os.path.exists(CH):
+    sys.exit(f'Chrome not found at {CH}: set CHROME to its path')
+
+
+def views(deck):
+    """(label, template index, step) for every view, read from the deck's META list, else one per template."""
+    m = re.search(r'\bMETA\s*=\s*(\[.*?\])\s*;', deck, re.S)
+    try:
+        meta = json.loads(m.group(1)) if m else None
+    except ValueError:
+        meta = None
+    if meta is None:
+        print('no JSON META list in the deck: one view per template', file=sys.stderr)
+        meta = [{} for _ in re.findall(r'<template id="t\d+">', deck)]
+    found = []
+    for i, slide in enumerate(meta):
+        steps = slide.get('steps') if isinstance(slide, dict) else None
+        lists = steps.values() if isinstance(steps, dict) else [steps] if isinstance(steps, list) else []
+        n = max([len(v) for v in lists if isinstance(v, list)] or [1])
+        found += [(f'{i + 1:02d}' + ('abcdefghij'[k] if n > 1 else ''), i, k) for k in range(n)]
+    return found
+
+
+VIEWS = views(s)
+if a.labels:
+    names = a.labels.split(',')
+    if len(names) != len(VIEWS):
+        sys.exit(f'{len(names)} labels for {len(VIEWS)} views: the deck and its labels disagree (a view added or dropped?)')
+    VIEWS = [(n, i, k) for n, (_, i, k) in zip(names, VIEWS)]
 JS = r'''
 const vis = e => { for (let n = e; n && n !== r.host; n = n.parentNode || n.host) { if (n.nodeType !== 1) continue; const c = getComputedStyle(n);
   if (c.display === 'none' || c.visibility === 'hidden' || parseFloat(c.opacity) < 0.05) return false; } const b = e.getBoundingClientRect(); return b.width > 0 && b.height > 0; };
@@ -22,17 +62,18 @@ while ((n = walker.nextNode())) { const t = n.textContent.trim(); if (!t) contin
               x: Math.round(b.left), y: Math.round(b.top), anchor: e.getAttribute && e.getAttribute('text-anchor') || 'start', h2}); }
 document.body.setAttribute('data-out', JSON.stringify({icons, texts}));
 '''
-CH = '/Applications/Google Chrome.app/Contents/MacOS/Google Chrome'
 res = {}
 for name, i, step in VIEWS:
-    t0 = s.find(f'<template id="t{i}">'); t1 = s.find('</template>', t0) + len('</template>')
+    t0 = s.find(f'<template id="t{i}">')
+    if t0 < 0:
+        print(f'view {name}: no <template id="t{i}"> in the deck', file=sys.stderr); sys.exit(2)
+    t1 = s.find('</template>', t0) + len('</template>')
     page = ('<!doctype html><meta charset="utf-8"><style>body{margin:0;background:#14171a}</style>' + s[t0:t1]
             + f'<div id="st" class="in" style="width:1280px;height:720px"></div><script>const r=document.getElementById("st").attachShadow({{mode:"open"}});'
             f'r.appendChild(document.getElementById("t{i}").content.cloneNode(true));const h=document.createElement("style");h.textContent=".pdf{{display:none!important}}.pdfv{{visibility:hidden!important}}*{{animation-duration:0s!important;animation-delay:0s!important;transition:none!important}}";r.appendChild(h);'
             f'const f=r.querySelector("[class*=step-]");if(f)f.className=f.className.replace(/step-\\d/,"step-{step}");setTimeout(()=>{{{JS}}},1500);</script>')
     p = out / f'{name}.html'; p.write_text(page)
     dom = subprocess.run([CH, '--headless=new', '--disable-gpu', '--window-size=1280,720', '--virtual-time-budget=9000', '--dump-dom', p.as_uri()], capture_output=True, text=True).stdout
-    import re, html
     m = re.search(r'data-out="([^"]*)"', dom)
     res[name] = json.loads(html.unescape(m.group(1))) if m else None
 (out / 'audit.json').write_text(json.dumps(res, indent=1))
