@@ -6,7 +6,9 @@ short summary.
 python3 ~/.claude/skills/capture-lesson/scripts/skills-watch.py
 It prints the path of this week's report (~/.claude/skills-watch/<date>.md) and remembers what it saw in
 ~/.claude/skills-watch/state.json, so the report lists only what changed. Read the report. If the network was down,
-the report says so; carry on with the local sections.
+the report says so; carry on with the local sections. Then run
+python3 ~/.claude/skills/capture-lesson/scripts/trigger-misses.py
+and append its output to the report under "## Trigger misses".
 
 ## Step 2: judge what is new
 For each skill listed as new or updated (upstream repos or local plugin marketplaces), read its SKILL.md: fetch
@@ -23,20 +25,25 @@ feedback line in the report that matches no skill, decide whether it is a genera
 a new one), the person's own taste (their `<name>-style` skill), or a fact about one project (that project's memory).
 Draft the guideline text: say what to do, with the example and its date.
 
-## Step 4: library health
+## Step 4: trigger misses
+For each skill that loaded for fewer than half of its strong matches, read its description and the missed prompts'
+matched words. Draft a description change that adds the words people actually used, and list two missed prompts as
+should-trigger cases for `trigger-evals.py --runs 3`. A skill that misses two weeks running gets a proposal.
+
+## Step 5: library health
 Compare the health section with last week's report in the same folder, if there is one. A skill flagged two weeks
 running gets a specific proposed rewrite.
 
-## Step 5: write the proposals
+## Step 6: write the proposals
 Append a section "## Proposed" to this week's report with at most five items, most useful first. Each item: what to
 change, where (file and section), why (the evidence from the report), and the drafted text. If nothing is worth doing,
 write one line saying so.
 
-## Aberrant behaviour
-Flag, in at most five lines, patterns that mean guidance exists but is not working: the same correction given three or
-more times in the window (the guideline is missing from what loads, or worded too weakly), sessions that started
-sessions the person did not ask for (`list_sessions` with linked sessions), and every-session load that grew more than
-a third since the last report. For each, name the file and the patch you would make.
+## Guidance that is not working
+Flag, in at most five lines, signs that guidance exists but is not taking effect: the same correction given three or
+more times in the window (the guideline is missing from what loads, or worded too weakly), a skill that keeps missing
+its matches, sessions that started sessions the person did not ask for (if a list_sessions tool is available; skip
+otherwise), and every-session load that grew more than a third since the last report. For each, name the file and the patch you would make.
 
 ## Scope
 This run reads, judges and writes the report only. Installing skills or plugins, editing any SKILL.md, committing,
