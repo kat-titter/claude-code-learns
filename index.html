@@ -89,9 +89,11 @@ Claude Code already has: Skills, hooks, memory and scheduled tasks.</p>
 </ol>
 
 <h2><span>01</span>notice</h2>
-<p>A UserPromptSubmit hook adds one line of context when your message reads like feedback: <em>does this apply beyond
-the task? if so, route it.</em> A Stop hook logs any correction it missed to a lessons inbox, the fast store. The agent
-also counts its own surprise ("17 s a frame seems like a lot") and its own debugging as signals.</p>
+<p>Hooks are tiny scripts Claude Code runs at set moments. When your message reads like feedback, one adds a line of
+context: <em>does this apply beyond the task? if so, route it.</em> When a request shares rare words with a skill's
+description, another names that skill, because skills often go unused even when they fit. After each reply, a third
+jots any feedback into a lessons inbox, a quick notebook. The agent also counts its own surprise ("17 s a frame seems
+like a lot") and its own debugging as signals. Most messages trigger none of this.</p>
 
 <h2><span>02</span>route</h2>
 <table>
@@ -119,7 +121,8 @@ does not already know. A second case folds into the same line.</p>
 <h2><span>04</span>validate</h2>
 <ul class="tight">
   <li>The frontmatter parses in a YAML parser (<code>claude plugin validate</code> can pass with nothing checked); one that doesn't loads with no description.</li>
-  <li>Three realistic prompts select it in a fresh session (or run <code>trigger-evals.py</code>, old description against new).</li>
+  <li>Three realistic prompts load it and two near-misses don't (<code>trigger-evals.py</code>, old description against new, three runs each).</li>
+  <li>It loads in real sessions: <code>trigger-misses.py</code> shows, per skill, how often a request that matched it actually loaded it. In one library the answer was about 1 time in 5.</li>
   <li>It handles a sibling case; a bundled checker proves it on a second input.</li>
   <li>It traces to a real moment. Anything that doesn't stays in the inbox.</li>
 </ul>
@@ -134,9 +137,7 @@ already answers the question and extend its line. When the signs show, refactor 
   <li>personal taste in a general skill: move it to your style skill</li>
   <li>a line no task has needed in months: archive it</li>
 </ul>
-<p><code>audit-skills.py</code> reports each sign, including repeats across skills, which it finds through an index of
-rare words, so the cost grows with real candidates rather than with every pair of lines. It takes about 40 ms on 15
-skills.</p>
+<p><code>audit-skills.py</code> reports each sign, including the same advice in two skills, in well under a second.</p>
 
 <h2><span>06</span>watch, weekly</h2>
 <p>A scheduled task runs <code>skills-watch.py</code>, which remembers what it saw and reports only what changed. The
@@ -150,7 +151,7 @@ Footprint                  what loads every session against what waits on disk
 Proposed                   at most five changes, most useful first</code></pre>
 
 <h2><span>07</span>stays light</h2>
-<p>What a session carries against what waits until it is needed, in the author's library (2026-10-26, 22 skills):</p>
+<p>What a session carries against what waits until it is needed, in one real library (2026-10-26, 22 skills):</p>
 <div class="key"><span><i class="on"></i>carried every session</span><span><i></i>loaded when a task needs it</span></div>
 <div class="bars" role="img" aria-label="Skill descriptions 17.2 KB carried; skill bodies 213 KB on demand; memory index 11.0 KB carried; memory notes 226 KB on demand">
   <span>skill descriptions</span><i class="on" style="width:7.6%"></i><span class="v">17.2 KB</span>
@@ -179,9 +180,10 @@ also proposed for intelligent agents<sup class="ref"><a href="#r2">2</a></sup>.<
 cd claude-code-learns && ./install.sh --name yourname --dry-run
 ./install.sh --name yourname</code></pre>
 <p>It adds <code>capture-lesson</code>, <code>prompt-practice</code>, a <code>yourname-style</code> skill, a
-<code>CLAUDE.md</code> that routes feedback, an inbox and an index, and merges the four hooks into
+<code>CLAUDE.md</code> that routes feedback, an inbox and an index, and merges five small hooks into
 <code>settings.json</code> after a backup. Re-running is
-safe. For the weekly watch, paste <code>weekly-watch.md</code> into a weekly scheduled task.</p>
+safe, and <code>./install.sh --uninstall</code> undoes it. For the weekly watch, paste <code>weekly-watch.md</code>
+into a weekly scheduled task.</p>
 
 <h2><span>10</span>references</h2>
 <ol class="refs">
@@ -194,7 +196,7 @@ safe. For the weekly watch, paste <code>weekly-watch.md</code> into a weekly sch
   <li id="r7">Tononi, G., &amp; Cirelli, C. (2014). Sleep and the price of plasticity: from synaptic and cellular homeostasis to memory consolidation and integration. <i>Neuron</i>, 81(1), 12–34. <a href="https://doi.org/10.1016/j.neuron.2013.12.025">doi:10.1016/j.neuron.2013.12.025</a></li>
 </ol>
 
-<footer><span>MIT licensed</span><a href="https://github.com/kat-titter/claude-code-learns">source and install</a><span>by Kat Titterton</span></footer>
+<footer><span>MIT licensed</span><a href="https://github.com/kat-titter/claude-code-learns">source and install</a></footer>
 </main>
 </body>
 </html>
