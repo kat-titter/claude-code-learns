@@ -106,9 +106,11 @@ class Svg:
         self.text(x, y, s.upper(), 11.5, self.t['muted'], MONO, 500, spacing=1.2)
 
     def key(self, y, items):
-        """One row: each kind drawn as in the figure, then its meaning."""
+        """Each kind drawn as in the figure, then its meaning; wraps to a new row at the figure's edge."""
         x = 24
         for kind, s in items:
+            if x > 24 and x + 21 + len(s) * 6.6 > self.w - 16:
+                x, y = 24, y + 24
             if kind == 'you':
                 self.add(f'<circle cx="{x + 7}" cy="{y - 9}" r="4" fill="{self.t["ink"]}"/><path d="M{x} {y + 2}C{x} {y - 4} '
                          f'{x + 14} {y - 4} {x + 14} {y + 2}Z" fill="{self.t["ink"]}"/>')
@@ -180,6 +182,44 @@ def how_it_works(t):
     s.label(70, 560, ['your yes,', 'one per lane'])
     s.key(752, KEY)
     s.save(f'how-it-works-{name_of(t)}.svg')
+
+
+def how_it_works_phone(t):
+    """The same graph in one column for a phone: the spine top to bottom, one rail each side."""
+    s = Svg(320, 1312, t, 'How it works, phone layout: every turn, your correction reaches a hook, Claude writes a '
+            'one-line lesson into your library; every week, scripts read the logs and outside posts, a weekly agent '
+            'drafts at most five proposals, and they come back to you, one yes per lane.')
+    X, W, A = 44, 246, 80
+    s.band(X, 30, 'every turn')
+    s.human(A, 44)
+    s.edge([(A, 124), (A, 149)]); s.label(92, 141, ['a correction'])
+    s.node(X, 152, W, 72, 'code', 'hooks', [('feedback-nudge.py + 4 more', 1), ('add a line or log, never block', 0)])
+    s.edge([(A, 224), (A, 261)]); s.label(92, 247, ['a reminder, the likely skill'])
+    s.node(X, 264, W, 52, 'claude', 'Claude', [('in your session', 0)])
+    s.edge([(A, 316), (A, 361)]); s.label(92, 344, ['a one-line lesson'])
+    s.edge([(210, 364), (210, 319)]); s.label(218, 336, ['skill text,', 'on a match'])
+    s.node(X, 364, W, 88, 'keep', 'your library', [('skills, e.g. workflow-design', 0), ('your style skill', 0),
+                                                   ('project memory', 0)])
+    s.add(f'<path d="M16 476H304" stroke="{t["hair"]}" stroke-width="1"/>')
+    s.band(X, 500, 'every week')
+    s.node(X, 512, W, 92, 'file', 'outside, read as data', [('new upstream skills', 0), ('X links you pasted', 0),
+                                                            ('practice-accounts.txt', 1)])
+    s.label(X, 630, ['new skills, new posts'])
+    s.edge([(X + W, 188), (304, 188), (304, 692), (X + W + 3, 692)]); s.label(296, 650, ['a quoted line, a skill used'], 'end')
+    s.node(X, 660, W, 64, 'file', None, [('lessons-inbox.md', 1), ('skill-usage.log', 1)])
+    s.edge([(A, 724), (A, 769)]); s.label(92, 752, ["the week's lines"])
+    s.node(X, 772, W, 118, 'code', 'weekly scripts', [('skills-watch.py', 1), ('trigger-misses.py', 1),
+                                                       ('practice-watch.py', 1), ("did last week's text land?", 0)])
+    s.edge([(X, 558), (30, 558), (30, 800), (X - 3, 800)])
+    s.edge([(A, 890), (A, 935)]); s.label(92, 918, ['one report'])
+    s.node(X, 938, W, 64, 'claude', 'weekly agent', [('weekly-watch.md', 1)])
+    s.edge([(A, 1002), (A, 1047)]); s.label(92, 1030, ['at most five drafts'])
+    s.node(X, 1050, W, 104, 'file', 'proposals, by undo cost', [('open: applies itself, opt-in', 0),
+                                                                 ('evidence: after its test', 0), ('closed: hooks, installs', 0)])
+    s.edge([(100, 1154), (100, 1176), (14, 1176), (14, 84), (55, 84)])
+    s.label(X, 1198, ['back to you: one yes per lane'])
+    s.key(1236, KEY)
+    s.save(f'how-it-works-phone-{name_of(t)}.svg')
 
 
 def check_repair(t):
@@ -254,6 +294,7 @@ if __name__ == '__main__':
     for t in THEMES.values():
         banner(t)
         how_it_works(t)
+        how_it_works_phone(t)
         check_repair(t)
         mind(t)
     bad = sorted({(a, b, round(contrast(a, b), 2)) for a, b in CHECK if contrast(a, b) < 4.5})

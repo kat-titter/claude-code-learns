@@ -85,6 +85,8 @@ Proposed     at most five changes, grouped by what a mistake would cost to undo
 ## How it works
 
 <picture>
+  <source media="(max-width: 600px) and (prefers-color-scheme: dark)" srcset="assets/how-it-works-phone-dark.svg">
+  <source media="(max-width: 600px)" srcset="assets/how-it-works-phone-light.svg">
   <source media="(prefers-color-scheme: dark)" srcset="assets/how-it-works-dark.svg">
   <img alt="How it works. Every turn: your correction reaches a hook, which hands Claude a one-line reminder and the likely skill; Claude writes a one-line lesson into your library and reads skills from it on a match; hooks log a quoted line and each skill use. Every week: scripts read the logs, new upstream skills and X posts, and whether last week's text landed; a weekly agent drafts at most five proposals by undo cost; the open lane can apply itself, the rest come back to you, one yes per lane." src="assets/how-it-works-light.svg" width="740">
 </picture>
