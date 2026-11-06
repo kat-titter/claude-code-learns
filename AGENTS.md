@@ -76,6 +76,9 @@ templates/, *.example*, memory.example/       starting files the installer copie
 assets/draw.py                     draws the README banner and figures: *-light.svg, *-dark.svg, and *-phone-*.svg
                                    for screens under 600 px; one data list per figure feeds both layouts
 index.html                         the explainer page (GitHub Pages)
+tests/checks.sh                    the six program checks, run by .github/workflows/checks.yml on every pull request
+tests/check-repair.test.mjs        runs the check-repair.js template against stub agents
+.github/workflows/                 checks.yml (the checks), claude-review.yml (the agent review, once its secret is set)
 ```
 
 ## Invariants
@@ -96,14 +99,37 @@ index.html                         the explainer page (GitHub Pages)
 ## Checks before a push
 
 ```bash
-sh -n install.sh
-python3 -m py_compile skills/*/scripts/*.py
-CLAUDE_CONFIG_DIR=$(mktemp -d) ./install.sh --name test --dry-run
-python3 skills/capture-lesson/scripts/audit-skills.py skills
-python3 assets/draw.py                       # exits 1 if a figure's text falls under WCAG AA contrast
+sh tests/checks.sh          # the six checks CI runs: python, audit, install, watch, check-repair, mermaid
+python3 assets/draw.py      # after a figure edit: exits 1 if a figure's text falls under WCAG AA contrast
 git diff origin/main | grep -nE "/Users/|/home/|@gmail|$USER"    # should print nothing
 ```
 
-After editing the Mermaid block above, parse it (paste it into mermaid.live, or `npx -y @mermaid-js/mermaid-cli`);
-after editing a figure, redraw both its layouts and open each light, dark and phone file to check that no label
-overlaps another.
+`sh tests/checks.sh audit install` runs some of them; the mermaid check fetches mermaid-cli and a headless Chrome
+through `npx` the first time (about 200 MB). After editing a figure, redraw both its layouts and open each light, dark
+and phone file to check that no label overlaps another.
+
+## Merging
+
+Three gates, in the order their evidence is strong. A program's exit code first, an agent's review second, a person
+last and only where a mistake is hard to undo.
+
+1. **Checks.** `.github/workflows/checks.yml` runs the six checks above on every pull request, one job each. All six
+   green, or nothing merges. A red check is fixed on the branch, never skipped.
+2. **Agent review.** `.github/workflows/claude-review.yml` has Claude review the diff with the `code-review` plugin and
+   leave inline comments, once the repo has a `CLAUDE_CODE_OAUTH_TOKEN` secret. The plugin reviews a pull request once,
+   when it opens or leaves draft. Before a first review, after later pushes, without the secret, or for a large change,
+   a fresh session (not the one that wrote the change) runs `/code-review high --comment <PR#>`; `/code-review ultra`
+   is the deep cloud review, which only a person can start and which is billed. The `review` job is green even when it
+   skipped, so the review is the comments on the pull request, never the job's colour. The reviewer gets the diff, not the
+   author's summary. A finding counts only once the author has checked it: reproduced it, or read the line and agreed.
+   A confirmed finding is fixed and pinned with a check; a refuted one gets a reply that says why.
+3. **A person, by lane.** The lane is set by what the change touches, never by a score.
+
+| lane | what the change touches | merges when |
+|---|---|---|
+| open | wording, a skill's body, a test, a new check, an isolated script change | checks pass and a review of the last push has every finding answered: an agent may merge it |
+| evidence | a skill's `description` or `when_to_use` (it changes when the skill loads), a shared script such as `lessonlib.py` | as open, and `refactor-gate.py` exits 0 for that skill |
+| closed | anything that publishes (`index.html` and `assets/`, which GitHub Pages serves from `main`; a tag or release), hooks, `settings.hooks.example.json`, `install.sh`, `.github/workflows/`, or a deletion | the owner merges it, whatever passed |
+
+A change in two lanes takes the stricter one. Pushes to `main` are blocked by a hook, so every change arrives as a pull
+request.

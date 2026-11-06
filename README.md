@@ -276,7 +276,8 @@ skills/html-*/, ...       example general skills, installed with --examples
 templates/, *.example*    starting points: style skill, CLAUDE.md, hooks, memory, inbox, X watch list
 coding-skills.md          an example library after a few months of use
 index.html                the explainer page
-AGENTS.md                 the map, commands, invariants and checks, for coding agents
+AGENTS.md                 the map, commands, invariants, checks and merge lanes, for coding agents
+tests/, .github/          the program checks every pull request runs, then Claude's review
 assets/                   the banner and figures as SVG text, drawn by assets/draw.py
 ```
 
