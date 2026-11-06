@@ -6,7 +6,7 @@ Each colour has one meaning, in every figure and on index.html: orange is Claude
 fail), green is what it keeps, ink is you, grey pages are files. Exits 1 if any text colour falls under WCAG AA (4.5:1)
 on the fill it sits on.
 """
-import math, os, sys
+import os, sys
 
 HERE = os.path.dirname(os.path.abspath(__file__))
 MONO = "'IBM Plex Mono',ui-monospace,'SF Mono',SFMono-Regular,Menlo,Consolas,'Liberation Mono',monospace"
@@ -134,24 +134,11 @@ KEY = [('you', 'you'), ('code', 'code: a check a program can fail'), ('claude', 
 
 
 def banner(t):
-    s = Svg(1280, 320, t, 'claude-code-learns: Learns in one turn. Keeps it for good.')
-    s.text(72, 92, 'claude-code-learns', 26, t['muted'], MONO, 500)
-    s.text(72, 178, 'Learns in one turn.', 62, t['ink'], MONO, 500, spacing=-1)
-    s.text(72, 254, 'Keeps it for good.', 62, t['claude'][2], MONO, 500, spacing=-1)
+    """The thesis and nothing else: the headline in the house mono, its second half in Claude's orange."""
+    s = Svg(1280, 300, t, 'claude-code-learns: Learns in one turn. Keeps it for good.')
+    s.text(72, 132, 'Learns in one turn.', 84, t['ink'], MONO, 500, spacing=-1.5)
+    s.text(72, 236, 'Keeps it for good.', 84, t['claude'][2], MONO, 500, spacing=-1.5)
     CHECK.append((t['claude'][2], t['bg']))
-    # the mark: one correction from you spirals into a lesson it keeps
-    cx, cy, turns, r0, r1 = 1078, 166, 2.6, 16, 112
-    pts = []
-    for i in range(0, 241):
-        f = i / 240
-        a = -math.pi / 2 + f * turns * 2 * math.pi
-        r = r1 - (r1 - r0) * f
-        pts.append((cx + r * math.cos(a), cy + r * math.sin(a)))
-    d = 'M' + 'L'.join(f'{x:.1f} {y:.1f}' for x, y in pts)
-    s.add(f'<path d="{d}" fill="none" stroke="{t["claude"][0]}" stroke-width="6" stroke-linecap="round" '
-          f'stroke-linejoin="round"/>')
-    s.add(f'<circle cx="{pts[-1][0]:.1f}" cy="{pts[-1][1]:.1f}" r="11" fill="{t["keep"][0]}"/>')
-    s.human(cx - 70, 22, label=None, scale=0.82)   # you, where the line starts
     s.save(f'banner-{name_of(t)}.svg')
 
 
