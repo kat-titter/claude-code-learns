@@ -134,10 +134,10 @@ KEY = [('you', 'you'), ('code', 'code: a check a program can fail'), ('claude', 
 
 
 def banner(t):
-    s = Svg(1280, 320, t, 'claude-code-learns: Correct it once. It remembers.')
+    s = Svg(1280, 320, t, 'claude-code-learns: Learns in one turn. Keeps it for good.')
     s.text(72, 92, 'claude-code-learns', 26, t['muted'], MONO, 500)
-    s.text(72, 178, 'Correct it once.', 62, t['ink'], MONO, 500, spacing=-1)
-    s.text(72, 254, 'It remembers.', 62, t['claude'][2], MONO, 500, spacing=-1)
+    s.text(72, 178, 'Learns in one turn.', 62, t['ink'], MONO, 500, spacing=-1)
+    s.text(72, 254, 'Keeps it for good.', 62, t['claude'][2], MONO, 500, spacing=-1)
     CHECK.append((t['claude'][2], t['bg']))
     # the mark: one correction from you spirals into a lesson it keeps
     cx, cy, turns, r0, r1 = 1078, 166, 2.6, 16, 112

@@ -1,7 +1,7 @@
 <h1>
 <picture>
   <source media="(prefers-color-scheme: dark)" srcset="assets/banner-dark.svg">
-  <img alt="claude-code-learns: Correct it once. It remembers." src="assets/banner-light.svg" width="100%">
+  <img alt="claude-code-learns: Learns in one turn. Keeps it for good." src="assets/banner-light.svg" width="100%">
 </picture>
 </h1>
 
