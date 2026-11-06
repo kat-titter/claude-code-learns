@@ -16,9 +16,23 @@ our_hooks() { python3 -c 'import json,sys; h=json.load(open(sys.argv[1])).get("h
 
 one() {
   case "$1" in
-  python)   # every script parses: Python compiles, shell passes bash -n
+  python)   # every script parses (Python compiles, shell passes bash -n), and the router's skill pick fires only
+            # where no skill has loaded: tool definitions and a quoted mention do not count as a load
     python3 -m py_compile skills/*/scripts/*.py
-    for f in skills/*/scripts/*.sh; do bash -n "$f"; done ;;
+    for f in skills/*/scripts/*.sh; do bash -n "$f"; done
+    t=$(mktemp -d)
+    printf '%s\n' '{"tools":[{"name":"Skill","description":"Invoke a skill"}]}' > "$t/defs.jsonl"
+    printf '%s\n' '{"type":"user","message":{"content":[{"type":"text","text":"a regex: \"Base directory for this skill\""}]}}' > "$t/quoted.jsonl"
+    printf '%s\n' '{"type":"assistant","message":{"content":[{"type":"tool_use","id":"t1","name":"Skill","input":{"skill":"x"}}]}}' > "$t/called.jsonl"
+    printf '%s\n' '{"type":"user","message":{"content":[{"type":"text","text":"Base directory for this skill: /x"}]}}' > "$t/typed.jsonl"
+    got=
+    for c in defs quoted called typed; do
+      for q in 'make the readme better and check it all still holds up' continue; do
+        o=$(printf '{"prompt": "%s", "transcript_path": "%s"}' "$q" "$t/$c.jsonl" | python3 "$S/skill-router.py")
+        case "$o" in *'Skill pick'*) got="$got $c:${q%% *}" ;; esac
+      done
+    done
+    [ "$got" = " defs:make quoted:make" ] || { say "skill pick fired for:$got (want: defs:make quoted:make)"; return 1; } ;;
   audit)    # the skill library passes its own audit with no flag at all
     python3 "$S/audit-skills.py" --strict skills ;;
   install)  # the installer parses, a dry run writes nothing, a real run installs, re-runs and undoes in a temp HOME

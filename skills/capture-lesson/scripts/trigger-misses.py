@@ -2,7 +2,9 @@
 """Skills that should have loaded and did not: for each recent session, every prompt that strongly matches a skill
 (three or more rare trigger words, as skill-router.py uses) is checked against the skills that session loaded (a Skill
 call or a read of the SKILL.md). Prints, per skill, how often a strong match loaded it, and a few missed prompts as
-cases for that skill's trigger evals. The weekly watch runs it; the report stays on this machine.
+cases for that skill's trigger evals. Ends with the skill-pick count: sessions that made ten or more tool calls and
+never loaded a skill, the gap skill-router.py's pick line is there to close. The weekly watch runs it; the report
+stays on this machine.
 
 Usage: trigger-misses.py [--sessions 60] [--examples 3]
 """
@@ -10,7 +12,7 @@ import argparse, json, os, re, sys
 from collections import defaultdict
 
 sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
-from lessonlib import CONFIG, match_skills, session_transcripts, skill_index, user_prompts
+from lessonlib import CONFIG, match_skills, scan_transcript, session_transcripts, skill_index, user_prompts
 
 ap = argparse.ArgumentParser(description=__doc__.split('\n\n')[0], formatter_class=argparse.RawDescriptionHelpFormatter)
 ap.add_argument('--sessions', type=int, default=60, help='most recent session transcripts to read (default 60)')
@@ -63,3 +65,7 @@ for skill in sorted(matched, key=lambda s: (-(matched[s] - hit[s]), s)):
     print(f'- `{skill}`: loaded for {hit[skill]} of {matched[skill]} strong matches')
     for ws, text in missed[skill][:a.examples]:
         print(f'    - missed ({", ".join(ws[:4])}): "{text}"')
+
+bare = sum(calls >= 10 and not loaded_one for calls, loaded_one in map(scan_transcript, paths))
+print(f'\n## Skill pick\n\n{bare} of {len(paths)} sessions made ten or more tool calls and loaded no skill. A count '
+      'that does not fall week on week means the pick line is ignored: make it stronger, or move it into CLAUDE.md.')
