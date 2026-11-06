@@ -125,9 +125,9 @@ last and only where a mistake is hard to undo.
 
 | lane | what the change touches | merges when |
 |---|---|---|
-| open | wording, a skill's body, a test, a new check, a figure, an isolated script change | checks and review pass: an agent may merge it |
+| open | wording, a skill's body, a test, a new check, an isolated script change | checks and review pass: an agent may merge it |
 | evidence | a skill's `description` or `when_to_use` (it changes when the skill loads), a shared script such as `lessonlib.py` | checks and review pass and `refactor-gate.py` exits 0 for that skill |
-| closed | anything that publishes (`index.html` and `assets/`, which GitHub Pages serves from `main`; a tag or release), hooks, `settings.hooks.example.json`, `install.sh`, `.github/workflows/`, or a deletion | Kat merges it, whatever passed |
+| closed | anything that publishes (`index.html` and `assets/`, which GitHub Pages serves from `main`; a tag or release), hooks, `settings.hooks.example.json`, `install.sh`, `.github/workflows/`, or a deletion | the owner merges it, whatever passed |
 
 A change in two lanes takes the stricter one. Pushes to `main` are blocked by a hook, so every change arrives as a pull
 request.
