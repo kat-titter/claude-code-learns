@@ -46,7 +46,8 @@ Draft the guideline text: say what to do, with the example and its date.
 ## Step 4: trigger misses
 For each skill that loaded for fewer than half of its strong matches, read its description and the missed prompts'
 matched words. Draft a description change that adds the words people actually used, and list two missed prompts as
-should-trigger cases for `trigger-evals.py --runs 3`. A skill that misses two weeks running gets a proposal.
+should-trigger cases and two near-misses from neighbouring skills for `trigger-evals.py --runs 3`. A skill that misses
+two weeks running gets a proposal.
 
 ## Step 5: library health
 Compare the health section with last week's report in the same folder, if there is one. A skill flagged two weeks
@@ -61,8 +62,9 @@ Give each item a lane, by what a mistake would cost to undo, and group the items
 - **open**: a wording change to a line of a SKILL.md or a memory note, drafted in full, in a folder kept in git. One
   revert undoes it.
 - **evidence**: a skill description (it changes when the skill loads), a merge or split, a change to a script. Name
-  the check that must pass first: `trigger-evals.py --runs 3` for a description, the script run on last week's data
-  for code.
+  the check that must pass first: for a skill, `refactor-gate.py <skill> <queries> --clears "<flag>"` (the strict
+  audit, then `trigger-evals.py --runs 3`), with its five queries as JSON (three that should load it, two near-misses);
+  for code, the script run on last week's data.
 - **closed**: hooks, `settings.json`, `CLAUDE.md` (read every session), installing, deleting, anything outside git,
   anything that sends or publishes. These wait for the person, whatever the evidence.
 
@@ -81,6 +83,21 @@ Optional, for a person who wants to approve only what is hard to undo: if this p
 list them under "## Applied" with the command that undoes each (`git -C <folder> revert <sha>`). Evidence and closed
 lanes still wait.
 
+Optional, for a person who also wants evidence-lane skill changes applied when their check passes: if this prompt
+contains the line `evidence lane: apply on pass`, take each evidence-lane item that changes one skill (a description,
+or at most one merge or split a week, named by the skill that keeps its name), one at a time, in ~/.claude/skills:
+1. Skip it if `git status --short <skill>` shows an edit: that is another session's work.
+2. `git switch -c evidence/<skill>-<date>`, make the drafted change, write its queries to
+   ~/.claude/skills-watch/gate-<skill>.json, and run
+   python3 ~/.claude/skills/capture-lesson/scripts/refactor-gate.py <skill> ~/.claude/skills-watch/gate-<skill>.json --clears "<flag>"
+   (leave out `--clears` when no audit flag prompted the item). It exits 0 only when the flag cleared, no flag is new
+   and the new description triggers no worse than the old one on the same queries. The audit is free and runs
+   first; the evals after it are 30 `claude -p` calls, about 50k input tokens each.
+3. Commit the change on its branch either way, then `git switch -`. On exit 0, `git merge --ff-only` the branch and
+   list the item under "## Applied" with its revert command. Otherwise the library stays as it was: leave the item
+   under "## Proposed" with the branch name and the gate's last five lines.
+Script changes in the evidence lane, and the closed lane, still wait for the person.
+
 ## Summary
-End with at most three short lines: how many of last week's proposals stalled, upstream news worth a look, and the one
-change you would make first, plus the report path.
+End with at most three short lines: how many of last week's proposals stalled (and how many applied themselves),
+upstream news worth a look, and the one change you would make first, plus the report path.
