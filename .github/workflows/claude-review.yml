@@ -1,14 +1,14 @@
 # The agent review, second gate of a merge (AGENTS.md, "Merging"): Claude reviews the pull request's diff with the
 # code-review plugin and leaves inline comments. The official example (code.claude.com/docs/en/github-actions, "Run a
 # skill", retrieved 2026-11-05), plus a skip: with no CLAUDE_CODE_OAUTH_TOKEN secret (not added yet, or a pull request
-# from a fork, which GitHub runs without secrets) the job passes with a notice instead of failing.
+# from a fork, which GitHub runs without secrets) the job passes with a notice instead of failing, so a green job is
+# not a review: the review is Claude's comments on the pull request.
+# The plugin reviews a pull request once: it stops on a draft and once Claude has commented. So it runs when a pull
+# request opens or leaves draft; after later pushes, a fresh session's /code-review re-reviews (AGENTS.md, Merging).
 name: claude-review
 on:
   pull_request:
-    types: [opened, synchronize, ready_for_review, reopened]
-concurrency:
-  group: claude-review-${{ github.event.pull_request.number }}
-  cancel-in-progress: true   # a new push replaces the review of the old one
+    types: [opened, ready_for_review, reopened]
 jobs:
   review:
     runs-on: ubuntu-latest

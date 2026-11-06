@@ -116,17 +116,19 @@ last and only where a mistake is hard to undo.
 1. **Checks.** `.github/workflows/checks.yml` runs the six checks above on every pull request, one job each. All six
    green, or nothing merges. A red check is fixed on the branch, never skipped.
 2. **Agent review.** `.github/workflows/claude-review.yml` has Claude review the diff with the `code-review` plugin and
-   leave inline comments, once the repo has a `CLAUDE_CODE_OAUTH_TOKEN` secret. Until then, or for a large change, a
-   fresh session (not the one that wrote the change) runs `/code-review high --comment <PR#>`; `/code-review ultra` is
-   the deep cloud review, which only a person can start and which is billed. The reviewer gets the diff, not the
+   leave inline comments, once the repo has a `CLAUDE_CODE_OAUTH_TOKEN` secret. The plugin reviews a pull request once,
+   when it opens or leaves draft. Before a first review, after later pushes, without the secret, or for a large change,
+   a fresh session (not the one that wrote the change) runs `/code-review high --comment <PR#>`; `/code-review ultra`
+   is the deep cloud review, which only a person can start and which is billed. The `review` job is green even when it
+   skipped, so the review is the comments on the pull request, never the job's colour. The reviewer gets the diff, not the
    author's summary. A finding counts only once the author has checked it: reproduced it, or read the line and agreed.
    A confirmed finding is fixed and pinned with a check; a refuted one gets a reply that says why.
 3. **A person, by lane.** The lane is set by what the change touches, never by a score.
 
 | lane | what the change touches | merges when |
 |---|---|---|
-| open | wording, a skill's body, a test, a new check, an isolated script change | checks and review pass: an agent may merge it |
-| evidence | a skill's `description` or `when_to_use` (it changes when the skill loads), a shared script such as `lessonlib.py` | checks and review pass and `refactor-gate.py` exits 0 for that skill |
+| open | wording, a skill's body, a test, a new check, an isolated script change | checks pass and a review of the last push has every finding answered: an agent may merge it |
+| evidence | a skill's `description` or `when_to_use` (it changes when the skill loads), a shared script such as `lessonlib.py` | as open, and `refactor-gate.py` exits 0 for that skill |
 | closed | anything that publishes (`index.html` and `assets/`, which GitHub Pages serves from `main`; a tag or release), hooks, `settings.hooks.example.json`, `install.sh`, `.github/workflows/`, or a deletion | the owner merges it, whatever passed |
 
 A change in two lanes takes the stricter one. Pushes to `main` are blocked by a hook, so every change arrives as a pull
