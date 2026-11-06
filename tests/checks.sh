@@ -43,10 +43,10 @@ one() {
   mermaid)  # every Mermaid block in README.md and AGENTS.md renders; a block that fails to parse fails here
     out=$(mktemp -d)
     for f in README.md AGENTS.md; do
-      want=$(grep -c '^```mermaid' "$f")
+      want=$(grep -c '^```mermaid' "$f" || true)   # grep -c exits 1 on a count of 0
       [ "$want" -gt 0 ] || { say "$f: no Mermaid blocks"; continue; }
       npx -y "$MMDC" -p tests/puppeteer.json -q -i "$f" -o "$out/$f"
-      got=$(ls "$out" | grep -c "^${f%.md}-[0-9]*\.svg$")
+      got=$(ls "$out" | grep -c "^${f%.md}-[0-9]*\.svg$" || true)
       [ "$got" = "$want" ] || { say "$f: $want Mermaid blocks, $got rendered"; return 1; }
       say "$f: $got Mermaid block(s) rendered"
     done ;;
@@ -55,7 +55,11 @@ one() {
 }
 
 # each check runs in its own process so set -e holds inside it (an `if` or `||` around a function turns it off)
-if [ "${1:-}" = --one ]; then set -e; one "$2"; exit; fi
+if [ "${1:-}" = --one ]; then
+  set -e
+  [ -z "${CI:-}" ] || set -x   # in CI, trace each command, so a check that stops silently names its last command
+  one "$2"; exit
+fi
 [ $# -gt 0 ] || set -- $ALL
 failed=
 for c; do
