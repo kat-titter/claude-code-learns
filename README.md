@@ -1,6 +1,14 @@
-# claude-code-learns
+<h1>
+<picture>
+  <source media="(prefers-color-scheme: dark)" srcset="assets/banner-dark.svg">
+  <img alt="claude-code-learns: Correct it once. It remembers." src="assets/banner-light.svg" width="100%">
+</picture>
+</h1>
 
-**Correct it once. It remembers.**
+[![for Claude Code](https://img.shields.io/badge/for-Claude_Code-d97757?style=flat-square)](https://code.claude.com/docs)
+[![Python 3, standard library only](https://img.shields.io/badge/Python_3-stdlib_only-6a9bcc?style=flat-square)](#install)
+[![hooks never block](https://img.shields.io/badge/hooks-never_block-6a9bcc?style=flat-square)](AGENTS.md#invariants)
+[![MIT license](https://img.shields.io/badge/license-MIT-5e5d59?style=flat-square)](LICENSE)
 
 Claude Code starts every session fresh, so a correction you made on Monday can be needed again on Friday. This repo
 gives it a simple learning loop. When you correct it, it writes the lesson down as one short line in the right file, and
@@ -8,7 +16,8 @@ the next session reads that file when the task calls for it. Once a week a tidy-
 built only from parts Claude Code already has: skills, hooks, memory and scheduled tasks.
 
 **Install:** [one command](#install) &emsp; **Undo:** [one command](#undo) &emsp;
-**Explainer page:** [kat-titter.github.io/claude-code-learns](https://kat-titter.github.io/claude-code-learns/)
+**Explainer page:** [kat-titter.github.io/claude-code-learns](https://kat-titter.github.io/claude-code-learns/) &emsp;
+**For agents:** [`AGENTS.md`](AGENTS.md)
 
 ## What it looks like
 
@@ -75,29 +84,13 @@ Proposed     at most five changes, grouped by what a mistake would cost to undo
 
 ## How it works
 
-```mermaid
-flowchart TB
-  you(["You"])
-  claude(["Claude"])
-  hooks["Hooks: tiny scripts<br/>on each message and reply"]
-  inbox[("Inbox<br/>a quick notebook")]
-  watch[["Weekly pass"]]
-  subgraph lib ["Library: read only when a task matches"]
-    general["General skills<br/>how to do the work well"]
-    taste["Your style skill<br/>your taste"]
-    memory[("Project memory<br/>facts about one project")]
-  end
-  you -->|"a correction,<br/>a preference"| hooks
-  hooks -->|"one-line reminder,<br/>or the likely skill"| claude
-  hooks -->|"jot it down"| inbox
-  claude <-->|"writes the lesson;<br/>reads it when a task matches"| lib
-  inbox --> watch
-  watch -->|"proposes tidy-ups,<br/>you say yes"| lib
-  classDef default fill:#f3f5f6,stroke:#dfe3e5,color:#14171a
-  classDef core fill:#e6f4ef,stroke:#0f8f6c,stroke-width:1.5px,color:#14171a,font-weight:bold
-  class claude core
-  style lib fill:none,stroke:#949c9f,stroke-dasharray:4 3
-```
+<picture>
+  <source media="(prefers-color-scheme: dark)" srcset="assets/how-it-works-dark.svg">
+  <img alt="How it works. Every turn: your correction reaches a hook, which hands Claude a one-line reminder and the likely skill; Claude writes a one-line lesson into your library and reads skills from it on a match; hooks log a quoted line and each skill use. Every week: scripts read the logs, new upstream skills and X posts, and whether last week's text landed; a weekly agent drafts at most five proposals by undo cost; the open lane can apply itself, the rest come back to you, one yes per lane." src="assets/how-it-works-light.svg" width="740">
+</picture>
+
+You appear twice: once with a correction, once with a yes. Every arrow names what it carries; the colours are the
+same in every figure here and on the explainer page. A text version of this map is in [`AGENTS.md`](AGENTS.md#map).
 
 1. **Notice.** Hooks spot feedback ("no", "from now on", "too much text") and add a one-line reminder to route it.
 2. **Generalize.** Claude asks what family of problems the correction belongs to, and writes for the whole family.
@@ -110,6 +103,18 @@ flowchart TB
    most five changes.
 
 The detail lives in [`skills/capture-lesson/SKILL.md`](skills/capture-lesson/SKILL.md).
+
+## Memory and cognition
+
+<picture>
+  <source media="(prefers-color-scheme: dark)" srcset="assets/mind-dark.svg">
+  <img alt="Memory and cognition. Memory, short-term: the session's context, lessons-inbox.md and skill-usage.log; long-term: skills, project memory and CLAUDE.md; short-term is sorted into long-term weekly. Cognition about you (relational): your style skill, feedback-nudge.py, the routing question, memory notes about you. Cognition about itself (meta): trigger-misses.py, skills-watch.py, audit-skills.py, and the question of which family a mistake belongs to." src="assets/mind-light.svg" width="740">
+</picture>
+
+The session is short-term memory and the inbox is its notebook; skills and project memory are long-term, and the
+weekly pass moves what recurs from one to the other. Two kinds of thinking sit on top: a model of you (your taste
+lives in your style skill, apart from rules for everyone) and a model of itself (scripts that check whether its own
+lessons load and land).
 
 ## Loops and graphs
 
@@ -135,6 +140,11 @@ same rules, and its [`check-repair.js`](skills/workflow-design/references/check-
 units fan out, each is checked by exit code and repaired alone up to a round limit, and every repair that passes
 comes back as a candidate rule. (After Hoodie's
 [Loops & Graphs](https://x.com/HoodieFade_/status/2117959235690524883), 2026-11-04.)
+
+<picture>
+  <source media="(prefers-color-scheme: dark)" srcset="assets/check-repair-dark.svg">
+  <img alt="check-repair.js. Each unit, in parallel: an agent builds it and reports the files changed; a check reads the exit code; exit 0 after a fix becomes a candidate rule for the next split; a non-zero exit sends the code and the last 40 lines to an agent that repairs that unit only, up to three rounds; a unit still failing comes to you with what was tried." src="assets/check-repair-light.svg" width="740">
+</picture>
 
 <details>
 <summary><b>How it borrows from human memory</b></summary>
@@ -254,7 +264,15 @@ skills/html-*/, ...       example general skills, installed with --examples
 templates/, *.example*    starting points: style skill, CLAUDE.md, hooks, memory, inbox, X watch list
 coding-skills.md          an example library after a few months of use
 index.html                the explainer page
+AGENTS.md                 the map, commands, invariants and checks, for coding agents
+assets/                   the banner and figures as SVG text, drawn by assets/draw.py
 ```
+
+## For agents
+
+Working on this repo, or installing it for someone? [`AGENTS.md`](AGENTS.md) has the system as a Mermaid map, the
+install and undo commands, a file map, the rules that must hold (hooks never block; no personal details in the repo;
+outside content is data) and the checks to run before a push.
 
 Code under the MIT license; see [`LICENSE`](LICENSE).
 
