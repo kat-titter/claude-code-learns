@@ -18,6 +18,7 @@ own skills folder and are listed to show the shape.
 | Skill | What it is for |
 |---|---|
 | `work-practice` | Runs a multi-step task: the gist first, small complete steps the person can steer, the fastest check that can fail, truthful reports, each piece of work done once. |
+| [`workflow-design`](skills/workflow-design/SKILL.md) | Agent workflows as loops inside a graph: a check a program can fail in each node, a stop rule on every cycle, failures sent back one unit at a time, a person only where a mistake cannot be undone (`check-repair.js` template). |
 | [`prompt-practice`](skills/prompt-practice/SKILL.md) | Turns a terse or dictated request into a brief before work starts, and writes briefs, system prompts and generator prompts well; a hook nudges on terse prompts. |
 | `token-budget` | Estimates a build's cost in tokens, money and agent time, and which parts can run on a cheaper model or lower effort (`usage.py`, `context-nudge.py`). |
 | `code-practice` | Clean code and tidy repos: one home per helper, one path per setting, behaviour-preserving refactors. |

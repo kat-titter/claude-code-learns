@@ -2,7 +2,8 @@
 # Install claude-code-learns into your Claude Code config (~/.claude, or $CLAUDE_CONFIG_DIR).
 #   ./install.sh --name yourname --dry-run     show what it would do, change nothing
 #   ./install.sh --name yourname               do it
-#   ./install.sh --name yourname --examples    also copy the example skills (citations, macos-long-render, html-docs, html-slide-deck)
+#   ./install.sh --name yourname --examples    also copy the example skills (citations, macos-long-render, html-docs, html-slide-deck,
+#                                              workflow-design)
 #   ./install.sh --uninstall                   remove the hooks, the two skills and the CLAUDE.md section; keep your notes
 # Safe to re-run: capture-lesson and prompt-practice are refreshed, files you wrote are left alone, settings.json and
 # CLAUDE.md are backed up before any change, and a hook that is already there is not added twice.
@@ -108,7 +109,7 @@ say "Installing into $C (personal style skill: $STYLE)"
 # 1. the skill that writes skills, with its scripts and the weekly prompt; the skill that turns prompts into briefs.
 # The loop may have written lessons into an installed copy, so a copy that differs is backed up (outside skills/,
 # where it would load as a second skill) before the refresh.
-SKILLS="capture-lesson prompt-practice"; [ "$EXAMPLES" = 1 ] && SKILLS="$SKILLS citations macos-long-render html-docs html-slide-deck"
+SKILLS="capture-lesson prompt-practice"; [ "$EXAMPLES" = 1 ] && SKILLS="$SKILLS citations macos-long-render html-docs html-slide-deck workflow-design"
 for s in $SKILLS; do
   if [ -d "$C/skills/$s" ] && ! diff -rq "$HERE/skills/$s" "$C/skills/$s" >/dev/null 2>&1; then
     run mkdir -p "$C/backups/claude-code-learns-$STAMP"; run cp -R "$C/skills/$s" "$C/backups/claude-code-learns-$STAMP/"
@@ -164,6 +165,7 @@ citations|Numbered references checked against the real source.
 macos-long-render|Keep long Mac jobs awake; tell idle from thermal slowdowns.
 html-docs|One-file HTML docs with light interactivity; light-audit.py.
 html-slide-deck|One-file HTML decks: views, layers, print, publish.
+workflow-design|Agent workflows as loops inside a graph: exit-code checks, bounded repair, gates by undo cost.
 ROWS
 fi
 

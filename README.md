@@ -53,11 +53,12 @@ flam*) with one skill's description and adds a single line naming it. Claude the
 The weekly pass leaves a page like this, and changes nothing until you say yes:
 
 ```
+Stalled      1 of last week's 4 proposals landed; the other 3 get one more week, then drop
 Upstream     1 new skill (pdf-forms): overlaps nothing you have
 Gaps         2 notes in the inbox that no skill covers, e.g. "the numbers don't match the sources"
 Misses       github-practice loaded for 3 of 9 requests that matched it: add "pages, publish" to its description?
 Health       one skill is 540 lines: split by task
-Proposed     at most five changes, most useful first
+Proposed     at most five changes, grouped by what a mistake would cost to undo
 ```
 
 ## Four words you'll need
@@ -106,6 +107,31 @@ flowchart TB
    most five changes.
 
 The detail lives in [`skills/capture-lesson/SKILL.md`](skills/capture-lesson/SKILL.md).
+
+## Loops and graphs
+
+A **loop** makes one piece of work correct without you: it runs a check a program can fail, repairs, and stops on a
+rule. A **graph** decides which pieces exist, in what order, and where you sign off. Without a loop you read every
+output; without a graph you approve every step. Most agent setups also skip the step that writes each failure down as
+a rule for next time, and that step is what this repo is.
+
+| every loop needs | the lesson loop (in the turn) | the weekly pass |
+|---|---|---|
+| a check a program can fail | the YAML parses; trigger tests load it on real prompts | the audit and the watcher are scripts |
+| a round limit and a budget | one line per lesson | weekly, at most five proposals |
+| memory of past attempts | the inbox, the skills folder in git | the report checks whether last week's drafted text landed |
+| someone told when it stalls | you, in the same turn | stalled items lead the report; two weeks open and they drop |
+
+The weekly pass sorts its proposals by what a mistake would cost to undo. A wording line in a skill kept in git is
+one revert (the **open** lane); a skill description changes when the skill loads, so it needs its trigger test first
+(**evidence**); hooks, `settings.json`, `CLAUDE.md`, installs and deletions wait for you (**closed**). You say yes
+once per lane, not once per item, and with one line in the weekly prompt the open lane applies itself.
+
+For workflows you write yourself, the example skill [`workflow-design`](skills/workflow-design/SKILL.md) holds the
+same rules, and its [`check-repair.js`](skills/workflow-design/references/check-repair.js) template is a working graph:
+units fan out, each is checked by exit code and repaired alone up to a round limit, and every repair that passes
+comes back as a candidate rule. (After Hoodie's
+[Loops & Graphs](https://x.com/HoodieFade_/status/2117959235690524883), 2026-11-04.)
 
 <details>
 <summary><b>How it borrows from human memory</b></summary>
@@ -192,7 +218,7 @@ git clone https://github.com/kat-titter/claude-code-learns && cd claude-code-lea
 The dry run shows every change first. The install adds two skills (`capture-lesson`, `prompt-practice`), a
 `yourname-style` skill for your taste, a routing section in `CLAUDE.md`, and five small hooks in `settings.json`. It
 backs up each file before changing it, and re-running is safe. Start a new session so everything loads. For the weekly
-pass, paste `skills/capture-lesson/weekly-watch.md` into a weekly scheduled task. Add `--examples` for four example
+pass, paste `skills/capture-lesson/weekly-watch.md` into a weekly scheduled task. Add `--examples` for five example
 skills.
 
 ## Undo
@@ -220,6 +246,7 @@ Everything stays on your machine, in `~/.claude`:
 install.sh                set up, or undo, in one command
 skills/capture-lesson/    the skill that writes skills, its hooks, checks and the weekly prompt
 skills/prompt-practice/   turns a short or dictated request into a clear brief, with its hook
+skills/workflow-design/   loops inside a graph, with a check-repair workflow template
 skills/html-*/, ...       example general skills, installed with --examples
 templates/, *.example*    starting points: style skill, CLAUDE.md, hooks, memory, inbox
 coding-skills.md          an example library after a few months of use
