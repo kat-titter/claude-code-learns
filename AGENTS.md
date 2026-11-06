@@ -12,7 +12,6 @@ The same graph as the README figure. Every arrow names the value it carries.
 
 ```mermaid
 flowchart TB
-  broken["unclosed
   you(("you"))
   hooks["hooks<br/>feedback-nudge.py, skill-router.py,<br/>prompt-nudge.py, scan-corrections.py,<br/>skill-usage-log.py"]
   claude["Claude, in your session"]
