@@ -3,7 +3,7 @@
 <defs><marker id="a" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M1 1L9 5L1 9" fill="none" stroke="#8f8d86" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></marker></defs>
 <rect x="0.5" y="0.5" width="739" height="475" rx="16" fill="#faf9f5" stroke="#e8e6dc"/>
 <text x="24" y="36" font-family="'IBM Plex Mono',ui-monospace,'SF Mono',SFMono-Regular,Menlo,Consolas,'Liberation Mono',monospace" font-size="11.5" font-weight="500" fill="#5e5d59" text-anchor="start" letter-spacing="1.2">MEMORY</text>
-<rect x="24" y="52" width="316" height="146" rx="12" fill="none" stroke="#e8e6dc" stroke-width="1.4"/>
+<rect x="24" y="52" width="316" height="138" rx="12" fill="none" stroke="#e8e6dc" stroke-width="1.4"/>
 <text x="40" y="78" font-family="Archivo,-apple-system,'Segoe UI','Helvetica Neue',Helvetica,Arial,sans-serif" font-size="15" font-weight="600" fill="#141413" text-anchor="start">short-term</text>
 <text x="40" y="98" font-family="Archivo,-apple-system,'Segoe UI','Helvetica Neue',Helvetica,Arial,sans-serif" font-size="13" font-weight="400" fill="#5e5d59" text-anchor="start">this session; fast, small</text>
 <rect x="40" y="116" width="14" height="14" rx="3" fill="#f8e6dd" stroke="#d97757" stroke-width="1.5"/>
@@ -12,7 +12,7 @@
 <text x="62" y="152" font-family="Archivo,-apple-system,'Segoe UI','Helvetica Neue',Helvetica,Arial,sans-serif" font-size="13" font-weight="400" fill="#141413" text-anchor="start">lessons-inbox.md, a quick notebook</text>
 <path d="M40 164H49L54 169V178H40Z" fill="#f0eee6" stroke="#b0aea5" stroke-width="1.3"/>
 <text x="62" y="176" font-family="Archivo,-apple-system,'Segoe UI','Helvetica Neue',Helvetica,Arial,sans-serif" font-size="13" font-weight="400" fill="#141413" text-anchor="start">skill-usage.log</text>
-<rect x="400" y="52" width="316" height="146" rx="12" fill="none" stroke="#e8e6dc" stroke-width="1.4"/>
+<rect x="400" y="52" width="316" height="138" rx="12" fill="none" stroke="#e8e6dc" stroke-width="1.4"/>
 <text x="416" y="78" font-family="Archivo,-apple-system,'Segoe UI','Helvetica Neue',Helvetica,Arial,sans-serif" font-size="15" font-weight="600" fill="#141413" text-anchor="start">long-term</text>
 <text x="416" y="98" font-family="Archivo,-apple-system,'Segoe UI','Helvetica Neue',Helvetica,Arial,sans-serif" font-size="13" font-weight="400" fill="#5e5d59" text-anchor="start">every later session; slow, general</text>
 <rect x="416" y="116" width="14" height="14" rx="3" fill="#ebeee2" stroke="#788c5d" stroke-width="1.5"/>
@@ -25,7 +25,7 @@
 <text x="370" y="117" font-family="Archivo,-apple-system,'Segoe UI','Helvetica Neue',Helvetica,Arial,sans-serif" font-size="12.5" font-weight="400" fill="#5e5d59" text-anchor="middle">sorted</text>
 <text x="370" y="144" font-family="Archivo,-apple-system,'Segoe UI','Helvetica Neue',Helvetica,Arial,sans-serif" font-size="12.5" font-weight="400" fill="#5e5d59" text-anchor="middle">weekly</text>
 <text x="24" y="236" font-family="'IBM Plex Mono',ui-monospace,'SF Mono',SFMono-Regular,Menlo,Consolas,'Liberation Mono',monospace" font-size="11.5" font-weight="500" fill="#5e5d59" text-anchor="start" letter-spacing="1.2">COGNITION</text>
-<rect x="24" y="252" width="316" height="170" rx="12" fill="none" stroke="#e8e6dc" stroke-width="1.4"/>
+<rect x="24" y="252" width="316" height="162" rx="12" fill="none" stroke="#e8e6dc" stroke-width="1.4"/>
 <text x="40" y="278" font-family="Archivo,-apple-system,'Segoe UI','Helvetica Neue',Helvetica,Arial,sans-serif" font-size="15" font-weight="600" fill="#141413" text-anchor="start">about you</text>
 <text x="40" y="298" font-family="Archivo,-apple-system,'Segoe UI','Helvetica Neue',Helvetica,Arial,sans-serif" font-size="13" font-weight="400" fill="#5e5d59" text-anchor="start">relational: who it works with</text>
 <rect x="40" y="316" width="14" height="14" rx="3" fill="#ebeee2" stroke="#788c5d" stroke-width="1.5"/>
@@ -36,7 +36,7 @@
 <text x="62" y="376" font-family="Archivo,-apple-system,'Segoe UI','Helvetica Neue',Helvetica,Arial,sans-serif" font-size="13" font-weight="400" fill="#141413" text-anchor="start">routes it: your taste, or for all?</text>
 <rect x="40" y="388" width="14" height="14" rx="3" fill="#ebeee2" stroke="#788c5d" stroke-width="1.5"/>
 <text x="62" y="400" font-family="Archivo,-apple-system,'Segoe UI','Helvetica Neue',Helvetica,Arial,sans-serif" font-size="13" font-weight="400" fill="#141413" text-anchor="start">memory notes about you</text>
-<rect x="400" y="252" width="316" height="170" rx="12" fill="none" stroke="#e8e6dc" stroke-width="1.4"/>
+<rect x="400" y="252" width="316" height="162" rx="12" fill="none" stroke="#e8e6dc" stroke-width="1.4"/>
 <text x="416" y="278" font-family="Archivo,-apple-system,'Segoe UI','Helvetica Neue',Helvetica,Arial,sans-serif" font-size="15" font-weight="600" fill="#141413" text-anchor="start">about itself</text>
 <text x="416" y="298" font-family="Archivo,-apple-system,'Segoe UI','Helvetica Neue',Helvetica,Arial,sans-serif" font-size="13" font-weight="400" fill="#5e5d59" text-anchor="start">meta: is its own learning working?</text>
 <rect x="416" y="316" width="14" height="14" rx="3" fill="#e6eef7" stroke="#6a9bcc" stroke-width="1.5"/>

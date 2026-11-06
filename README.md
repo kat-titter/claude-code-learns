@@ -109,6 +109,8 @@ The detail lives in [`skills/capture-lesson/SKILL.md`](skills/capture-lesson/SKI
 ## Memory and cognition
 
 <picture>
+  <source media="(max-width: 600px) and (prefers-color-scheme: dark)" srcset="assets/mind-phone-dark.svg">
+  <source media="(max-width: 600px)" srcset="assets/mind-phone-light.svg">
   <source media="(prefers-color-scheme: dark)" srcset="assets/mind-dark.svg">
   <img alt="Memory and cognition. Memory, short-term: the session's context, lessons-inbox.md and skill-usage.log; long-term: skills, project memory and CLAUDE.md; short-term is sorted into long-term weekly. Cognition about you (relational): your style skill, feedback-nudge.py, the routing question, memory notes about you. Cognition about itself (meta): trigger-misses.py, skills-watch.py, audit-skills.py, and the question of which family a mistake belongs to." src="assets/mind-light.svg" width="740">
 </picture>

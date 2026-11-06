@@ -261,49 +261,76 @@ def check_repair(t):
     s.save(f'check-repair-{name_of(t)}.svg')
 
 
+MIND_TITLE = ('Memory and cognition: short-term memory is the session and the inbox; long-term memory is skills, '
+              'project memory and CLAUDE.md, sorted in weekly; cognition about you is your style skill and the feedback '
+              'hook; cognition about itself is the miss report, the watcher and the audit.')
+MIND = [  # (band, title, gloss, chips): one cell each
+    ('memory', 'short-term', 'this session; fast, small', [
+        ('claude', "the session's context"), ('file', 'lessons-inbox.md, a quick notebook'), ('file', 'skill-usage.log')]),
+    ('memory', 'long-term', 'every later session; slow, general', [
+        ('keep', 'skills: how to do the work'), ('keep', "project memory: one project's facts"),
+        ('keep', 'CLAUDE.md: read every session')]),
+    ('cognition', 'about you', 'relational: who it works with', [
+        ('keep', 'your style skill: your taste'), ('code', 'feedback-nudge.py: hears a correction'),
+        ('claude', 'routes it: your taste, or for all?'), ('keep', 'memory notes about you')]),
+    ('cognition', 'about itself', 'meta: is its own learning working?', [
+        ('code', 'trigger-misses.py: loaded when it fit?'), ('code', "skills-watch.py: did last week's land?"),
+        ('code', 'audit-skills.py: too long, repeated'), ('claude', 'asks which family a mistake is in')]),
+]
+
+
+def mind_cell(s, x, y, w, cell):
+    _, title, gloss, chips = cell
+    t = s.t
+    h = 66 + 24 * len(chips)
+    s.add(f'<rect x="{x}" y="{y}" width="{w}" height="{h}" rx="12" fill="none" stroke="{t["hair"]}" stroke-width="1.4"/>')
+    s.text(x + 16, y + 26, title, 15, t['ink'], SANS, 600)
+    s.text(x + 16, y + 46, gloss, 13, t['muted'])
+    for i, (kind, label) in enumerate(chips):
+        cy = y + 76 + 24 * i
+        st, fi, _ = t[kind]
+        if kind == 'file':
+            s.add(f'<path d="M{x + 16} {cy - 12}H{x + 25}L{x + 30} {cy - 7}V{cy + 2}H{x + 16}Z" fill="{fi}" '
+                  f'stroke="{st}" stroke-width="1.3"/>')
+        else:
+            s.add(f'<rect x="{x + 16}" y="{cy - 12}" width="14" height="14" rx="3" fill="{fi}" stroke="{st}" '
+                  f'stroke-width="1.5"/>')
+        s.text(x + 38, cy, label, 13, t['ink'])
+    CHECK.append((t['muted'], t['bg']))
+    return h
+
+
 def mind(t):
     """Memory, short and long, and cognition, about you and about itself: which files play each part."""
-    s = Svg(740, 476, t, 'Memory and cognition: short-term memory is the session and the inbox; long-term memory is '
-            'skills, project memory and CLAUDE.md, sorted in weekly; cognition about you is your style skill and the '
-            'feedback hook; cognition about itself is the miss report, the watcher and the audit.')
+    s = Svg(740, 476, t, MIND_TITLE)
     cw, gap = 316, 60
     xs = (24, 24 + cw + gap)
-
-    def cell(x, y, h, title, gloss, chips):
-        s.add(f'<rect x="{x}" y="{y}" width="{cw}" height="{h}" rx="12" fill="none" stroke="{t["hair"]}" '
-              f'stroke-width="1.4"/>')
-        s.text(x + 16, y + 26, title, 15, t['ink'], SANS, 600)
-        s.text(x + 16, y + 46, gloss, 13, t['muted'])
-        for i, (kind, label) in enumerate(chips):
-            cy = y + 76 + 24 * i
-            st, fi, _ = t[kind]
-            if kind == 'file':
-                s.add(f'<path d="M{x + 16} {cy - 12}H{x + 25}L{x + 30} {cy - 7}V{cy + 2}H{x + 16}Z" fill="{fi}" '
-                      f'stroke="{st}" stroke-width="1.3"/>')
-            else:
-                s.add(f'<rect x="{x + 16}" y="{cy - 12}" width="14" height="14" rx="3" fill="{fi}" stroke="{st}" '
-                      f'stroke-width="1.5"/>')
-            s.text(x + 38, cy, label, 13, t['ink'])
-        CHECK.append((t['muted'], t['bg']))
-
     s.band(24, 36, 'memory')
-    cell(xs[0], 52, 146, 'short-term', 'this session; fast, small', [
-        ('claude', "the session's context"), ('file', 'lessons-inbox.md, a quick notebook'),
-        ('file', 'skill-usage.log')])
-    cell(xs[1], 52, 146, 'long-term', 'every later session; slow, general', [
-        ('keep', 'skills: how to do the work'), ('keep', "project memory: one project's facts"),
-        ('keep', 'CLAUDE.md: read every session')])
+    mind_cell(s, xs[0], 52, cw, MIND[0]); mind_cell(s, xs[1], 52, cw, MIND[1])
     s.edge([(xs[0] + cw + 6, 125), (xs[1] - 6, 125)])
     s.label(370, 117, ['sorted'], 'middle'); s.label(370, 144, ['weekly'], 'middle')
     s.band(24, 236, 'cognition')
-    cell(xs[0], 252, 170, 'about you', 'relational: who it works with', [
-        ('keep', 'your style skill: your taste'), ('code', 'feedback-nudge.py: hears a correction'),
-        ('claude', 'routes it: your taste, or for all?'), ('keep', 'memory notes about you')])
-    cell(xs[1], 252, 170, 'about itself', 'meta: is its own learning working?', [
-        ('code', 'trigger-misses.py: loaded when it fit?'), ('code', "skills-watch.py: did last week's land?"),
-        ('code', 'audit-skills.py: too long, repeated'), ('claude', 'asks which family a mistake is in')])
+    mind_cell(s, xs[0], 252, cw, MIND[2]); mind_cell(s, xs[1], 252, cw, MIND[3])
     s.key(456, KEY)
     s.save(f'mind-{name_of(t)}.svg')
+
+
+def mind_phone(t):
+    """The same four cells in one column for a phone."""
+    s = Svg(320, 880, t, MIND_TITLE)
+    x, w, y = 16, 288, 52
+    s.band(x, 36, 'memory')
+    y += mind_cell(s, x, y, w, MIND[0])
+    s.edge([(80, y + 4), (80, y + 41)]); s.label(92, y + 28, ['sorted weekly'])
+    y += 44
+    y += mind_cell(s, x, y, w, MIND[1]) + 40
+    s.band(x, y, 'cognition')
+    y += 16
+    y += mind_cell(s, x, y, w, MIND[2]) + 16
+    y += mind_cell(s, x, y, w, MIND[3]) + 36
+    s.key(y, KEY)
+    s.save(f'mind-phone-{name_of(t)}.svg')
+    return y
 
 
 def name_of(t):
@@ -317,6 +344,7 @@ if __name__ == '__main__':
         how_it_works_phone(t)
         check_repair(t)
         mind(t)
+        mind_phone(t)
     bad = sorted({(a, b, round(contrast(a, b), 2)) for a, b in CHECK if contrast(a, b) < 4.5})
     for a, b, c in bad:
         print(f'text {a} on {b}: {c}:1, under 4.5')
