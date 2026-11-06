@@ -13,10 +13,10 @@ MONO = "'IBM Plex Mono',ui-monospace,'SF Mono',SFMono-Regular,Menlo,Consolas,'Li
 SANS = "Archivo,-apple-system,'Segoe UI','Helvetica Neue',Helvetica,Arial,sans-serif"
 
 THEMES = {
-    'light': dict(bg='#faf9f5', hair='#e8e6dc', ink='#141413', muted='#5e5d59', edge='#8f8d86',
+    'light': dict(bg='#faf9f5', hair='#e8e6dc', mark='#c96442', ink='#141413', muted='#5e5d59', edge='#8f8d86',
                   claude=('#d97757', '#f8e6dd', '#a8492a'), code=('#6a9bcc', '#e6eef7', '#2f5f8c'),
                   keep=('#788c5d', '#ebeee2', '#4a5c33'), file=('#b0aea5', '#f0eee6', '#141413')),
-    'dark': dict(bg='#1f1e1d', hair='#3d3d3a', ink='#faf9f5', muted='#b0aea5', edge='#8f8d86',
+    'dark': dict(bg='#1f1e1d', hair='#3d3d3a', mark='#d97757', ink='#faf9f5', muted='#b0aea5', edge='#8f8d86',
                  claude=('#d97757', '#3b2922', '#f0a284'), code=('#6a9bcc', '#212d3a', '#9cc0e6'),
                  keep=('#788c5d', '#282e22', '#b3c59a'), file=('#6b6a65', '#2a2927', '#faf9f5')),
 }
@@ -135,12 +135,32 @@ KEY = [('you', 'you'), ('code', 'code: a check a program can fail'), ('claude', 
        ('keep', 'what it keeps'), ('file', 'a file')]
 
 
+# the banner's character: Claude (orange) holding a page with one kept line (green); E is an eye, L the line
+CHARACTER = """\
+..ooooo......
+.ooooooo.ggg.
+.oEoooEo.gggg
+.ooooooo.gggg
+ooooooooogLLg
+.ooooooo.gggg
+..o...o..gggg
+..o...o......"""
+
+
 def banner(t):
-    """The thesis and nothing else: the headline in the house mono, its second half in Claude's orange."""
+    """The thesis, and Claude keeping one line of it."""
     s = Svg(1280, 300, t, 'claude-code-learns: Learns in one turn. Keeps it for good.')
-    s.text(72, 132, 'Learns in one turn.', 84, t['ink'], MONO, 500, spacing=-1.5)
-    s.text(72, 236, 'Keeps it for good.', 84, t['claude'][2], MONO, 500, spacing=-1.5)
+    s.text(72, 136, 'Learns in one turn.', 76, t['ink'], MONO, 500, spacing=-1.5)
+    s.text(72, 230, 'Keeps it for good.', 76, t['claude'][2], MONO, 500, spacing=-1.5)
     CHECK.append((t['claude'][2], t['bg']))
+    cell, x0, y0 = 18, 1000, 78
+    s.add('<g shape-rendering="crispEdges">')
+    paint = {'o': t['mark'], 'E': '#141413', 'g': t['keep'][0], 'L': t['bg']}
+    for r, row in enumerate(CHARACTER.splitlines()):
+        for c, ch in enumerate(row):
+            if ch in paint:
+                s.add(f'<rect x="{x0 + c * cell}" y="{y0 + r * cell}" width="{cell}" height="{cell}" fill="{paint[ch]}"/>')
+    s.add('</g>')
     s.save(f'banner-{name_of(t)}.svg')
 
 
