@@ -164,81 +164,85 @@ def banner(t):
     s.save(f'banner-{name_of(t)}.svg')
 
 
+HOOKS = [('feedback-nudge.py', 1), ('skill-router.py', 1), ('prompt-nudge.py', 1), ('scan-corrections.py', 1),
+         ('skill-usage-log.py', 1), ('add a line or log, never block', 0)]   # the first three add a line, the last two log
+
+
 def how_it_works(t):
-    s = Svg(740, 776, t, 'How it works: every turn, your correction becomes a one-line lesson; every week, scripts '
+    s = Svg(740, 850, t, 'How it works: every turn, your correction becomes a one-line lesson; every week, scripts '
             'read the notebook and outside posts, a weekly agent drafts at most five proposals, and the ones that '
             'need you come back to you, one yes per lane.')
     M, R, W = 175, 495, 220
     s.band(M, 40, 'every turn')
     s.human(60, 52)
-    s.node(M, 56, W, 72, 'code', 'hooks', [('feedback-nudge.py + 4 more', 1), ('add a line or log, never block', 0)])
+    s.node(M, 56, W, 146, 'code', 'hooks', HOOKS)
     s.node(R, 56, W, 72, 'claude', 'Claude', [('in your session', 0)])
     s.edge([(94, 92), (M - 3, 92)]); s.label(134, 84, ['a correction'], 'middle')
     s.edge([(M + W, 82), (R - 3, 82)]); s.label(445, 74, ['a reminder,'], 'middle'); s.label(445, 101, ['likely skill'], 'middle')
-    s.node(M, 196, W, 64, 'file', None, [('lessons-inbox.md', 1), ('skill-usage.log', 1)])
-    s.edge([(285, 128), (285, 193)]); s.label(295, 172, ['a quoted line, a skill used'])
-    s.node(R, 196, W, 88, 'keep', 'your library', [('skills, e.g. workflow-design', 0), ('your style skill', 0),
+    s.node(M, 270, W, 64, 'file', None, [('lessons-inbox.md', 1), ('skill-usage.log', 1)])
+    s.edge([(285, 202), (285, 267)]); s.label(295, 240, ['a quoted line, a skill used'])
+    s.node(R, 270, W, 88, 'keep', 'your library', [('skills, e.g. workflow-design', 0), ('your style skill', 0),
                                                     ('project memory', 0)])
-    s.edge([(560, 128), (560, 193)]); s.label(552, 156, ['one-line lesson'], 'end')
-    s.edge([(650, 196), (650, 131)]); s.label(658, 156, ['skill text,', 'on a match'])
-    s.add(f'<path d="M24 318H716" stroke="{t["hair"]}" stroke-width="1"/>')
-    s.band(M, 346, 'every week')
-    s.edge([(285, 260), (285, 359)]); s.label(295, 296, ["the week's lines"])
-    s.node(M, 362, W, 92, 'code', 'weekly scripts', [('skills-watch.py', 1), ('trigger-misses.py', 1),
+    s.edge([(560, 128), (560, 267)]); s.label(552, 200, ['one-line lesson'], 'end')
+    s.edge([(650, 270), (650, 131)]); s.label(658, 200, ['skill text,', 'on a match'])
+    s.add(f'<path d="M24 392H716" stroke="{t["hair"]}" stroke-width="1"/>')
+    s.band(M, 420, 'every week')
+    s.edge([(285, 334), (285, 433)]); s.label(295, 370, ["the week's lines"])
+    s.node(M, 436, W, 92, 'code', 'weekly scripts', [('skills-watch.py', 1), ('trigger-misses.py', 1),
                                                        ('practice-watch.py', 1)])
-    s.node(R, 400, W, 92, 'file', 'outside, read as data', [('new upstream skills', 0), ('X links you pasted', 0),
+    s.node(R, 474, W, 92, 'file', 'outside, read as data', [('new upstream skills', 0), ('X links you pasted', 0),
                                                               ('practice-accounts.txt', 1)])
-    s.edge([(R, 446), (M + W + 3, 446)]); s.label(445, 438, ['new skills,'], 'middle'); s.label(445, 464, ['new posts'], 'middle')
-    s.edge([(R + 40, 284), (R + 40, 340), (440, 340), (440, 380), (M + W + 3, 380)])
-    s.label(R + 48, 340, ["last week's", 'text: landed?'])
-    s.node(M, 520, W, 64, 'claude', 'weekly agent', [('weekly-watch.md', 1)])
-    s.edge([(285, 454), (285, 517)]); s.label(295, 492, ['one report'])
-    s.node(M, 640, W, 92, 'file', 'proposals, by undo cost', [('open: a wording line', 0), ('evidence: after its test', 0),
+    s.edge([(R, 512), (M + W + 3, 512)]); s.label(445, 504, ['new skills,'], 'middle'); s.label(445, 530, ['new posts'], 'middle')
+    s.edge([(R + 40, 358), (R + 40, 414), (440, 414), (440, 454), (M + W + 3, 454)])
+    s.label(R + 48, 414, ["last week's", 'text: landed?'])
+    s.node(M, 594, W, 64, 'claude', 'weekly agent', [('weekly-watch.md', 1)])
+    s.edge([(285, 528), (285, 591)]); s.label(295, 566, ['one report'])
+    s.node(M, 714, W, 92, 'file', 'proposals, by undo cost', [('open: a wording line', 0), ('evidence: after its test', 0),
                                                                ('closed: hooks, installs', 0)])
-    s.edge([(285, 584), (285, 637)]); s.label(295, 616, ['at most five drafts'])
-    s.edge([(M + W, 681), (726, 681), (726, 240), (R + W + 3, 240)], dashed=True)
-    s.label(716, 640, ['open lane applies', 'itself, if you opt in'], 'end')
-    s.edge([(M, 704), (60, 704), (60, 133)])
-    s.label(70, 560, ['your yes,', 'one per lane'])
-    s.key(752, KEY)
+    s.edge([(285, 658), (285, 711)]); s.label(295, 690, ['at most five drafts'])
+    s.edge([(M + W, 755), (726, 755), (726, 314), (R + W + 3, 314)], dashed=True)
+    s.label(716, 714, ['open lane applies', 'itself, if you opt in'], 'end')
+    s.edge([(M, 778), (60, 778), (60, 133)])
+    s.label(70, 634, ['your yes,', 'one per lane'])
+    s.key(826, KEY)
     s.save(f'how-it-works-{name_of(t)}.svg')
 
 
 def how_it_works_phone(t):
     """The same graph in one column for a phone: the spine top to bottom, one rail each side."""
-    s = Svg(320, 1312, t, 'How it works, phone layout: every turn, your correction reaches a hook, Claude writes a '
+    s = Svg(320, 1386, t, 'How it works, phone layout: every turn, your correction reaches a hook, Claude writes a '
             'one-line lesson into your library; every week, scripts read the logs and outside posts, a weekly agent '
             'drafts at most five proposals, and they come back to you, one yes per lane.')
     X, W, A = 44, 246, 80
     s.band(X, 30, 'every turn')
     s.human(A, 44)
     s.edge([(A, 124), (A, 149)]); s.label(92, 141, ['a correction'])
-    s.node(X, 152, W, 72, 'code', 'hooks', [('feedback-nudge.py + 4 more', 1), ('add a line or log, never block', 0)])
-    s.edge([(A, 224), (A, 261)]); s.label(92, 247, ['a reminder, the likely skill'])
-    s.node(X, 264, W, 52, 'claude', 'Claude', [('in your session', 0)])
-    s.edge([(A, 316), (A, 361)]); s.label(92, 344, ['a one-line lesson'])
-    s.edge([(210, 364), (210, 319)]); s.label(218, 336, ['skill text,', 'on a match'])
-    s.node(X, 364, W, 88, 'keep', 'your library', [('skills, e.g. workflow-design', 0), ('your style skill', 0),
+    s.node(X, 152, W, 146, 'code', 'hooks', HOOKS)
+    s.edge([(A, 298), (A, 335)]); s.label(92, 321, ['a reminder, the likely skill'])
+    s.node(X, 338, W, 52, 'claude', 'Claude', [('in your session', 0)])
+    s.edge([(A, 390), (A, 435)]); s.label(92, 418, ['a one-line lesson'])
+    s.edge([(210, 438), (210, 393)]); s.label(218, 410, ['skill text,', 'on a match'])
+    s.node(X, 438, W, 88, 'keep', 'your library', [('skills, e.g. workflow-design', 0), ('your style skill', 0),
                                                    ('project memory', 0)])
-    s.add(f'<path d="M16 476H304" stroke="{t["hair"]}" stroke-width="1"/>')
-    s.band(X, 500, 'every week')
-    s.node(X, 512, W, 92, 'file', 'outside, read as data', [('new upstream skills', 0), ('X links you pasted', 0),
+    s.add(f'<path d="M16 550H304" stroke="{t["hair"]}" stroke-width="1"/>')
+    s.band(X, 574, 'every week')
+    s.node(X, 586, W, 92, 'file', 'outside, read as data', [('new upstream skills', 0), ('X links you pasted', 0),
                                                             ('practice-accounts.txt', 1)])
-    s.label(X, 630, ['new skills, new posts'])
-    s.edge([(X + W, 188), (304, 188), (304, 692), (X + W + 3, 692)]); s.label(296, 650, ['a quoted line, a skill used'], 'end')
-    s.node(X, 660, W, 64, 'file', None, [('lessons-inbox.md', 1), ('skill-usage.log', 1)])
-    s.edge([(A, 724), (A, 769)]); s.label(92, 752, ["the week's lines"])
-    s.node(X, 772, W, 118, 'code', 'weekly scripts', [('skills-watch.py', 1), ('trigger-misses.py', 1),
+    s.label(X, 704, ['new skills, new posts'])
+    s.edge([(X + W, 188), (304, 188), (304, 766), (X + W + 3, 766)]); s.label(296, 724, ['a quoted line, a skill used'], 'end')
+    s.node(X, 734, W, 64, 'file', None, [('lessons-inbox.md', 1), ('skill-usage.log', 1)])
+    s.edge([(A, 798), (A, 843)]); s.label(92, 826, ["the week's lines"])
+    s.node(X, 846, W, 118, 'code', 'weekly scripts', [('skills-watch.py', 1), ('trigger-misses.py', 1),
                                                        ('practice-watch.py', 1), ("did last week's text land?", 0)])
-    s.edge([(X, 558), (30, 558), (30, 800), (X - 3, 800)])
-    s.edge([(A, 890), (A, 935)]); s.label(92, 918, ['one report'])
-    s.node(X, 938, W, 64, 'claude', 'weekly agent', [('weekly-watch.md', 1)])
-    s.edge([(A, 1002), (A, 1047)]); s.label(92, 1030, ['at most five drafts'])
-    s.node(X, 1050, W, 104, 'file', 'proposals, by undo cost', [('open: applies itself, opt-in', 0),
+    s.edge([(X, 632), (30, 632), (30, 874), (X - 3, 874)])
+    s.edge([(A, 964), (A, 1009)]); s.label(92, 992, ['one report'])
+    s.node(X, 1012, W, 64, 'claude', 'weekly agent', [('weekly-watch.md', 1)])
+    s.edge([(A, 1076), (A, 1121)]); s.label(92, 1104, ['at most five drafts'])
+    s.node(X, 1124, W, 104, 'file', 'proposals, by undo cost', [('open: applies itself, opt-in', 0),
                                                                  ('evidence: after its test', 0), ('closed: hooks, installs', 0)])
-    s.edge([(100, 1154), (100, 1176), (14, 1176), (14, 84), (55, 84)])
-    s.label(X, 1198, ['back to you: one yes per lane'])
-    s.key(1236, KEY)
+    s.edge([(100, 1228), (100, 1250), (14, 1250), (14, 84), (55, 84)])
+    s.label(X, 1272, ['back to you: one yes per lane'])
+    s.key(1310, KEY)
     s.save(f'how-it-works-phone-{name_of(t)}.svg')
 
 

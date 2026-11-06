@@ -1,15 +1,19 @@
-<svg xmlns="http://www.w3.org/2000/svg" width="740" height="776" viewBox="0 0 740 776" role="img" aria-label="How it works: every turn, your correction becomes a one-line lesson; every week, scripts read the notebook and outside posts, a weekly agent drafts at most five proposals, and the ones that need you come back to you, one yes per lane.">
+<svg xmlns="http://www.w3.org/2000/svg" width="740" height="850" viewBox="0 0 740 850" role="img" aria-label="How it works: every turn, your correction becomes a one-line lesson; every week, scripts read the notebook and outside posts, a weekly agent drafts at most five proposals, and the ones that need you come back to you, one yes per lane.">
 <title>How it works: every turn, your correction becomes a one-line lesson; every week, scripts read the notebook and outside posts, a weekly agent drafts at most five proposals, and the ones that need you come back to you, one yes per lane.</title>
 <defs><marker id="a" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M1 1L9 5L1 9" fill="none" stroke="#8f8d86" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></marker></defs>
-<rect x="0.5" y="0.5" width="739" height="775" rx="16" fill="#1f1e1d" stroke="#3d3d3a"/>
+<rect x="0.5" y="0.5" width="739" height="849" rx="16" fill="#1f1e1d" stroke="#3d3d3a"/>
 <text x="175" y="40" font-family="'IBM Plex Mono',ui-monospace,'SF Mono',SFMono-Regular,Menlo,Consolas,'Liberation Mono',monospace" font-size="11.5" font-weight="500" fill="#b0aea5" text-anchor="start" letter-spacing="1.2">EVERY TURN</text>
 <circle cx="60" cy="63.0" r="11.0" fill="#faf9f5"/>
 <path d="M38.0 105.0C38.0 83.0 48.0 79.0 60 79.0C72.0 79.0 82.0 83.0 82.0 105.0Z" fill="#faf9f5"/>
 <text x="60" y="125.0" font-family="Archivo,-apple-system,'Segoe UI','Helvetica Neue',Helvetica,Arial,sans-serif" font-size="15" font-weight="600" fill="#faf9f5" text-anchor="middle">you</text>
-<rect x="175" y="56" width="220" height="72" rx="10" fill="#212d3a" stroke="#6a9bcc" stroke-width="1.6"/>
+<rect x="175" y="56" width="220" height="146" rx="10" fill="#212d3a" stroke="#6a9bcc" stroke-width="1.6"/>
 <text x="189" y="79" font-family="Archivo,-apple-system,'Segoe UI','Helvetica Neue',Helvetica,Arial,sans-serif" font-size="15" font-weight="600" fill="#9cc0e6" text-anchor="start">hooks</text>
-<text x="189" y="99" font-family="'IBM Plex Mono',ui-monospace,'SF Mono',SFMono-Regular,Menlo,Consolas,'Liberation Mono',monospace" font-size="12.5" font-weight="400" fill="#faf9f5" text-anchor="start">feedback-nudge.py + 4 more</text>
-<text x="189" y="117" font-family="Archivo,-apple-system,'Segoe UI','Helvetica Neue',Helvetica,Arial,sans-serif" font-size="13" font-weight="400" fill="#faf9f5" text-anchor="start">add a line or log, never block</text>
+<text x="189" y="99" font-family="'IBM Plex Mono',ui-monospace,'SF Mono',SFMono-Regular,Menlo,Consolas,'Liberation Mono',monospace" font-size="12.5" font-weight="400" fill="#faf9f5" text-anchor="start">feedback-nudge.py</text>
+<text x="189" y="117" font-family="'IBM Plex Mono',ui-monospace,'SF Mono',SFMono-Regular,Menlo,Consolas,'Liberation Mono',monospace" font-size="12.5" font-weight="400" fill="#faf9f5" text-anchor="start">skill-router.py</text>
+<text x="189" y="135" font-family="'IBM Plex Mono',ui-monospace,'SF Mono',SFMono-Regular,Menlo,Consolas,'Liberation Mono',monospace" font-size="12.5" font-weight="400" fill="#faf9f5" text-anchor="start">prompt-nudge.py</text>
+<text x="189" y="153" font-family="'IBM Plex Mono',ui-monospace,'SF Mono',SFMono-Regular,Menlo,Consolas,'Liberation Mono',monospace" font-size="12.5" font-weight="400" fill="#faf9f5" text-anchor="start">scan-corrections.py</text>
+<text x="189" y="171" font-family="'IBM Plex Mono',ui-monospace,'SF Mono',SFMono-Regular,Menlo,Consolas,'Liberation Mono',monospace" font-size="12.5" font-weight="400" fill="#faf9f5" text-anchor="start">skill-usage-log.py</text>
+<text x="189" y="189" font-family="Archivo,-apple-system,'Segoe UI','Helvetica Neue',Helvetica,Arial,sans-serif" font-size="13" font-weight="400" fill="#faf9f5" text-anchor="start">add a line or log, never block</text>
 <rect x="495" y="56" width="220" height="72" rx="10" fill="#3b2922" stroke="#d97757" stroke-width="1.6"/>
 <text x="509" y="79" font-family="Archivo,-apple-system,'Segoe UI','Helvetica Neue',Helvetica,Arial,sans-serif" font-size="15" font-weight="600" fill="#f0a284" text-anchor="start">Claude</text>
 <text x="509" y="99" font-family="Archivo,-apple-system,'Segoe UI','Helvetica Neue',Helvetica,Arial,sans-serif" font-size="13" font-weight="400" fill="#faf9f5" text-anchor="start">in your session</text>
@@ -18,67 +22,67 @@
 <path d="M395 82L492 82" fill="none" stroke="#8f8d86" stroke-width="1.6" stroke-linejoin="round" marker-end="url(#a)"/>
 <text x="445" y="74" font-family="Archivo,-apple-system,'Segoe UI','Helvetica Neue',Helvetica,Arial,sans-serif" font-size="12.5" font-weight="400" fill="#b0aea5" text-anchor="middle">a reminder,</text>
 <text x="445" y="101" font-family="Archivo,-apple-system,'Segoe UI','Helvetica Neue',Helvetica,Arial,sans-serif" font-size="12.5" font-weight="400" fill="#b0aea5" text-anchor="middle">likely skill</text>
-<path d="M183 196H381L395 210V252Q395 260 387 260H183Q175 260 175 252V204Q175 196 183 196Z" fill="#2a2927" stroke="#6b6a65" stroke-width="1.4"/><path d="M381 196V210H395" fill="none" stroke="#6b6a65" stroke-width="1.4"/>
-<text x="189" y="219" font-family="'IBM Plex Mono',ui-monospace,'SF Mono',SFMono-Regular,Menlo,Consolas,'Liberation Mono',monospace" font-size="12.5" font-weight="400" fill="#faf9f5" text-anchor="start">lessons-inbox.md</text>
-<text x="189" y="237" font-family="'IBM Plex Mono',ui-monospace,'SF Mono',SFMono-Regular,Menlo,Consolas,'Liberation Mono',monospace" font-size="12.5" font-weight="400" fill="#faf9f5" text-anchor="start">skill-usage.log</text>
-<path d="M285 128L285 193" fill="none" stroke="#8f8d86" stroke-width="1.6" stroke-linejoin="round" marker-end="url(#a)"/>
-<text x="295" y="172" font-family="Archivo,-apple-system,'Segoe UI','Helvetica Neue',Helvetica,Arial,sans-serif" font-size="12.5" font-weight="400" fill="#b0aea5" text-anchor="start">a quoted line, a skill used</text>
-<rect x="495" y="196" width="220" height="88" rx="10" fill="#282e22" stroke="#788c5d" stroke-width="1.6"/>
-<text x="509" y="219" font-family="Archivo,-apple-system,'Segoe UI','Helvetica Neue',Helvetica,Arial,sans-serif" font-size="15" font-weight="600" fill="#b3c59a" text-anchor="start">your library</text>
-<text x="509" y="239" font-family="Archivo,-apple-system,'Segoe UI','Helvetica Neue',Helvetica,Arial,sans-serif" font-size="13" font-weight="400" fill="#faf9f5" text-anchor="start">skills, e.g. workflow-design</text>
-<text x="509" y="257" font-family="Archivo,-apple-system,'Segoe UI','Helvetica Neue',Helvetica,Arial,sans-serif" font-size="13" font-weight="400" fill="#faf9f5" text-anchor="start">your style skill</text>
-<text x="509" y="275" font-family="Archivo,-apple-system,'Segoe UI','Helvetica Neue',Helvetica,Arial,sans-serif" font-size="13" font-weight="400" fill="#faf9f5" text-anchor="start">project memory</text>
-<path d="M560 128L560 193" fill="none" stroke="#8f8d86" stroke-width="1.6" stroke-linejoin="round" marker-end="url(#a)"/>
-<text x="552" y="156" font-family="Archivo,-apple-system,'Segoe UI','Helvetica Neue',Helvetica,Arial,sans-serif" font-size="12.5" font-weight="400" fill="#b0aea5" text-anchor="end">one-line lesson</text>
-<path d="M650 196L650 131" fill="none" stroke="#8f8d86" stroke-width="1.6" stroke-linejoin="round" marker-end="url(#a)"/>
-<text x="658" y="156" font-family="Archivo,-apple-system,'Segoe UI','Helvetica Neue',Helvetica,Arial,sans-serif" font-size="12.5" font-weight="400" fill="#b0aea5" text-anchor="start">skill text,</text>
-<text x="658" y="171" font-family="Archivo,-apple-system,'Segoe UI','Helvetica Neue',Helvetica,Arial,sans-serif" font-size="12.5" font-weight="400" fill="#b0aea5" text-anchor="start">on a match</text>
-<path d="M24 318H716" stroke="#3d3d3a" stroke-width="1"/>
-<text x="175" y="346" font-family="'IBM Plex Mono',ui-monospace,'SF Mono',SFMono-Regular,Menlo,Consolas,'Liberation Mono',monospace" font-size="11.5" font-weight="500" fill="#b0aea5" text-anchor="start" letter-spacing="1.2">EVERY WEEK</text>
-<path d="M285 260L285 359" fill="none" stroke="#8f8d86" stroke-width="1.6" stroke-linejoin="round" marker-end="url(#a)"/>
-<text x="295" y="296" font-family="Archivo,-apple-system,'Segoe UI','Helvetica Neue',Helvetica,Arial,sans-serif" font-size="12.5" font-weight="400" fill="#b0aea5" text-anchor="start">the week's lines</text>
-<rect x="175" y="362" width="220" height="92" rx="10" fill="#212d3a" stroke="#6a9bcc" stroke-width="1.6"/>
-<text x="189" y="385" font-family="Archivo,-apple-system,'Segoe UI','Helvetica Neue',Helvetica,Arial,sans-serif" font-size="15" font-weight="600" fill="#9cc0e6" text-anchor="start">weekly scripts</text>
-<text x="189" y="405" font-family="'IBM Plex Mono',ui-monospace,'SF Mono',SFMono-Regular,Menlo,Consolas,'Liberation Mono',monospace" font-size="12.5" font-weight="400" fill="#faf9f5" text-anchor="start">skills-watch.py</text>
-<text x="189" y="423" font-family="'IBM Plex Mono',ui-monospace,'SF Mono',SFMono-Regular,Menlo,Consolas,'Liberation Mono',monospace" font-size="12.5" font-weight="400" fill="#faf9f5" text-anchor="start">trigger-misses.py</text>
-<text x="189" y="441" font-family="'IBM Plex Mono',ui-monospace,'SF Mono',SFMono-Regular,Menlo,Consolas,'Liberation Mono',monospace" font-size="12.5" font-weight="400" fill="#faf9f5" text-anchor="start">practice-watch.py</text>
-<path d="M503 400H701L715 414V484Q715 492 707 492H503Q495 492 495 484V408Q495 400 503 400Z" fill="#2a2927" stroke="#6b6a65" stroke-width="1.4"/><path d="M701 400V414H715" fill="none" stroke="#6b6a65" stroke-width="1.4"/>
-<text x="509" y="423" font-family="Archivo,-apple-system,'Segoe UI','Helvetica Neue',Helvetica,Arial,sans-serif" font-size="15" font-weight="600" fill="#faf9f5" text-anchor="start">outside, read as data</text>
-<text x="509" y="443" font-family="Archivo,-apple-system,'Segoe UI','Helvetica Neue',Helvetica,Arial,sans-serif" font-size="13" font-weight="400" fill="#faf9f5" text-anchor="start">new upstream skills</text>
-<text x="509" y="461" font-family="Archivo,-apple-system,'Segoe UI','Helvetica Neue',Helvetica,Arial,sans-serif" font-size="13" font-weight="400" fill="#faf9f5" text-anchor="start">X links you pasted</text>
-<text x="509" y="479" font-family="'IBM Plex Mono',ui-monospace,'SF Mono',SFMono-Regular,Menlo,Consolas,'Liberation Mono',monospace" font-size="12.5" font-weight="400" fill="#faf9f5" text-anchor="start">practice-accounts.txt</text>
-<path d="M495 446L398 446" fill="none" stroke="#8f8d86" stroke-width="1.6" stroke-linejoin="round" marker-end="url(#a)"/>
-<text x="445" y="438" font-family="Archivo,-apple-system,'Segoe UI','Helvetica Neue',Helvetica,Arial,sans-serif" font-size="12.5" font-weight="400" fill="#b0aea5" text-anchor="middle">new skills,</text>
-<text x="445" y="464" font-family="Archivo,-apple-system,'Segoe UI','Helvetica Neue',Helvetica,Arial,sans-serif" font-size="12.5" font-weight="400" fill="#b0aea5" text-anchor="middle">new posts</text>
-<path d="M535 284L535 340L440 340L440 380L398 380" fill="none" stroke="#8f8d86" stroke-width="1.6" stroke-linejoin="round" marker-end="url(#a)"/>
-<text x="543" y="340" font-family="Archivo,-apple-system,'Segoe UI','Helvetica Neue',Helvetica,Arial,sans-serif" font-size="12.5" font-weight="400" fill="#b0aea5" text-anchor="start">last week's</text>
-<text x="543" y="355" font-family="Archivo,-apple-system,'Segoe UI','Helvetica Neue',Helvetica,Arial,sans-serif" font-size="12.5" font-weight="400" fill="#b0aea5" text-anchor="start">text: landed?</text>
-<rect x="175" y="520" width="220" height="64" rx="10" fill="#3b2922" stroke="#d97757" stroke-width="1.6"/>
-<text x="189" y="543" font-family="Archivo,-apple-system,'Segoe UI','Helvetica Neue',Helvetica,Arial,sans-serif" font-size="15" font-weight="600" fill="#f0a284" text-anchor="start">weekly agent</text>
-<text x="189" y="563" font-family="'IBM Plex Mono',ui-monospace,'SF Mono',SFMono-Regular,Menlo,Consolas,'Liberation Mono',monospace" font-size="12.5" font-weight="400" fill="#faf9f5" text-anchor="start">weekly-watch.md</text>
-<path d="M285 454L285 517" fill="none" stroke="#8f8d86" stroke-width="1.6" stroke-linejoin="round" marker-end="url(#a)"/>
-<text x="295" y="492" font-family="Archivo,-apple-system,'Segoe UI','Helvetica Neue',Helvetica,Arial,sans-serif" font-size="12.5" font-weight="400" fill="#b0aea5" text-anchor="start">one report</text>
-<path d="M183 640H381L395 654V724Q395 732 387 732H183Q175 732 175 724V648Q175 640 183 640Z" fill="#2a2927" stroke="#6b6a65" stroke-width="1.4"/><path d="M381 640V654H395" fill="none" stroke="#6b6a65" stroke-width="1.4"/>
-<text x="189" y="663" font-family="Archivo,-apple-system,'Segoe UI','Helvetica Neue',Helvetica,Arial,sans-serif" font-size="15" font-weight="600" fill="#faf9f5" text-anchor="start">proposals, by undo cost</text>
-<text x="189" y="683" font-family="Archivo,-apple-system,'Segoe UI','Helvetica Neue',Helvetica,Arial,sans-serif" font-size="13" font-weight="400" fill="#faf9f5" text-anchor="start">open: a wording line</text>
-<text x="189" y="701" font-family="Archivo,-apple-system,'Segoe UI','Helvetica Neue',Helvetica,Arial,sans-serif" font-size="13" font-weight="400" fill="#faf9f5" text-anchor="start">evidence: after its test</text>
-<text x="189" y="719" font-family="Archivo,-apple-system,'Segoe UI','Helvetica Neue',Helvetica,Arial,sans-serif" font-size="13" font-weight="400" fill="#faf9f5" text-anchor="start">closed: hooks, installs</text>
-<path d="M285 584L285 637" fill="none" stroke="#8f8d86" stroke-width="1.6" stroke-linejoin="round" marker-end="url(#a)"/>
-<text x="295" y="616" font-family="Archivo,-apple-system,'Segoe UI','Helvetica Neue',Helvetica,Arial,sans-serif" font-size="12.5" font-weight="400" fill="#b0aea5" text-anchor="start">at most five drafts</text>
-<path d="M395 681L726 681L726 240L718 240" fill="none" stroke="#8f8d86" stroke-width="1.6" stroke-linejoin="round" stroke-dasharray="5 4" marker-end="url(#a)"/>
-<text x="716" y="640" font-family="Archivo,-apple-system,'Segoe UI','Helvetica Neue',Helvetica,Arial,sans-serif" font-size="12.5" font-weight="400" fill="#b0aea5" text-anchor="end">open lane applies</text>
-<text x="716" y="655" font-family="Archivo,-apple-system,'Segoe UI','Helvetica Neue',Helvetica,Arial,sans-serif" font-size="12.5" font-weight="400" fill="#b0aea5" text-anchor="end">itself, if you opt in</text>
-<path d="M175 704L60 704L60 133" fill="none" stroke="#8f8d86" stroke-width="1.6" stroke-linejoin="round" marker-end="url(#a)"/>
-<text x="70" y="560" font-family="Archivo,-apple-system,'Segoe UI','Helvetica Neue',Helvetica,Arial,sans-serif" font-size="12.5" font-weight="400" fill="#b0aea5" text-anchor="start">your yes,</text>
-<text x="70" y="575" font-family="Archivo,-apple-system,'Segoe UI','Helvetica Neue',Helvetica,Arial,sans-serif" font-size="12.5" font-weight="400" fill="#b0aea5" text-anchor="start">one per lane</text>
-<circle cx="31" cy="743" r="4" fill="#faf9f5"/><path d="M24 754C24 748 38 748 38 754Z" fill="#faf9f5"/>
-<text x="45" y="752" font-family="Archivo,-apple-system,'Segoe UI','Helvetica Neue',Helvetica,Arial,sans-serif" font-size="12.5" font-weight="400" fill="#b0aea5" text-anchor="start">you</text>
-<rect x="86" y="740" width="14" height="14" rx="3" fill="#212d3a" stroke="#6a9bcc" stroke-width="1.5"/>
-<text x="107" y="752" font-family="Archivo,-apple-system,'Segoe UI','Helvetica Neue',Helvetica,Arial,sans-serif" font-size="12.5" font-weight="400" fill="#b0aea5" text-anchor="start">code: a check a program can fail</text>
-<rect x="340" y="740" width="14" height="14" rx="3" fill="#3b2922" stroke="#d97757" stroke-width="1.5"/>
-<text x="361" y="752" font-family="Archivo,-apple-system,'Segoe UI','Helvetica Neue',Helvetica,Arial,sans-serif" font-size="12.5" font-weight="400" fill="#b0aea5" text-anchor="start">Claude</text>
-<rect x="422" y="740" width="14" height="14" rx="3" fill="#282e22" stroke="#788c5d" stroke-width="1.5"/>
-<text x="443" y="752" font-family="Archivo,-apple-system,'Segoe UI','Helvetica Neue',Helvetica,Arial,sans-serif" font-size="12.5" font-weight="400" fill="#b0aea5" text-anchor="start">what it keeps</text>
-<path d="M550 740H559L564 745V754H550Z" fill="#2a2927" stroke="#6b6a65" stroke-width="1.3"/>
-<text x="571" y="752" font-family="Archivo,-apple-system,'Segoe UI','Helvetica Neue',Helvetica,Arial,sans-serif" font-size="12.5" font-weight="400" fill="#b0aea5" text-anchor="start">a file</text>
+<path d="M183 270H381L395 284V326Q395 334 387 334H183Q175 334 175 326V278Q175 270 183 270Z" fill="#2a2927" stroke="#6b6a65" stroke-width="1.4"/><path d="M381 270V284H395" fill="none" stroke="#6b6a65" stroke-width="1.4"/>
+<text x="189" y="293" font-family="'IBM Plex Mono',ui-monospace,'SF Mono',SFMono-Regular,Menlo,Consolas,'Liberation Mono',monospace" font-size="12.5" font-weight="400" fill="#faf9f5" text-anchor="start">lessons-inbox.md</text>
+<text x="189" y="311" font-family="'IBM Plex Mono',ui-monospace,'SF Mono',SFMono-Regular,Menlo,Consolas,'Liberation Mono',monospace" font-size="12.5" font-weight="400" fill="#faf9f5" text-anchor="start">skill-usage.log</text>
+<path d="M285 202L285 267" fill="none" stroke="#8f8d86" stroke-width="1.6" stroke-linejoin="round" marker-end="url(#a)"/>
+<text x="295" y="240" font-family="Archivo,-apple-system,'Segoe UI','Helvetica Neue',Helvetica,Arial,sans-serif" font-size="12.5" font-weight="400" fill="#b0aea5" text-anchor="start">a quoted line, a skill used</text>
+<rect x="495" y="270" width="220" height="88" rx="10" fill="#282e22" stroke="#788c5d" stroke-width="1.6"/>
+<text x="509" y="293" font-family="Archivo,-apple-system,'Segoe UI','Helvetica Neue',Helvetica,Arial,sans-serif" font-size="15" font-weight="600" fill="#b3c59a" text-anchor="start">your library</text>
+<text x="509" y="313" font-family="Archivo,-apple-system,'Segoe UI','Helvetica Neue',Helvetica,Arial,sans-serif" font-size="13" font-weight="400" fill="#faf9f5" text-anchor="start">skills, e.g. workflow-design</text>
+<text x="509" y="331" font-family="Archivo,-apple-system,'Segoe UI','Helvetica Neue',Helvetica,Arial,sans-serif" font-size="13" font-weight="400" fill="#faf9f5" text-anchor="start">your style skill</text>
+<text x="509" y="349" font-family="Archivo,-apple-system,'Segoe UI','Helvetica Neue',Helvetica,Arial,sans-serif" font-size="13" font-weight="400" fill="#faf9f5" text-anchor="start">project memory</text>
+<path d="M560 128L560 267" fill="none" stroke="#8f8d86" stroke-width="1.6" stroke-linejoin="round" marker-end="url(#a)"/>
+<text x="552" y="200" font-family="Archivo,-apple-system,'Segoe UI','Helvetica Neue',Helvetica,Arial,sans-serif" font-size="12.5" font-weight="400" fill="#b0aea5" text-anchor="end">one-line lesson</text>
+<path d="M650 270L650 131" fill="none" stroke="#8f8d86" stroke-width="1.6" stroke-linejoin="round" marker-end="url(#a)"/>
+<text x="658" y="200" font-family="Archivo,-apple-system,'Segoe UI','Helvetica Neue',Helvetica,Arial,sans-serif" font-size="12.5" font-weight="400" fill="#b0aea5" text-anchor="start">skill text,</text>
+<text x="658" y="215" font-family="Archivo,-apple-system,'Segoe UI','Helvetica Neue',Helvetica,Arial,sans-serif" font-size="12.5" font-weight="400" fill="#b0aea5" text-anchor="start">on a match</text>
+<path d="M24 392H716" stroke="#3d3d3a" stroke-width="1"/>
+<text x="175" y="420" font-family="'IBM Plex Mono',ui-monospace,'SF Mono',SFMono-Regular,Menlo,Consolas,'Liberation Mono',monospace" font-size="11.5" font-weight="500" fill="#b0aea5" text-anchor="start" letter-spacing="1.2">EVERY WEEK</text>
+<path d="M285 334L285 433" fill="none" stroke="#8f8d86" stroke-width="1.6" stroke-linejoin="round" marker-end="url(#a)"/>
+<text x="295" y="370" font-family="Archivo,-apple-system,'Segoe UI','Helvetica Neue',Helvetica,Arial,sans-serif" font-size="12.5" font-weight="400" fill="#b0aea5" text-anchor="start">the week's lines</text>
+<rect x="175" y="436" width="220" height="92" rx="10" fill="#212d3a" stroke="#6a9bcc" stroke-width="1.6"/>
+<text x="189" y="459" font-family="Archivo,-apple-system,'Segoe UI','Helvetica Neue',Helvetica,Arial,sans-serif" font-size="15" font-weight="600" fill="#9cc0e6" text-anchor="start">weekly scripts</text>
+<text x="189" y="479" font-family="'IBM Plex Mono',ui-monospace,'SF Mono',SFMono-Regular,Menlo,Consolas,'Liberation Mono',monospace" font-size="12.5" font-weight="400" fill="#faf9f5" text-anchor="start">skills-watch.py</text>
+<text x="189" y="497" font-family="'IBM Plex Mono',ui-monospace,'SF Mono',SFMono-Regular,Menlo,Consolas,'Liberation Mono',monospace" font-size="12.5" font-weight="400" fill="#faf9f5" text-anchor="start">trigger-misses.py</text>
+<text x="189" y="515" font-family="'IBM Plex Mono',ui-monospace,'SF Mono',SFMono-Regular,Menlo,Consolas,'Liberation Mono',monospace" font-size="12.5" font-weight="400" fill="#faf9f5" text-anchor="start">practice-watch.py</text>
+<path d="M503 474H701L715 488V558Q715 566 707 566H503Q495 566 495 558V482Q495 474 503 474Z" fill="#2a2927" stroke="#6b6a65" stroke-width="1.4"/><path d="M701 474V488H715" fill="none" stroke="#6b6a65" stroke-width="1.4"/>
+<text x="509" y="497" font-family="Archivo,-apple-system,'Segoe UI','Helvetica Neue',Helvetica,Arial,sans-serif" font-size="15" font-weight="600" fill="#faf9f5" text-anchor="start">outside, read as data</text>
+<text x="509" y="517" font-family="Archivo,-apple-system,'Segoe UI','Helvetica Neue',Helvetica,Arial,sans-serif" font-size="13" font-weight="400" fill="#faf9f5" text-anchor="start">new upstream skills</text>
+<text x="509" y="535" font-family="Archivo,-apple-system,'Segoe UI','Helvetica Neue',Helvetica,Arial,sans-serif" font-size="13" font-weight="400" fill="#faf9f5" text-anchor="start">X links you pasted</text>
+<text x="509" y="553" font-family="'IBM Plex Mono',ui-monospace,'SF Mono',SFMono-Regular,Menlo,Consolas,'Liberation Mono',monospace" font-size="12.5" font-weight="400" fill="#faf9f5" text-anchor="start">practice-accounts.txt</text>
+<path d="M495 512L398 512" fill="none" stroke="#8f8d86" stroke-width="1.6" stroke-linejoin="round" marker-end="url(#a)"/>
+<text x="445" y="504" font-family="Archivo,-apple-system,'Segoe UI','Helvetica Neue',Helvetica,Arial,sans-serif" font-size="12.5" font-weight="400" fill="#b0aea5" text-anchor="middle">new skills,</text>
+<text x="445" y="530" font-family="Archivo,-apple-system,'Segoe UI','Helvetica Neue',Helvetica,Arial,sans-serif" font-size="12.5" font-weight="400" fill="#b0aea5" text-anchor="middle">new posts</text>
+<path d="M535 358L535 414L440 414L440 454L398 454" fill="none" stroke="#8f8d86" stroke-width="1.6" stroke-linejoin="round" marker-end="url(#a)"/>
+<text x="543" y="414" font-family="Archivo,-apple-system,'Segoe UI','Helvetica Neue',Helvetica,Arial,sans-serif" font-size="12.5" font-weight="400" fill="#b0aea5" text-anchor="start">last week's</text>
+<text x="543" y="429" font-family="Archivo,-apple-system,'Segoe UI','Helvetica Neue',Helvetica,Arial,sans-serif" font-size="12.5" font-weight="400" fill="#b0aea5" text-anchor="start">text: landed?</text>
+<rect x="175" y="594" width="220" height="64" rx="10" fill="#3b2922" stroke="#d97757" stroke-width="1.6"/>
+<text x="189" y="617" font-family="Archivo,-apple-system,'Segoe UI','Helvetica Neue',Helvetica,Arial,sans-serif" font-size="15" font-weight="600" fill="#f0a284" text-anchor="start">weekly agent</text>
+<text x="189" y="637" font-family="'IBM Plex Mono',ui-monospace,'SF Mono',SFMono-Regular,Menlo,Consolas,'Liberation Mono',monospace" font-size="12.5" font-weight="400" fill="#faf9f5" text-anchor="start">weekly-watch.md</text>
+<path d="M285 528L285 591" fill="none" stroke="#8f8d86" stroke-width="1.6" stroke-linejoin="round" marker-end="url(#a)"/>
+<text x="295" y="566" font-family="Archivo,-apple-system,'Segoe UI','Helvetica Neue',Helvetica,Arial,sans-serif" font-size="12.5" font-weight="400" fill="#b0aea5" text-anchor="start">one report</text>
+<path d="M183 714H381L395 728V798Q395 806 387 806H183Q175 806 175 798V722Q175 714 183 714Z" fill="#2a2927" stroke="#6b6a65" stroke-width="1.4"/><path d="M381 714V728H395" fill="none" stroke="#6b6a65" stroke-width="1.4"/>
+<text x="189" y="737" font-family="Archivo,-apple-system,'Segoe UI','Helvetica Neue',Helvetica,Arial,sans-serif" font-size="15" font-weight="600" fill="#faf9f5" text-anchor="start">proposals, by undo cost</text>
+<text x="189" y="757" font-family="Archivo,-apple-system,'Segoe UI','Helvetica Neue',Helvetica,Arial,sans-serif" font-size="13" font-weight="400" fill="#faf9f5" text-anchor="start">open: a wording line</text>
+<text x="189" y="775" font-family="Archivo,-apple-system,'Segoe UI','Helvetica Neue',Helvetica,Arial,sans-serif" font-size="13" font-weight="400" fill="#faf9f5" text-anchor="start">evidence: after its test</text>
+<text x="189" y="793" font-family="Archivo,-apple-system,'Segoe UI','Helvetica Neue',Helvetica,Arial,sans-serif" font-size="13" font-weight="400" fill="#faf9f5" text-anchor="start">closed: hooks, installs</text>
+<path d="M285 658L285 711" fill="none" stroke="#8f8d86" stroke-width="1.6" stroke-linejoin="round" marker-end="url(#a)"/>
+<text x="295" y="690" font-family="Archivo,-apple-system,'Segoe UI','Helvetica Neue',Helvetica,Arial,sans-serif" font-size="12.5" font-weight="400" fill="#b0aea5" text-anchor="start">at most five drafts</text>
+<path d="M395 755L726 755L726 314L718 314" fill="none" stroke="#8f8d86" stroke-width="1.6" stroke-linejoin="round" stroke-dasharray="5 4" marker-end="url(#a)"/>
+<text x="716" y="714" font-family="Archivo,-apple-system,'Segoe UI','Helvetica Neue',Helvetica,Arial,sans-serif" font-size="12.5" font-weight="400" fill="#b0aea5" text-anchor="end">open lane applies</text>
+<text x="716" y="729" font-family="Archivo,-apple-system,'Segoe UI','Helvetica Neue',Helvetica,Arial,sans-serif" font-size="12.5" font-weight="400" fill="#b0aea5" text-anchor="end">itself, if you opt in</text>
+<path d="M175 778L60 778L60 133" fill="none" stroke="#8f8d86" stroke-width="1.6" stroke-linejoin="round" marker-end="url(#a)"/>
+<text x="70" y="634" font-family="Archivo,-apple-system,'Segoe UI','Helvetica Neue',Helvetica,Arial,sans-serif" font-size="12.5" font-weight="400" fill="#b0aea5" text-anchor="start">your yes,</text>
+<text x="70" y="649" font-family="Archivo,-apple-system,'Segoe UI','Helvetica Neue',Helvetica,Arial,sans-serif" font-size="12.5" font-weight="400" fill="#b0aea5" text-anchor="start">one per lane</text>
+<circle cx="31" cy="817" r="4" fill="#faf9f5"/><path d="M24 828C24 822 38 822 38 828Z" fill="#faf9f5"/>
+<text x="45" y="826" font-family="Archivo,-apple-system,'Segoe UI','Helvetica Neue',Helvetica,Arial,sans-serif" font-size="12.5" font-weight="400" fill="#b0aea5" text-anchor="start">you</text>
+<rect x="86" y="814" width="14" height="14" rx="3" fill="#212d3a" stroke="#6a9bcc" stroke-width="1.5"/>
+<text x="107" y="826" font-family="Archivo,-apple-system,'Segoe UI','Helvetica Neue',Helvetica,Arial,sans-serif" font-size="12.5" font-weight="400" fill="#b0aea5" text-anchor="start">code: a check a program can fail</text>
+<rect x="340" y="814" width="14" height="14" rx="3" fill="#3b2922" stroke="#d97757" stroke-width="1.5"/>
+<text x="361" y="826" font-family="Archivo,-apple-system,'Segoe UI','Helvetica Neue',Helvetica,Arial,sans-serif" font-size="12.5" font-weight="400" fill="#b0aea5" text-anchor="start">Claude</text>
+<rect x="422" y="814" width="14" height="14" rx="3" fill="#282e22" stroke="#788c5d" stroke-width="1.5"/>
+<text x="443" y="826" font-family="Archivo,-apple-system,'Segoe UI','Helvetica Neue',Helvetica,Arial,sans-serif" font-size="12.5" font-weight="400" fill="#b0aea5" text-anchor="start">what it keeps</text>
+<path d="M550 814H559L564 819V828H550Z" fill="#2a2927" stroke="#6b6a65" stroke-width="1.3"/>
+<text x="571" y="826" font-family="Archivo,-apple-system,'Segoe UI','Helvetica Neue',Helvetica,Arial,sans-serif" font-size="12.5" font-weight="400" fill="#b0aea5" text-anchor="start">a file</text>
 </svg>

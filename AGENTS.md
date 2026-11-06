@@ -13,7 +13,7 @@ The same graph as the README figure. Every arrow names the value it carries.
 ```mermaid
 flowchart TB
   you(("you"))
-  hooks["hooks<br/>feedback-nudge.py + 4 more"]
+  hooks["hooks<br/>feedback-nudge.py, skill-router.py,<br/>prompt-nudge.py, scan-corrections.py,<br/>skill-usage-log.py"]
   claude["Claude, in your session"]
   logs[/"lessons-inbox.md<br/>skill-usage.log"/]
   lib["your library<br/>skills, your style skill, project memory"]
