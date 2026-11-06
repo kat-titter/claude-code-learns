@@ -50,11 +50,14 @@ flam*) with one skill's description and adds a single line naming it. Claude the
 
 **Monday morning, a short report.**
 
-The weekly pass leaves a page like this, and changes nothing until you say yes:
+The weekly pass leaves a page like this, and changes nothing until you say yes. It also reads new posts on X (links
+you pasted into Claude Code that week, and accounts listed in `~/.claude/practice-accounts.txt`) and proposes a
+practice only when a measurement on your own sessions shows you don't follow it yet:
 
 ```
 Stalled      1 of last week's 4 proposals landed; the other 3 get one more week, then drop
 Upstream     1 new skill (pdf-forms): overlaps nothing you have
+Practice     a post you pasted: "gate on the exit code"; 0 of 103 workflows do, so proposed
 Gaps         2 notes in the inbox that no skill covers, e.g. "the numbers don't match the sources"
 Misses       github-practice loaded for 3 of 9 requests that matched it: add "pages, publish" to its description?
 Health       one skill is 540 lines: split by task
@@ -248,7 +251,7 @@ skills/capture-lesson/    the skill that writes skills, its hooks, checks and th
 skills/prompt-practice/   turns a short or dictated request into a clear brief, with its hook
 skills/workflow-design/   loops inside a graph, with a check-repair workflow template
 skills/html-*/, ...       example general skills, installed with --examples
-templates/, *.example*    starting points: style skill, CLAUDE.md, hooks, memory, inbox
+templates/, *.example*    starting points: style skill, CLAUDE.md, hooks, memory, inbox, X watch list
 coding-skills.md          an example library after a few months of use
 index.html                the explainer page
 ```
