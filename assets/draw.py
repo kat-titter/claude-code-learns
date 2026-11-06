@@ -261,6 +261,28 @@ def check_repair(t):
     s.save(f'check-repair-{name_of(t)}.svg')
 
 
+def check_repair_phone(t):
+    """The same loop in one column for a phone; the pass branch takes the right rail."""
+    s = Svg(320, 672, t, 'check-repair.js, phone layout: an agent builds each unit, a check reads its exit code, a '
+            'failing unit is repaired alone up to three rounds, a unit still failing comes to you, and a repair that '
+            'passes becomes a candidate rule.')
+    X, W, A = 40, 240, 80
+    s.band(X, 34, 'each unit, in parallel')
+    s.node(X, 52, W, 64, 'claude', 'agent builds', [('one unit, its files', 0)], stack=2)
+    s.edge([(A, 128), (A, 167)]); s.label(92, 152, ['files changed'])
+    s.node(X, 170, W, 64, 'code', 'check', [('the exit code', 0)])
+    s.edge([(A, 234), (A, 287)]); s.label(92, 256, ['exit code,', 'last 40 lines'])
+    s.edge([(200, 290), (200, 237)]); s.label(208, 256, ['a fix, up to', 'three rounds'])
+    s.node(X, 290, W, 64, 'claude', 'agent repairs', [('that unit only', 0)])
+    s.edge([(A, 354), (A, 393)]); s.label(92, 378, ['still failing: what was tried'])
+    s.human(A, 396)
+    s.edge([(X + W, 202), (300, 202), (300, 532), (X + W + 3, 532)])
+    s.label(292, 492, ['exit 0, after a fix'], 'end')
+    s.node(X, 500, W, 64, 'keep', 'candidate rule', [('for the next split', 0)])
+    s.key(600, [k for k in KEY if k[0] != 'file'])
+    s.save(f'check-repair-phone-{name_of(t)}.svg')
+
+
 MIND_TITLE = ('Memory and cognition: short-term memory is the session and the inbox; long-term memory is skills, '
               'project memory and CLAUDE.md, sorted in weekly; cognition about you is your style skill and the feedback '
               'hook; cognition about itself is the miss report, the watcher and the audit.')
@@ -343,6 +365,7 @@ if __name__ == '__main__':
         how_it_works(t)
         how_it_works_phone(t)
         check_repair(t)
+        check_repair_phone(t)
         mind(t)
         mind_phone(t)
     bad = sorted({(a, b, round(contrast(a, b), 2)) for a, b in CHECK if contrast(a, b) < 4.5})

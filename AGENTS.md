@@ -73,7 +73,8 @@ skills/prompt-practice/            turns a terse request into a brief; prompt-nu
 skills/workflow-design/            loops inside a graph; references/check-repair.js is a working Workflow template
 skills/citations, html-*, macos-long-render   example skills (--examples)
 templates/, *.example*, memory.example/       starting files the installer copies
-assets/draw.py                     draws the README banner and figures (assets/*-light.svg, *-dark.svg)
+assets/draw.py                     draws the README banner and figures: *-light.svg, *-dark.svg, and *-phone-*.svg
+                                   for screens under 600 px; one data list per figure feeds both layouts
 index.html                         the explainer page (GitHub Pages)
 ```
 
@@ -103,4 +104,5 @@ git diff origin/main | grep -nE "/Users/|/home/|@gmail|$USER"    # should print 
 ```
 
 After editing the Mermaid block above, parse it (paste it into mermaid.live, or `npx -y @mermaid-js/mermaid-cli`);
-after editing a figure, open `assets/*-light.svg` and `*-dark.svg` and check that no label overlaps another.
+after editing a figure, redraw both its layouts and open each light, dark and phone file to check that no label
+overlaps another.

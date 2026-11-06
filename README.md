@@ -169,6 +169,8 @@ comes back as a candidate rule. (After Hoodie's
 [Loops & Graphs](https://x.com/HoodieFade_/status/2117959235690524883), 2026-11-04.)
 
 <picture>
+  <source media="(max-width: 600px) and (prefers-color-scheme: dark)" srcset="assets/check-repair-phone-dark.svg">
+  <source media="(max-width: 600px)" srcset="assets/check-repair-phone-light.svg">
   <source media="(prefers-color-scheme: dark)" srcset="assets/check-repair-dark.svg">
   <img alt="check-repair.js. Each unit, in parallel: an agent builds it and reports the files changed; a check reads the exit code; exit 0 after a fix becomes a candidate rule for the next split; a non-zero exit sends the code and the last 40 lines to an agent that repairs that unit only, up to three rounds; a unit still failing comes to you with what was tried." src="assets/check-repair-light.svg" width="740">
 </picture>
