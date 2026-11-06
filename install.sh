@@ -91,23 +91,14 @@ PY
 }
 
 BEGIN='<!-- claude-code-learns: begin -->'; END='<!-- claude-code-learns: end -->'
-# CLAUDE.md as install writes it: the example's top (yours to edit) and the marked section uninstall removes
-claude_top() { sed -n '/^## Feedback becomes guidance/q;p' "$HERE/CLAUDE.example.md" | sed "s/my-style/$STYLE/g"; }
-claude_section() { printf '%s\n' "$BEGIN"; sed -n '/^## Feedback becomes guidance/,$p' "$HERE/CLAUDE.example.md" | sed "s/my-style/$STYLE/g"; printf '%s\n' "$END"; }
 
 if [ "$UNINSTALL" = 1 ]; then
   say "Uninstalling from $C"
-  [ ! -e "$C/.style-skill" ] || STYLE=$(cat "$C/.style-skill")
   hooks remove
   for s in capture-lesson prompt-practice; do [ -d "$C/skills/$s" ] && run rm -r "$C/skills/$s"; done
   if [ -e "$C/CLAUDE.md" ] && grep -qF "$BEGIN" "$C/CLAUDE.md"; then
     if [ "$DRY" = 1 ]; then say "  would remove the claude-code-learns section from $C/CLAUDE.md (after a backup)"; else
-      b=$(backup "$C/CLAUDE.md"); sed "/$BEGIN/,/$END/d" "$b" > "$C/CLAUDE.md"
-      if [ "$(cat "$C/CLAUDE.md")" = "$(claude_top)" ]; then rm "$C/CLAUDE.md"; say "  removed CLAUDE.md: install wrote it and it was unchanged (backup: $b)"
-      else say "  removed the claude-code-learns section from CLAUDE.md (backup: $b)"; fi; fi
-  fi
-  if [ "$DRY" = 0 ] && [ -e "$C/CLAUDE.md" ] && grep -q 'capture-lesson' "$C/CLAUDE.md"; then
-    say "  CLAUDE.md still names capture-lesson outside a marked section (an install before markers, or your own lines): remove those by hand"
+      b=$(backup "$C/CLAUDE.md"); sed "/$BEGIN/,/$END/d" "$b" > "$C/CLAUDE.md"; say "  removed the claude-code-learns section from CLAUDE.md (backup: $b)"; fi
   fi
   say "Kept (yours): your *-style skill, lessons-inbox.md, skill-usage.log, coding-skills.md, memory, and any example skills."
   exit 0
@@ -144,13 +135,13 @@ fi
 # 3. the routing habit in CLAUDE.md (loaded every session): a new file, or one marked section added to yours
 if [ ! -e "$C/CLAUDE.md" ]; then
   if [ "$DRY" = 1 ]; then say "  would write $C/CLAUDE.md"; else
-    { claude_top; claude_section; } > "$C/CLAUDE.md"; fi
+    sed "s/my-style/$STYLE/g" "$HERE/CLAUDE.example.md" > "$C/CLAUDE.md"; fi
 elif grep -qF "$BEGIN" "$C/CLAUDE.md" || grep -q 'capture-lesson' "$C/CLAUDE.md"; then
   say "  CLAUDE.md already routes feedback: left as is"
 elif [ "$DRY" = 1 ]; then say "  would add the 'Feedback becomes guidance' section to $C/CLAUDE.md (after a backup)"
 else
   b=$(backup "$C/CLAUDE.md")
-  { printf '\n'; claude_section; } >> "$C/CLAUDE.md"
+  { printf '\n%s\n' "$BEGIN"; sed -n '/^## Feedback becomes guidance/,$p' "$HERE/CLAUDE.example.md" | sed "s/my-style/$STYLE/g"; printf '%s\n' "$END"; } >> "$C/CLAUDE.md"
   say "  added the 'Feedback becomes guidance' section to CLAUDE.md (backup: $b)"
 fi
 

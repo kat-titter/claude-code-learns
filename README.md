@@ -301,3 +301,5 @@ Code under the MIT license; see [`LICENSE`](LICENSE).
 [^10]: Richards & Frankland (2017). The persistence and transience of memory. *Neuron*. [doi:10.1016/j.neuron.2017.04.037](https://doi.org/10.1016/j.neuron.2017.04.037)
 [^11]: Tononi & Cirelli (2014). Sleep and the price of plasticity. *Neuron*. [doi:10.1016/j.neuron.2013.12.025](https://doi.org/10.1016/j.neuron.2013.12.025)
 [^12]: Cowan (2001). The magical number 4 in short-term memory. *Behavioral and Brain Sciences*. [doi:10.1017/S0140525X01003922](https://doi.org/10.1017/S0140525X01003922)
+
+see nobody@example.org and /home/someone/notes
