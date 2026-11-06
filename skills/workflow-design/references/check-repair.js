@@ -62,7 +62,6 @@ const results = await pipeline(UNITS,
   u => agent(`${A.context}\n\nYour unit: ${u.id}\n${u.task}\n\n${scope(u)}`,
     { label: `build:${u.id}`, phase: 'Build', schema: BUILT }),
   async (built, u) => {
-    if (!built) return null   // a dead build agent comes back as null, not a throw: drop the unit, never check old files
     let c = await check(u, 'Check')
     const repairs = []
     for (let r = 0; r < MAX_REPAIRS && !passed(c); r++) {

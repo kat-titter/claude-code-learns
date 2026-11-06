@@ -182,3 +182,4 @@ say "  - Check the library any time: python3 \"$C/skills/capture-lesson/scripts/
 say "  - See which skills get used:  python3 \"$C/skills/capture-lesson/scripts/skill-usage-log.py\" --report"
 say "  - See which skills missed:     python3 \"$C/skills/capture-lesson/scripts/trigger-misses.py\""
 say "  - Undo everything: ./install.sh --uninstall"
+if; then fi

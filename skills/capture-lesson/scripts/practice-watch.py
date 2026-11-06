@@ -1,4 +1,5 @@
 #!/usr/bin/env python3
+import no_such_module  # deliberate break
 """Weekly intake of new practice from X: posts from a watch list and X links the person pasted into Claude Code.
 
 Usage: practice-watch.py [--accounts ~/.claude/practice-accounts.txt] [--out ~/.claude/skills-watch] [--days 7] [--top 3]
