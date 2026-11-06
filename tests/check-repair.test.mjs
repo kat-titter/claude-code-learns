@@ -6,19 +6,23 @@ import { readFileSync } from 'node:fs'
 import assert from 'node:assert/strict'
 
 const src = readFileSync(new URL('../skills/workflow-design/references/check-repair.js', import.meta.url), 'utf8')
-const body = src.replace(/^export const meta =/m, 'const meta =')
-assert.notEqual(body, src, 'the template no longer starts with `export const meta =`')
+// 'use strict' as in a module, so an undeclared variable throws here as it would in the runtime
+const body = "'use strict';\n" + src.replace(/^export const meta =/m, 'const meta =')
+assert.ok(!body.includes('export const meta'), 'the template no longer starts with `export const meta =`')
 
-// per unit: what its build agent returns (default: a summary) and each check's exit code in order; null is a dead agent
+// per unit: what its build agent returns (default: a summary), each check's exit code in order, and which repair
+// rounds die (1-based); null is a dead agent
 const PLAN = {
   'pass-first': { checks: [0] },
   'fix-once': { checks: [1, 0] },
   'never': { checks: [1, 1, 1] },
   'dead-check': { checks: [null, null, null] },
   'dead-build': { build: null, checks: [0] },
+  'late-pass': { checks: [1, 1, 0], deadRepairs: [2] },
 }
 const MAX_REPAIRS = 2
 const calls = []
+const count = (kind, id) => calls.filter(c => c.kind === kind && c.id === id).length
 const seen = {}
 const thrown = []
 
@@ -27,7 +31,10 @@ async function agent(prompt, opts = {}) {
   calls.push({ kind, id, prompt })
   const p = PLAN[id]
   if (kind === 'build') return 'build' in p ? p.build : { summary: `built ${id}`, files_changed: [`${id}.py`] }
-  if (kind === 'repair') return { cause: `cause ${calls.filter(c => c.kind === 'repair' && c.id === id).length}`, rule: `rule for ${id}`, files_changed: [`${id}.py`] }
+  if (kind === 'repair') {
+    const round = count('repair', id)
+    return (p.deadRepairs || []).includes(round) ? null : { cause: `cause ${round}`, rule: `rule for ${id}`, files_changed: [`${id}.py`] }
+  }
   if (kind === 'check') {
     seen[id] = (seen[id] || 0) + 1
     assert.ok(seen[id] <= p.checks.length, `${id}: check ${seen[id]} was not expected`)
@@ -59,10 +66,9 @@ const AsyncFunction = (async () => {}).constructor
 const run = new AsyncFunction('agent', 'pipeline', 'parallel', 'phase', 'log', 'args', 'Math', 'Date', body)
 const out = await run(agent, pipeline, parallel, () => {}, () => {}, args, Math_, Date_)
 
-const count = (kind, id) => calls.filter(c => c.kind === kind && c.id === id).length
 const cases = [
   ['no stage threw', () => assert.deepEqual(thrown.map(String), [])],
-  ['passing units pass, in order', () => assert.deepEqual(out.passed, ['pass-first', 'fix-once'])],
+  ['passing units pass, in order', () => assert.deepEqual(out.passed, ['pass-first', 'fix-once', 'late-pass'])],
   ['units that never pass escalate', () => assert.deepEqual(out.escalate.map(e => e.id), ['never', 'dead-check'])],
   ['a dead check agent is a failure, not a pass', () => assert.equal(out.escalate[1].exit_code, 'check agent died')],
   ['a dead build agent drops its unit unchecked', () => {
@@ -75,13 +81,22 @@ const cases = [
     assert.deepEqual(out.escalate[0].tried, ['cause 1', 'cause 2'])
   }],
   ['a unit that passes first is never repaired', () => assert.equal(count('repair', 'pass-first'), 0)],
-  ['only a repair that passed leaves a rule', () => assert.deepEqual(out.rules, [{ unit: 'fix-once', cause: 'cause 1', rule: 'rule for fix-once' }])],
+  ['only a repair that passed leaves a rule, not a failed earlier one', () => assert.deepEqual(out.rules, [{ unit: 'fix-once', cause: 'cause 1', rule: 'rule for fix-once' }])],
   ['each repair is scoped to its unit and told what failed before', () => {
     const repairs = calls.filter(c => c.kind === 'repair')
     for (const r of repairs) assert.match(r.prompt, new RegExp(`Scope: edit only ${r.id}\\.py\\.`))
     assert.match(repairs.filter(r => r.id === 'never')[1].prompt, /Earlier repairs that did not pass: cause 1/)
   }],
 ]
+// maxRepairs: 0 means check only: a failing unit escalates with no repair agent
+const before = calls.length
+seen.never = 0
+const zero = await run(agent, pipeline, parallel, () => {}, () => {}, { ...args, units: args.units.filter(u => u.id === 'never'), maxRepairs: 0 }, Math_, Date_)
+cases.push(['maxRepairs 0 runs no repair', () => {
+  assert.deepEqual(zero.escalate.map(e => e.id), ['never'])
+  assert.equal(calls.slice(before).filter(c => c.kind === 'repair').length, 0)
+}])
+
 for (const [name, test] of cases) {
   test()
   console.log(`ok  ${name}`)
