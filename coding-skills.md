@@ -9,7 +9,7 @@ own skills folder and are listed to show the shape.
 
 | Skill | What it is for |
 |---|---|
-| [`capture-lesson`](skills/capture-lesson/SKILL.md) | Turns feedback into guidance in the same turn and keeps the library compact and current: audit, trigger evals, weekly watch, and hooks that nudge on feedback, scan for missed corrections and log skill use. |
+| [`capture-lesson`](skills/capture-lesson/SKILL.md) | Turns feedback into guidance in the same turn and keeps the library compact and current: audit, trigger evals, weekly watch, a daily nudge on what to do next, and hooks that nudge on feedback, scan for missed corrections and log skill use. |
 | `metacognition` | Asks "what am I learning?" during the work and links it to sibling projects, so a lesson reaches every place it holds. |
 | `<name>-style`, `<name>-visual-house-style` | The author's personal layer, kept private: how they like to work, voice, design and colour taste, figure house style. |
 
