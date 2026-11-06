@@ -193,6 +193,7 @@ to read little:
 | the routing section of `CLAUDE.md` | every session | about 130 tokens |
 | feedback reminder | only on a message that reads like feedback (about 1 in 7) | about 100 tokens |
 | skill-router line | only when a request strongly matches a skill (about 1 in 16) | about 30 tokens |
+| skill-pick line | when nothing matched and the session has loaded no skill yet (about 1 in 3), quiet once one loads | about 65 tokens |
 | prompt reminder | on a message that starts in lowercase or has no closing punctuation: most messages if you dictate (84% for one person who does) | about 55 tokens |
 | skill bodies | only when a task matches, once per session | 0 until then |
 | inbox, usage log, weekly reports | never in a session: scripts read them and hand over a short summary | 0 |

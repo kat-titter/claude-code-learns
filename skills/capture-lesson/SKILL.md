@@ -14,7 +14,9 @@ One loop, in the order the work runs: notice feedback (§1), find the general le
 
 - **Skills undertrigger.** In one real library, a skill whose description strongly matched the prompt loaded on its own
   about 1 time in 5; when the prompt named the skill, about 1 in 2. Rewriting descriptions alone made no measurable
-  difference. So `skill-router.py` names the likely skill, and `trigger-misses.py` finds the misses (§5).
+  difference. So `skill-router.py` names the likely skill, and `trigger-misses.py` finds the misses (§5). A vague prompt
+  matches no description, so until the session loads a skill the router asks Claude to pick from the list itself:
+  over 30 days, 260 of 315 big turns with no skill loaded yet loaded none (2026-11-05).
 - **One eval run per prompt can't separate two descriptions**: differences seen at one run vanished at three. Use
   `--runs 3` or more. `run_eval.py` counts a skill only when it is the first tool call, so short prompts understate recall.
 - **Corrections credited to "the skill loaded last" are mostly about the task**, since a skill stays loaded all session
@@ -36,7 +38,7 @@ can block a prompt:
 | hook | runs | does |
 |---|---|---|
 | `feedback-nudge.py` | on each prompt | one line of context when the prompt reads like feedback (about 1 prompt in 7) |
-| `skill-router.py` | on each prompt | names the likely skill when the prompt shares 3+ rare words with its description (about 1 in 16) |
+| `skill-router.py` | on each prompt | names the likely skill when the prompt shares 3+ rare words with its description (about 1 in 16); with no match and no skill loaded yet, asks for a pick from the skill list (about 1 in 3) |
 | `scan-corrections.py` | after each reply | logs each feedback-like prompt once to `lessons-inbox.md`, including messages typed while Claude worked |
 | `skill-usage-log.py` | on each skill load | one line to `skill-usage.log`; `--report [DAYS]` lists skills nobody used |
 
