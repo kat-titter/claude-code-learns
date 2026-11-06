@@ -2,6 +2,7 @@
 """Audit a skill library: what each skill needs to trigger and to be used by anyone, and how the library has drifted.
 
 Usage: audit-skills.py [SKILLS_DIR ...] [--personal NAME-style] [--index ~/.claude/coding-skills.md] [--inbox ~/.claude/lessons-inbox.md]
+                       [--strict] [--only SKILL]
 Per skill, against the rubric in SKILL.md 6b: frontmatter that parses, with a name that matches the folder (lowercase
 and hyphens, 64 characters at most, no "claude" or "anthropic"); a description under 1,024 characters and, with
 when_to_use, under 1,536 (about 600 is the aim); a body under 500 lines with a `## Gotchas` list in its first 40 lines;
@@ -9,7 +10,9 @@ scripts it names that exist; lines phrased as prohibitions (rewrite as positive 
 personal-taste markers outside the personal skill (move them to the personal skill).
 Library: two descriptions that would fire on the same prompt, the same guideline in two skills, skills missing from the
 index, inbox size and harness-noise lines.
-Advisory: prints a report and exits 0; exits 1 only when there is nothing to audit.
+Advisory: prints a report and exits 0; exits 1 only when there is nothing to audit. --strict also exits 1 when anything
+is flagged, so a program can gate on it; --only SKILL reports that skill alone, with the collisions and repeats it is in
+(the library is still read whole to find them).
 """
 import argparse, glob, importlib.util, os, re, sys
 from collections import Counter, defaultdict
@@ -49,6 +52,8 @@ def main():
     ap.add_argument('--inbox', default=os.path.join(os.path.dirname(SKILLS), 'lessons-inbox.md'),
                     help='the lessons inbox (default: %(default)s)')
     ap.add_argument('--lines', action='store_true', help='print every flagged line')
+    ap.add_argument('--strict', action='store_true', help='exit 1 when anything is flagged')
+    ap.add_argument('--only', default='', metavar='SKILL', help='report this skill alone')
     a = ap.parse_args()
 
     dirs = [os.path.expanduser(d) for d in a.dirs]
@@ -58,6 +63,9 @@ def main():
     skills = sorted(p for d in dirs for p in glob.glob(os.path.join(d, '*', 'SKILL.md')))
     if not skills:
         sys.exit(f"no <skill>/SKILL.md found in {', '.join(dirs)}")
+    if a.only and a.only not in {os.path.basename(os.path.dirname(p)) for p in skills}:
+        sys.exit(f"no skill {a.only} in {', '.join(dirs)}")
+    def shown(*names): return not a.only or a.only in names     # --only: flags that involve that skill
 
     personal = a.personal or style_skill(dirs[0])
     # siblings share the prefix (jo-style, jo-visual-house-style); a name without -style is its own prefix
@@ -75,7 +83,7 @@ def main():
         print(f'no index at {a.index}: index check skipped')
     print()
 
-    bodies, triggers = {}, {}
+    bodies, triggers, flags = {}, {}, 0
     for p in skills:
         d = os.path.dirname(p); name = os.path.basename(d)
         text = open(p, encoding='utf-8', errors='replace').read()
@@ -113,8 +121,10 @@ def main():
         if len(lines) > 500: notes.append(f'body is {len(lines)} lines: the limit is 500, split by task into references/')
         personal_layer = name == personal or name.startswith(prefix)    # a taste file, not a how-to: no Gotchas needed
         if not personal_layer and not any(re.match(r'##\s+Gotchas\b', l) for l in lines[:40]): notes.append('no "## Gotchas" in the first 40 lines of the body')
-        print(f'{name}: ' + ('ok' if not notes else ''))
-        for n in notes: print(f'  - {n}')
+        if shown(name):
+            print(f'{name}: ' + ('ok' if not notes else ''))
+            for n in notes: print(f'  - {n}')
+            flags += len(notes)
         bodies[name] = prov
         triggers[name] = {w for w in re.findall(r"[a-z]{4,}", (desc + ' ' + when).lower()) if w not in TRIGGER_WORDS}
 
@@ -126,7 +136,7 @@ def main():
             A, B = triggers[x], triggers[y]
             if len(A) >= 5 and len(B) >= 5 and len(A & B) / len(A | B) > 0.5:
                 collide.append((len(A & B) / len(A | B), x, y))
-    collide.sort(key=lambda t: (-t[0], t[1], t[2]))
+    collide = sorted((c for c in collide if shown(c[1], c[2])), key=lambda t: (-t[0], t[1], t[2]))
     print(f'\ntrigger collisions: {len(collide)}' + (' (descriptions share most words: merge, or give each its own use)' if collide else ''))
     for jac, x, y in collide[:10]:
         print(f'  - {x} / {y} ({jac:.0%} of description words shared)')
@@ -154,18 +164,23 @@ def main():
         if n >= 3:
             A, B = lines_[i][2], lines_[j][2]
             jac = len(A & B) / len(A | B)
-            if jac >= 0.35: repeats.append((jac, i, j))
+            if jac >= 0.35 and shown(lines_[i][0], lines_[j][0]): repeats.append((jac, i, j))
     repeats.sort(key=lambda t: (-t[0], t[1], t[2]))
     print(f'\nrepeats across skills: {len(repeats)}' + (' (same guideline in two places: keep one owner, link from the other)' if repeats else ''))
     for jac, i, j in repeats[:10]:
         print(f'  - {lines_[i][0]} / {lines_[j][0]} ({jac:.0%} shared): "{lines_[i][1][:90]}"' +
               (f'\n      > {lines_[j][1][:150]}' if a.lines else ''))
-    if os.path.exists(a.inbox):
+    flags += len(collide) + len(repeats)
+    if a.only:
+        pass                                        # the inbox belongs to no one skill
+    elif os.path.exists(a.inbox):
         inbox = open(a.inbox, encoding='utf-8', errors='replace').read().splitlines()
         noise = [l for l in inbox if HARNESS.search(l)]
         print(f'\ninbox: {len(inbox)} lines, {len(noise)} harness-noise lines to archive')
     else:
         print(f'\ninbox: none at {a.inbox}')
+    if a.strict and flags:
+        sys.exit(f'\nstrict: {flags} flag(s)' + (f' for {a.only}' if a.only else ''))
 
 
 if __name__ == '__main__':

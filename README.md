@@ -91,7 +91,7 @@ Proposed     at most five changes, grouped by what a mistake would cost to undo
   <source media="(max-width: 600px) and (prefers-color-scheme: dark)" srcset="assets/how-it-works-phone-dark.svg">
   <source media="(max-width: 600px)" srcset="assets/how-it-works-phone-light.svg">
   <source media="(prefers-color-scheme: dark)" srcset="assets/how-it-works-dark.svg">
-  <img alt="How it works. Every turn: your correction reaches a hook, which hands Claude a one-line reminder and the likely skill; Claude writes a one-line lesson into your library and reads skills from it on a match; hooks log a quoted line and each skill use. Every week: scripts read the logs, new upstream skills and X posts, and whether last week's text landed; a weekly agent drafts at most five proposals by undo cost; the open lane can apply itself, the rest come back to you, one yes per lane." src="assets/how-it-works-light.svg" width="740">
+  <img alt="How it works. Every turn: your correction reaches a hook, which hands Claude a one-line reminder and the likely skill; Claude writes a one-line lesson into your library and reads skills from it on a match; hooks log a quoted line and each skill use. Every week: scripts read the logs, new upstream skills and X posts, and whether last week's text landed; a weekly agent drafts at most five proposals by undo cost; the open lane, and the evidence lane on a passing check, can apply themselves; the rest come back to you, one yes per lane." src="assets/how-it-works-light.svg" width="740">
 </picture>
 
 You appear twice: once with a correction, once with a yes. Every arrow names what it carries; the colours are the
@@ -163,7 +163,10 @@ a rule for next time, and that step is what this repo is.
 The weekly pass sorts its proposals by what a mistake would cost to undo. A wording line in a skill kept in git is
 one revert (the **open** lane); a skill description changes when the skill loads, so it needs its trigger test first
 (**evidence**); hooks, `settings.json`, `CLAUDE.md`, installs and deletions wait for you (**closed**). You say yes
-once per lane, not once per item, and with one line in the weekly prompt the open lane applies itself.
+once per lane, not once per item, and with one line in the weekly prompt the open lane applies itself. With a second
+line, an evidence-lane skill change applies itself when
+[`refactor-gate.py`](skills/capture-lesson/scripts/refactor-gate.py) exits 0 (the audit flag it was for cleared,
+nothing newly flagged, its trigger test no worse), and stays a proposal when it fails.
 
 For workflows you write yourself, the example skill [`workflow-design`](skills/workflow-design/SKILL.md) holds the
 same rules, and its [`check-repair.js`](skills/workflow-design/references/check-repair.js) template is a working graph:

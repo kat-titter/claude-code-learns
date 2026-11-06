@@ -167,7 +167,7 @@ arrow names the value it carries.</p>
   <source media="(max-width: 600px) and (prefers-color-scheme: dark)" srcset="assets/how-it-works-phone-dark.svg">
   <source media="(max-width: 600px)" srcset="assets/how-it-works-phone-light.svg">
   <source media="(prefers-color-scheme: dark)" srcset="assets/how-it-works-dark.svg">
-  <img src="assets/how-it-works-light.svg" alt="How it works. Every turn: your correction reaches the hooks, which hand Claude a one-line reminder and the likely skill; Claude writes a one-line lesson into your library and reads skill text from it on a match; the hooks log a quoted line and each skill used. Every week: scripts read the logs, new upstream skills and X posts, and whether last week's text landed; a weekly agent drafts at most five proposals by undo cost; the open lane can apply itself, the rest come back to you, one yes per lane." width="740" loading="lazy">
+  <img src="assets/how-it-works-light.svg" alt="How it works. Every turn: your correction reaches the hooks, which hand Claude a one-line reminder and the likely skill; Claude writes a one-line lesson into your library and reads skill text from it on a match; the hooks log a quoted line and each skill used. Every week: scripts read the logs, new upstream skills and X posts, and whether last week's text landed; a weekly agent drafts at most five proposals by undo cost; the open lane, and the evidence lane on a passing check, can apply themselves; the rest come back to you, one yes per lane." width="740" loading="lazy">
 </picture></figure>
 <table>
   <tr><th>every loop needs</th><th>the lesson loop, in the turn</th><th>the weekly pass</th></tr>
@@ -180,7 +180,7 @@ arrow names the value it carries.</p>
 <table>
   <tr><th>lane</th><th>what</th><th>gate</th></tr>
   <tr><td><b>open</b></td><td>a wording line in a skill or memory note kept in git: one revert</td><td>ships on its check, if you opt in</td></tr>
-  <tr><td><b>evidence</b></td><td>a skill description (it changes when the skill loads), a merge, a script</td><td>its trigger test, or a run on last week's data, first</td></tr>
+  <tr><td><b>evidence</b></td><td>a skill description (it changes when the skill loads), a merge, a script</td><td>a skill: <code>refactor-gate.py</code> (strict audit, then its trigger test), and ships on a pass if you opt in; a script: a run on last week's data</td></tr>
   <tr><td><b>closed</b></td><td>hooks, <code>settings.json</code>, <code>CLAUDE.md</code>, installs, deletions, anything that publishes</td><td>you, whatever the evidence</td></tr>
 </table>
 <p>Measured in one person's harness: 103 workflows written over three weeks (Oct 15 to Nov 4, 2026, 138 runs), and

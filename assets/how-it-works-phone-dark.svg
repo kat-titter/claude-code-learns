@@ -63,7 +63,7 @@
 <path d="M52 1124H276L290 1138V1220Q290 1228 282 1228H52Q44 1228 44 1220V1132Q44 1124 52 1124Z" fill="#2a2927" stroke="#6b6a65" stroke-width="1.4"/><path d="M276 1124V1138H290" fill="none" stroke="#6b6a65" stroke-width="1.4"/>
 <text x="58" y="1147" font-family="Archivo,-apple-system,'Segoe UI','Helvetica Neue',Helvetica,Arial,sans-serif" font-size="15" font-weight="600" fill="#faf9f5" text-anchor="start">proposals, by undo cost</text>
 <text x="58" y="1167" font-family="Archivo,-apple-system,'Segoe UI','Helvetica Neue',Helvetica,Arial,sans-serif" font-size="13" font-weight="400" fill="#faf9f5" text-anchor="start">open: applies itself, opt-in</text>
-<text x="58" y="1185" font-family="Archivo,-apple-system,'Segoe UI','Helvetica Neue',Helvetica,Arial,sans-serif" font-size="13" font-weight="400" fill="#faf9f5" text-anchor="start">evidence: after its test</text>
+<text x="58" y="1185" font-family="Archivo,-apple-system,'Segoe UI','Helvetica Neue',Helvetica,Arial,sans-serif" font-size="13" font-weight="400" fill="#faf9f5" text-anchor="start">evidence: on a pass, opt-in</text>
 <text x="58" y="1203" font-family="Archivo,-apple-system,'Segoe UI','Helvetica Neue',Helvetica,Arial,sans-serif" font-size="13" font-weight="400" fill="#faf9f5" text-anchor="start">closed: hooks, installs</text>
 <path d="M100 1228L100 1250L14 1250L14 84L55 84" fill="none" stroke="#8f8d86" stroke-width="1.6" stroke-linejoin="round" marker-end="url(#a)"/>
 <text x="44" y="1272" font-family="Archivo,-apple-system,'Segoe UI','Helvetica Neue',Helvetica,Arial,sans-serif" font-size="12.5" font-weight="400" fill="#b0aea5" text-anchor="start">back to you: one yes per lane</text>

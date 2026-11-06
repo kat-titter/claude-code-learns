@@ -70,8 +70,8 @@
 <path d="M285 658L285 711" fill="none" stroke="#8f8d86" stroke-width="1.6" stroke-linejoin="round" marker-end="url(#a)"/>
 <text x="295" y="690" font-family="Archivo,-apple-system,'Segoe UI','Helvetica Neue',Helvetica,Arial,sans-serif" font-size="12.5" font-weight="400" fill="#b0aea5" text-anchor="start">at most five drafts</text>
 <path d="M395 755L726 755L726 314L718 314" fill="none" stroke="#8f8d86" stroke-width="1.6" stroke-linejoin="round" stroke-dasharray="5 4" marker-end="url(#a)"/>
-<text x="716" y="714" font-family="Archivo,-apple-system,'Segoe UI','Helvetica Neue',Helvetica,Arial,sans-serif" font-size="12.5" font-weight="400" fill="#b0aea5" text-anchor="end">open lane applies</text>
-<text x="716" y="729" font-family="Archivo,-apple-system,'Segoe UI','Helvetica Neue',Helvetica,Arial,sans-serif" font-size="12.5" font-weight="400" fill="#b0aea5" text-anchor="end">itself, if you opt in</text>
+<text x="716" y="714" font-family="Archivo,-apple-system,'Segoe UI','Helvetica Neue',Helvetica,Arial,sans-serif" font-size="12.5" font-weight="400" fill="#b0aea5" text-anchor="end">open lane, and evidence</text>
+<text x="716" y="729" font-family="Archivo,-apple-system,'Segoe UI','Helvetica Neue',Helvetica,Arial,sans-serif" font-size="12.5" font-weight="400" fill="#b0aea5" text-anchor="end">on a pass, if you opt in</text>
 <path d="M175 778L60 778L60 133" fill="none" stroke="#8f8d86" stroke-width="1.6" stroke-linejoin="round" marker-end="url(#a)"/>
 <text x="70" y="634" font-family="Archivo,-apple-system,'Segoe UI','Helvetica Neue',Helvetica,Arial,sans-serif" font-size="12.5" font-weight="400" fill="#b0aea5" text-anchor="start">your yes,</text>
 <text x="70" y="649" font-family="Archivo,-apple-system,'Segoe UI','Helvetica Neue',Helvetica,Arial,sans-serif" font-size="12.5" font-weight="400" fill="#b0aea5" text-anchor="start">one per lane</text>
