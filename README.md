@@ -51,11 +51,13 @@ next week, the weekly pass suggests a lesson for it.
 
 **It points at the right skill.**
 
-> **You:** the transition between the two tracks is rough, the kicks flam
+> **You:** two of the references in this report look made up, and the numbering has drifted
 
 Skills often go unused even when they fit: in one person's real sessions, a skill that clearly matched the request
-loaded on its own only about 1 time in 5. So a hook notices that the request shares rare words (*transition, track,
-flam*) with one skill's description and adds a single line naming it. Claude then loads it before starting.
+loaded on its own only about 1 time in 5. So a hook notices that the request shares rare words (*references, numbering,
+drifted*) with one skill's description, here the example skill [`citations`](skills/citations/SKILL.md), and adds
+a single line naming it. Claude loads it before starting, so every source is checked and every marker matched to its
+entry.
 
 **Monday morning, a short report.**
 

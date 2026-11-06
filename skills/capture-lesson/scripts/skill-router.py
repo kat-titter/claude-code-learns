@@ -4,7 +4,7 @@ naming that skill, so it loads before the work starts. Skills undertrigger: on o
 skill loaded on its own about 1 time in 5, and about 1 in 2 when the prompt named it. Quiet on most prompts (about 1 in
 25 fired there). Never names the personal style skill, a skill the prompt already names, or more than two.
 
-Test it: echo '{"prompt": "the transition is rough, kicks flam when the two tracks overlap"}' | python3 skill-router.py
+Test it: echo '{"prompt": "two of the references in the report look made up and the numbering drifted"}' | python3 skill-router.py
 """
 import json, os, re, sys
 
