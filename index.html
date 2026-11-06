@@ -175,7 +175,7 @@ failure down as a rule for the next run. That step is this repo.</p>
   <li class="edge">a report</li>
   <li><b>weekly agent</b><span>judges what is new and drafts at most five changes, each in a lane</span></li>
   <li class="edge">drafts, grouped by lane</li>
-  <li><b>you</b><span>one yes per lane, or only the closed lane once the open lane applies itself</span></li>
+  <li><b>you</b><span>one yes per lane, or only the closed lane once the open and evidence lanes apply on their checks</span></li>
 </ol>
 <table>
   <tr><th>every loop needs</th><th>the lesson loop, in the turn</th><th>the weekly pass</th></tr>
@@ -188,7 +188,7 @@ failure down as a rule for the next run. That step is this repo.</p>
 <table>
   <tr><th>lane</th><th>what</th><th>gate</th></tr>
   <tr><td><b>open</b></td><td>a wording line in a skill or memory note kept in git: one revert</td><td>ships on its check, if you opt in</td></tr>
-  <tr><td><b>evidence</b></td><td>a skill description (it changes when the skill loads), a merge, a script</td><td>its trigger test, or a run on last week's data, first</td></tr>
+  <tr><td><b>evidence</b></td><td>a skill description (it changes when the skill loads), a merge, a script</td><td>a skill: <code>refactor-gate.py</code> (strict audit, then its trigger test), and ships on a pass if you opt in; a script: a run on last week's data</td></tr>
   <tr><td><b>closed</b></td><td>hooks, <code>settings.json</code>, <code>CLAUDE.md</code>, installs, deletions, anything that publishes</td><td>you, whatever the evidence</td></tr>
 </table>
 <p>Measured in one person's harness: 103 workflows written over three weeks (Oct 15 to Nov 4, 2026, 138 runs), and

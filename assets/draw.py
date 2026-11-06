@@ -211,7 +211,7 @@ def how_it_works(t):
                                                                ('closed: hooks, installs', 0)])
     s.edge([(285, 658), (285, 711)]); s.label(295, 690, ['at most five drafts'])
     s.edge([(M + W, 755), (726, 755), (726, 314), (R + W + 3, 314)], dashed=True)
-    s.label(716, 714, ['open lane applies', 'itself, if you opt in'], 'end')
+    s.label(716, 714, ['open lane, and evidence', 'on a pass, if you opt in'], 'end')
     s.edge([(M, 778), (60, 778), (60, 133)])
     s.label(70, 634, ['your yes,', 'one per lane'])
     s.key(826, KEY)
@@ -249,7 +249,7 @@ def how_it_works_phone(t):
     s.node(X, 1012, W, 64, 'claude', 'weekly agent', [('weekly-watch.md', 1)])
     s.edge([(A, 1076), (A, 1121)]); s.label(92, 1104, ['at most five drafts'])
     s.node(X, 1124, W, 104, 'file', 'proposals, by undo cost', [('open: applies itself, opt-in', 0),
-                                                                 ('evidence: after its test', 0), ('closed: hooks, installs', 0)])
+                                                                 ('evidence: on a pass, opt-in', 0), ('closed: hooks, installs', 0)])
     s.edge([(100, 1228), (100, 1250), (14, 1250), (14, 84), (55, 84)])
     s.label(X, 1272, ['back to you: one yes per lane'])
     s.key(1310, KEY)
