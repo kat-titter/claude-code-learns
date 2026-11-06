@@ -1,0 +1,4 @@
+# X accounts the weekly pass reads for new practice, one handle per line (practice-watch.py).
+# Primary sources first; add the people whose posts you bookmark. X links you paste into Claude Code are read too.
+AnthropicAI
+claudeai

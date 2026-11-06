@@ -9,13 +9,13 @@
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500&family=Archivo:wght@400;500;600&display=swap">
 <style>
 :root{
-  --bg:#ffffff; --panel:#f3f5f6; --line:#dfe3e5; --ink:#14171a; --dim:#666e72; --acc:#0f8f6c; --acc-text:#0a7457; --bar:#949c9f;
+  --bg:#faf9f5; --panel:#f0eee6; --line:#e8e6dc; --ink:#141413; --dim:#5e5d59; --acc:#d97757; --acc-text:#a8492a; --bar:#b0aea5; --mark:#c96442; --keep:#788c5d;
   --mono:"IBM Plex Mono",ui-monospace,Menlo,monospace; --sans:Archivo,"Helvetica Neue",Helvetica,Arial,sans-serif;
   color-scheme:light;
 }
 @media (prefers-color-scheme:dark){ :root:not([data-theme="light"]){
-  --bg:#0e1112; --panel:#171b1d; --line:#2a2f33; --ink:#f6f7f7; --dim:#949c9f; --acc:#3fe0a0; --acc-text:#3fe0a0; --bar:#666e72; color-scheme:dark }}
-:root[data-theme="dark"]{ --bg:#0e1112; --panel:#171b1d; --line:#2a2f33; --ink:#f6f7f7; --dim:#949c9f; --acc:#3fe0a0; --acc-text:#3fe0a0; --bar:#666e72; color-scheme:dark }
+  --bg:#1f1e1d; --panel:#2a2927; --line:#3d3d3a; --ink:#faf9f5; --dim:#b0aea5; --acc:#d97757; --acc-text:#f0a284; --bar:#6b6a65; --mark:#d97757; --keep:#788c5d; color-scheme:dark }}
+:root[data-theme="dark"]{ --bg:#1f1e1d; --panel:#2a2927; --line:#3d3d3a; --ink:#faf9f5; --dim:#b0aea5; --acc:#d97757; --acc-text:#f0a284; --bar:#6b6a65; --mark:#d97757; --keep:#788c5d; color-scheme:dark }
 *{box-sizing:border-box}
 body{margin:0;background:var(--bg);color:var(--ink);font:16px/1.6 var(--sans)}
 main{max-width:760px;margin:0 auto;padding:32px 16px 64px}
@@ -23,9 +23,11 @@ main{max-width:760px;margin:0 auto;padding:32px 16px 64px}
 .top a{color:var(--dim)}
 h1{font-family:var(--mono);font-weight:500;font-size:clamp(1.6rem,4.6vw,2.2rem);line-height:1.2;margin:28px 0 12px;letter-spacing:-.01em}
 h1 b{color:var(--acc-text);font-weight:500}
+.hero{display:flex;align-items:center;justify-content:space-between;gap:21px}
+.hero svg{flex:none;width:117px;height:auto}
 .lede{margin:0 0 28px;max-width:62ch}
 h2{font-family:var(--mono);font-weight:500;font-size:1rem;margin:44px 0 10px;padding-top:14px;border-top:1px solid var(--line)}
-h2 span{color:var(--acc-text);margin-right:12px}
+h2 span{color:var(--dim);margin-right:12px}
 p{margin:0 0 12px;max-width:66ch}
 .three{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,210px),1fr));gap:20px 28px;margin:8px 0 0}
 .three h3{font-family:var(--mono);font-weight:500;font-size:.95rem;margin:0 0 4px}
@@ -33,7 +35,9 @@ p{margin:0 0 12px;max-width:66ch}
 ol.loop{list-style:none;padding:0;margin:6px 0 0;display:grid;gap:6px;counter-reset:s}
 ol.loop li{display:grid;grid-template-columns:7.5rem 1fr;gap:12px;counter-increment:s}
 ol.loop b{font-family:var(--mono);font-weight:500}
-ol.loop b::before{content:counter(s) "  ";color:var(--acc-text)}
+ol.loop b::before{content:counter(s) "  ";color:var(--dim)}
+.fig{margin:13px 0 21px}
+.fig img{display:block;width:100%;max-width:740px;height:auto}
 table{border-collapse:collapse;width:100%;font-size:.93rem;margin:6px 0 12px}
 th,td{text-align:left;vertical-align:top;padding:7px 10px 7px 0;border-bottom:1px solid var(--line)}
 th{font-family:var(--mono);font-weight:500;font-size:.8rem;color:var(--dim)}
@@ -47,23 +51,24 @@ ul.tight{margin:0 0 12px;padding-left:20px;max-width:66ch} ul.tight li{margin:4p
 .bars .v{font-family:var(--mono);text-align:right}
 .bars i{display:block;height:12px;border-radius:2px;background:var(--bar)}
 .bars i.on{background:var(--acc)}
+.bars .grp{grid-column:1/-1;font-family:var(--mono);font-size:.8rem;color:var(--dim);margin-top:6px}
 .key{display:flex;flex-wrap:wrap;gap:4px 20px;font-size:.85rem;color:var(--dim);margin:0 0 12px}
 .key i{display:inline-block;width:12px;height:12px;border-radius:2px;vertical-align:-1px;margin-right:6px;background:var(--bar)}
 .key i.on{background:var(--acc)}
 sup.ref{font-size:.7em;line-height:0}
-sup.ref a{color:var(--acc-text);text-decoration:none}
+sup.ref a{color:var(--dim);text-decoration:none}
 ol.refs{padding-left:22px;font-size:.88rem;color:var(--dim)} ol.refs li{margin:6px 0} ol.refs a{color:var(--dim)}
-a{color:var(--ink);text-decoration-color:var(--acc);text-underline-offset:2px}
+a{color:var(--ink);text-decoration-color:var(--bar);text-underline-offset:2px}
 footer{margin-top:44px;padding-top:14px;border-top:1px solid var(--line);font-size:.85rem;color:var(--dim);display:flex;flex-wrap:wrap;gap:6px 24px}
 footer a{color:var(--dim)}
-@media (max-width:520px){ pre{white-space:pre-wrap;overflow-wrap:anywhere} ol.loop li{grid-template-columns:1fr;gap:0} .bars{grid-template-columns:1fr 3.8rem} .bars span:first-child{grid-column:1/-1;margin-top:4px} }
-</style>
+@media (max-width:520px){ .hero{flex-direction:column-reverse;align-items:flex-start;gap:13px} .hero svg{width:78px} pre{white-space:pre-wrap;overflow-wrap:anywhere} ol.loop li,</style>
 </head>
 <body>
 <main>
-<div class="top"><a href="https://github.com/kat-titter/claude-code-learns">github.com/kat-titter/claude-code-learns</a><span>updated Oct 2026</span></div>
+<div class="top"><a href="https://github.com/kat-titter/claude-code-learns">github.com/kat-titter/claude-code-learns</a><span>updated Nov 2026</span></div>
 
-<h1>Let Claude Code <b>keep what you teach it</b></h1>
+<div class="hero"><h1>Learns in one turn.<br><b>Keeps it for good.</b></h1>
+<!--mark--><svg viewBox="0 0 117 72" width="117" height="72" shape-rendering="crispEdges" role="img" aria-label="Claude keeping one line"><rect x="18" y="0" width="9" height="9" fill="var(--mark)"/><rect x="27" y="0" width="9" height="9" fill="var(--mark)"/><rect x="36" y="0" width="9" height="9" fill="var(--mark)"/><rect x="45" y="0" width="9" height="9" fill="var(--mark)"/><rect x="54" y="0" width="9" height="9" fill="var(--mark)"/><rect x="9" y="9" width="9" height="9" fill="var(--mark)"/><rect x="18" y="9" width="9" height="9" fill="var(--mark)"/><rect x="27" y="9" width="9" height="9" fill="var(--mark)"/><rect x="36" y="9" width="9" height="9" fill="var(--mark)"/><rect x="45" y="9" width="9" height="9" fill="var(--mark)"/><rect x="54" y="9" width="9" height="9" fill="var(--mark)"/><rect x="63" y="9" width="9" height="9" fill="var(--mark)"/><rect x="81" y="9" width="9" height="9" fill="var(--keep)"/><rect x="90" y="9" width="9" height="9" fill="var(--keep)"/><rect x="99" y="9" width="9" height="9" fill="var(--keep)"/><rect x="9" y="18" width="9" height="9" fill="var(--mark)"/><rect x="18" y="18" width="9" height="9" fill="#141413"/><rect x="27" y="18" width="9" height="9" fill="var(--mark)"/><rect x="36" y="18" width="9" height="9" fill="var(--mark)"/><rect x="45" y="18" width="9" height="9" fill="var(--mark)"/><rect x="54" y="18" width="9" height="9" fill="#141413"/><rect x="63" y="18" width="9" height="9" fill="var(--mark)"/><rect x="81" y="18" width="9" height="9" fill="var(--keep)"/><rect x="90" y="18" width="9" height="9" fill="var(--keep)"/><rect x="99" y="18" width="9" height="9" fill="var(--keep)"/><rect x="108" y="18" width="9" height="9" fill="var(--keep)"/><rect x="9" y="27" width="9" height="9" fill="var(--mark)"/><rect x="18" y="27" width="9" height="9" fill="var(--mark)"/><rect x="27" y="27" width="9" height="9" fill="var(--mark)"/><rect x="36" y="27" width="9" height="9" fill="var(--mark)"/><rect x="45" y="27" width="9" height="9" fill="var(--mark)"/><rect x="54" y="27" width="9" height="9" fill="var(--mark)"/><rect x="63" y="27" width="9" height="9" fill="var(--mark)"/><rect x="81" y="27" width="9" height="9" fill="var(--keep)"/><rect x="90" y="27" width="9" height="9" fill="var(--keep)"/><rect x="99" y="27" width="9" height="9" fill="var(--keep)"/><rect x="108" y="27" width="9" height="9" fill="var(--keep)"/><rect x="0" y="36" width="9" height="9" fill="var(--mark)"/><rect x="9" y="36" width="9" height="9" fill="var(--mark)"/><rect x="18" y="36" width="9" height="9" fill="var(--mark)"/><rect x="27" y="36" width="9" height="9" fill="var(--mark)"/><rect x="36" y="36" width="9" height="9" fill="var(--mark)"/><rect x="45" y="36" width="9" height="9" fill="var(--mark)"/><rect x="54" y="36" width="9" height="9" fill="var(--mark)"/><rect x="63" y="36" width="9" height="9" fill="var(--mark)"/><rect x="72" y="36" width="9" height="9" fill="var(--mark)"/><rect x="81" y="36" width="9" height="9" fill="var(--keep)"/><rect x="90" y="36" width="9" height="9" fill="var(--bg)"/><rect x="99" y="36" width="9" height="9" fill="var(--bg)"/><rect x="108" y="36" width="9" height="9" fill="var(--keep)"/><rect x="9" y="45" width="9" height="9" fill="var(--mark)"/><rect x="18" y="45" width="9" height="9" fill="var(--mark)"/><rect x="27" y="45" width="9" height="9" fill="var(--mark)"/><rect x="36" y="45" width="9" height="9" fill="var(--mark)"/><rect x="45" y="45" width="9" height="9" fill="var(--mark)"/><rect x="54" y="45" width="9" height="9" fill="var(--mark)"/><rect x="63" y="45" width="9" height="9" fill="var(--mark)"/><rect x="81" y="45" width="9" height="9" fill="var(--keep)"/><rect x="90" y="45" width="9" height="9" fill="var(--keep)"/><rect x="99" y="45" width="9" height="9" fill="var(--keep)"/><rect x="108" y="45" width="9" height="9" fill="var(--keep)"/><rect x="18" y="54" width="9" height="9" fill="var(--mark)"/><rect x="54" y="54" width="9" height="9" fill="var(--mark)"/><rect x="81" y="54" width="9" height="9" fill="var(--keep)"/><rect x="90" y="54" width="9" height="9" fill="var(--keep)"/><rect x="99" y="54" width="9" height="9" fill="var(--keep)"/><rect x="108" y="54" width="9" height="9" fill="var(--keep)"/><rect x="18" y="63" width="9" height="9" fill="var(--mark)"/><rect x="54" y="63" width="9" height="9" fill="var(--mark)"/></svg><!--/mark--></div>
 <p class="lede">You correct the agent once and it keeps the lesson. Feedback in any chat becomes a short guideline in a
 Skill, the library organizes itself, and a weekly check looks for new skills that fill a gap. It is built only on what
 Claude Code already has: Skills, hooks, memory and scheduled tasks.</p>
@@ -146,11 +151,67 @@ your yes.</p>
 <pre><code><span class="c"># Skills watch, 2026-11-02</span>
 New or updated upstream    skills added to anthropics/skills or a plugin marketplace
 Gaps in the library        feedback no skill covers, and the words that recur in it
+Practice from X            new posts from your links and watch list; proposed only if your sessions lack it
 Library health             audit flags; a flag two weeks running becomes a proposal
 Footprint                  what loads every session against what waits on disk
 Proposed                   at most five changes, most useful first</code></pre>
 
-<h2><span>07</span>stays light</h2>
+<h2><span>07</span>loops and graphs</h2>
+<p>A loop makes one piece of work correct without you: a check a program can fail, a repair, a rule for when to stop.
+A graph decides which pieces exist, in what order, and where you sign off<sup class="ref"><a href="#r8">8</a></sup>.
+Without a loop you read every output; without a graph you approve every step. The step most setups skip writes each
+failure down as a rule for the next run. That step is this repo.</p>
+<p>The whole system, drawn as a graph. You appear twice, once with a correction and once with a yes; every
+arrow names the value it carries.</p>
+<figure class="fig"><picture>
+  <source media="(max-width: 600px) and (prefers-color-scheme: dark)" srcset="assets/how-it-works-phone-dark.svg">
+  <source media="(max-width: 600px)" srcset="assets/how-it-works-phone-light.svg">
+  <source media="(prefers-color-scheme: dark)" srcset="assets/how-it-works-dark.svg">
+  <img src="assets/how-it-works-light.svg" alt="How it works. Every turn: your correction reaches the hooks, which hand Claude a one-line reminder and the likely skill; Claude writes a one-line lesson into your library and reads skill text from it on a match; the hooks log a quoted line and each skill used. Every week: scripts read the logs, new upstream skills and X posts, and whether last week's text landed; a weekly agent drafts at most five proposals by undo cost; the open lane can apply itself, the rest come back to you, one yes per lane." width="740" loading="lazy">
+</picture></figure>
+<table>
+  <tr><th>every loop needs</th><th>the lesson loop, in the turn</th><th>the weekly pass</th></tr>
+  <tr><td>a check a program can fail</td><td>the YAML parses; trigger tests load it on real prompts</td><td>the audit and the watcher are scripts</td></tr>
+  <tr><td>a round limit and a budget</td><td>one line per lesson</td><td>weekly, at most five proposals</td></tr>
+  <tr><td>memory of past attempts</td><td>the inbox; skills kept in git</td><td>the report checks whether last week's drafts landed</td></tr>
+  <tr><td>someone told when it stalls</td><td>you, in the same turn</td><td>stalled items lead the report; open two weeks, they drop</td></tr>
+</table>
+<p>Proposals are gated by what a mistake would cost to undo, not by a confidence score:</p>
+<table>
+  <tr><th>lane</th><th>what</th><th>gate</th></tr>
+  <tr><td><b>open</b></td><td>a wording line in a skill or memory note kept in git: one revert</td><td>ships on its check, if you opt in</td></tr>
+  <tr><td><b>evidence</b></td><td>a skill description (it changes when the skill loads), a merge, a script</td><td>its trigger test, or a run on last week's data, first</td></tr>
+  <tr><td><b>closed</b></td><td>hooks, <code>settings.json</code>, <code>CLAUDE.md</code>, installs, deletions, anything that publishes</td><td>you, whatever the evidence</td></tr>
+</table>
+<p>Measured in one person's harness: 103 workflows written over three weeks (Oct 15 to Nov 4, 2026, 138 runs), and
+the weekly pass three days after its last report.</p>
+<div class="bars" role="img" aria-label="fan out to agents in parallel 85 of 103; a schema on each agent&#39;s output 79 of 103; saved and reused, not drawn fresh 0 of 103; an agent asked to run a test 81 of 103; the script gates on the exit code 0 of 103; a bounded repair cycle 0 of 103; runs resumed, not rerun whole 17 of 138; weekly proposals that landed 0 of 4">
+  <span class="grp">the graph</span>
+  <span>fan out to agents in parallel</span><i style="width:82.5%"></i><span class="v">85 / 103</span>
+  <span>a schema on each agent's output</span><i style="width:76.7%"></i><span class="v">79 / 103</span>
+  <span>saved and reused, not drawn fresh</span><i style="width:0.0%"></i><span class="v">0 / 103</span>
+  <span class="grp">the loop</span>
+  <span>an agent asked to run a test</span><i style="width:78.6%"></i><span class="v">81 / 103</span>
+  <span>the script gates on the exit code</span><i style="width:0.0%"></i><span class="v">0 / 103</span>
+  <span>a bounded repair cycle</span><i style="width:0.0%"></i><span class="v">0 / 103</span>
+  <span>runs resumed, not rerun whole</span><i style="width:12.3%"></i><span class="v">17 / 138</span>
+  <span>weekly proposals that landed</span><i style="width:0.0%"></i><span class="v">0 / 4</span>
+</div>
+<p>The graphs were good: most fanned out, and most agents returned a fixed shape. The loops closed through the person.
+Agents were asked to run tests in 81 workflows, but no script read an exit code: where one gated, it gated on an
+agent's verdict. No script repaired a failing unit and tried again; whole workflows were rerun instead of resumed, one
+six times; and 21 reviews, audits and verify passes were each drawn fresh. The example skill
+<a href="https://github.com/kat-titter/claude-code-learns/blob/main/skills/workflow-design/SKILL.md"><code>workflow-design</code></a>
+holds the rules, and its <code>check-repair.js</code> template is a working graph: units fan out, each is checked by
+exit code and repaired alone up to three times, and every repair that passes comes back as a candidate rule.</p>
+<figure class="fig"><picture>
+  <source media="(max-width: 600px) and (prefers-color-scheme: dark)" srcset="assets/check-repair-phone-dark.svg">
+  <source media="(max-width: 600px)" srcset="assets/check-repair-phone-light.svg">
+  <source media="(prefers-color-scheme: dark)" srcset="assets/check-repair-dark.svg">
+  <img src="assets/check-repair-light.svg" alt="check-repair.js. Each unit, in parallel: an agent builds it; a check reads the exit code; exit 0 after a fix becomes a candidate rule; a non-zero exit sends the code and the last 40 lines to an agent that repairs that unit only, up to three rounds; a unit still failing comes to you." width="740" loading="lazy">
+</picture></figure>
+
+<h2><span>08</span>stays light</h2>
 <p>What a session carries against what waits until it is needed, in one real library (2026-10-26, 22 skills):</p>
 <div class="key"><span><i class="on"></i>carried every session</span><span><i></i>loaded when a task needs it</span></div>
 <div class="bars" role="img" aria-label="Skill descriptions 17.2 KB carried; skill bodies 213 KB on demand; memory index 11.0 KB carried; memory notes 226 KB on demand">
@@ -162,7 +223,13 @@ Proposed                   at most five changes, most useful first</code></pre>
 <p>Memory keeps one fact per note and one line per note in its index. Scripts read every file; the agent reads their
 short reports and only the files they name.</p>
 
-<h2><span>08</span>why it works</h2>
+<h2><span>09</span>why it works</h2>
+<figure class="fig"><picture>
+  <source media="(max-width: 600px) and (prefers-color-scheme: dark)" srcset="assets/mind-phone-dark.svg">
+  <source media="(max-width: 600px)" srcset="assets/mind-phone-light.svg">
+  <source media="(prefers-color-scheme: dark)" srcset="assets/mind-dark.svg">
+  <img src="assets/mind-light.svg" alt="Memory and cognition. Short-term memory: the session's context, lessons-inbox.md, skill-usage.log; long-term: skills, project memory, CLAUDE.md, sorted in weekly. Cognition about you: your style skill, feedback-nudge.py, the routing question, memory notes about you. About itself: trigger-misses.py, skills-watch.py, audit-skills.py, and which family a mistake belongs to." width="740" loading="lazy">
+</picture></figure>
 <p>It borrows the brain's split between a fast learner and a slow one<sup class="ref"><a href="#r1">1</a></sup>, a split
 also proposed for intelligent agents<sup class="ref"><a href="#r2">2</a></sup>.</p>
 <table>
@@ -175,7 +242,7 @@ also proposed for intelligent agents<sup class="ref"><a href="#r2">2</a></sup>.<
   <tr><td>downscaling keeps the system efficient<sup class="ref"><a href="#r7">7</a></sup></td><td>compress, merge, archive</td></tr>
 </table>
 
-<h2><span>09</span>install</h2>
+<h2><span>10</span>install</h2>
 <pre><code>git clone https://github.com/kat-titter/claude-code-learns
 cd claude-code-learns && ./install.sh --name yourname --dry-run
 ./install.sh --name yourname</code></pre>
@@ -185,7 +252,7 @@ cd claude-code-learns && ./install.sh --name yourname --dry-run
 safe, and <code>./install.sh --uninstall</code> undoes it. For the weekly watch, paste <code>weekly-watch.md</code>
 into a weekly scheduled task.</p>
 
-<h2><span>10</span>references</h2>
+<h2><span>11</span>references</h2>
 <ol class="refs">
   <li id="r1">McClelland, J. L., McNaughton, B. L., &amp; O'Reilly, R. C. (1995). Why there are complementary learning systems in the hippocampus and neocortex. <i>Psychological Review</i>, 102(3), 419–457. <a href="https://doi.org/10.1037/0033-295X.102.3.419">doi:10.1037/0033-295X.102.3.419</a></li>
   <li id="r2">Kumaran, D., Hassabis, D., &amp; McClelland, J. L. (2016). What learning systems do intelligent agents need? Complementary learning systems theory updated. <i>Trends in Cognitive Sciences</i>, 20(7), 512–534. <a href="https://doi.org/10.1016/j.tics.2016.05.004">doi:10.1016/j.tics.2016.05.004</a></li>
@@ -194,6 +261,7 @@ into a weekly scheduled task.</p>
   <li id="r5">Tse, D., Langston, R. F., Kakeyama, M., et al. (2007). Schemas and memory consolidation. <i>Science</i>, 316(5821), 76–82. <a href="https://doi.org/10.1126/science.1135935">doi:10.1126/science.1135935</a></li>
   <li id="r6">Wilson, M. A., &amp; McNaughton, B. L. (1994). Reactivation of hippocampal ensemble memories during sleep. <i>Science</i>, 265(5172), 676–679. <a href="https://doi.org/10.1126/science.8036517">doi:10.1126/science.8036517</a></li>
   <li id="r7">Tononi, G., &amp; Cirelli, C. (2014). Sleep and the price of plasticity: from synaptic and cellular homeostasis to memory consolidation and integration. <i>Neuron</i>, 81(1), 12–34. <a href="https://doi.org/10.1016/j.neuron.2013.12.025">doi:10.1016/j.neuron.2013.12.025</a></li>
+  <li id="r8">Hoodie [@HoodieFade_]. (2026, November 4). <i>Loops &amp; Graphs: how to stop being the slowest node in your agent system and approve only one step</i> [Article]. X. <a href="https://x.com/HoodieFade_/status/2117959235690524883">x.com/HoodieFade_/status/2117959235690524883</a></li>
 </ol>
 
 <footer><span>MIT licensed</span><a href="https://github.com/kat-titter/claude-code-learns">source and install</a></footer>

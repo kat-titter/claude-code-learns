@@ -137,6 +137,33 @@ def enabled_plugin_skills():
                   for p in glob.glob(os.path.join(e.get('installPath', ''), 'skills', '*', 'SKILL.md')))
 
 
+def flat(text):
+    """Lowercase words only, so markdown, quotes and line wraps do not hide a match."""
+    return ' '.join(re.sub(r'[^\w#]+', ' ', text.lower()).split())
+
+
+def last_proposals(out, corpus):
+    """Each item of the newest earlier report's "## Proposed": did its drafted text (the > lines) land anywhere?
+    A draft counts as landed when at least half of its six-word runs appear in the library or memory; an item is
+    landed when all its drafts are, partly when some are."""
+    reports = sorted(p for p in glob.glob(os.path.join(out, '20??-??-??*.md')) if '## Proposed' in open(p, encoding='utf-8').read())
+    if not reports:
+        return None, []
+    text = open(reports[-1], encoding='utf-8').read().split('## Proposed', 1)[1].split('\n## ', 1)[0]
+    items = []
+    for block in re.split(r'\n(?=\d+\. )', '\n' + text):
+        m = re.match(r'\s*(\d+)\. \*\*(.+?)\*\*', block)
+        if not m:
+            continue
+        drafts = [flat(l.lstrip()[1:]).split() for l in block.splitlines() if l.lstrip().startswith('>')]
+        drafts = [[' '.join(w[i:i + 6]) for i in range(0, len(w) - 5, 6)] for w in drafts if len(w) >= 6]
+        found = [sum(r in corpus for r in runs) * 2 >= len(runs) for runs in drafts]
+        state = 'no drafted text' if not found else 'landed' if all(found) else \
+            f'partly ({sum(found)} of {len(found)} drafts)' if any(found) else 'open'
+        items.append((m.group(1), m.group(2).rstrip('.'), state))
+    return os.path.basename(reports[-1])[:10], items
+
+
 def write_atomic(path, text):
     tmp = path + '.tmp'
     with open(tmp, 'w', encoding='utf-8') as f:
@@ -307,10 +334,23 @@ def main():
     prev = next((h for h in reversed(history) if h.get('date') != foot['date']), None)
     state['footprint'] = ([h for h in history if h.get('date') != foot['date']] + [foot])[-26:]
 
+    # last week's proposals: a loop that waits on a person must say when it is stuck, at the top of the report
+    corpus = flat(' '.join(open(f, encoding='utf-8', errors='replace').read() for d in [a.skills] + a.memory
+                           for f in glob.glob(os.path.join(d, '**', '*.md'), recursive=True)) +
+                  (open(claude_md, encoding='utf-8', errors='replace').read() if os.path.exists(claude_md) else ''))
+    proposed_on, proposals = last_proposals(a.out, corpus)
+
     # report
     md = [f'# Skills watch, {today.isoformat()}', '', f'Window: {since.isoformat()} to {today.isoformat()}.', '']
     if state_note:
         md += [state_note, '']
+    if proposals:
+        checked = [p for p in proposals if p[2] != 'no drafted text']
+        landed = [p for p in checked if p[2] == 'landed']
+        md += ['## Last proposals', '',
+               f'{len(landed)} of {len(checked)} drafted proposals from {proposed_on} are in the library or memory now.'
+               + (' The rest are stalled: apply them, or say no so they stop coming back.' if len(landed) < len(checked) else '')]
+        md += [f'- {n}. {t}: {s}' for n, t, s in proposals] + ['']
     md += ['## New or updated upstream', '']
     first = [u for u in upstream_seen if u['status'] == 'first look']
     changed = [u for u in upstream_seen if u['status'] != 'first look']
@@ -369,7 +409,9 @@ def main():
     state['last_run'] = today.isoformat()
     write_atomic(STATE, json.dumps(state, indent=1))
     print(path)
-    print(f"{len(changed)} upstream changes" + (f", {unreadable} upstream repos unreadable" if unreadable else '') +
+    stalled = sum(p[2] not in ('landed', 'no drafted text') for p in proposals)
+    print((f"{stalled} of last week's proposals stalled, " if stalled else '') +
+          f"{len(changed)} upstream changes" + (f", {unreadable} upstream repos unreadable" if unreadable else '') +
           f", {len(new_offer)} new in marketplaces, {len(unmatched)} unmatched feedback lines, " +
           ('audit FAILED' if audit_error else f'{len(flagged)} skills flagged by the audit') +
           (', state.json was corrupt and moved aside' if state_note else ''))

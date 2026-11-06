@@ -1,6 +1,14 @@
-# claude-code-learns
+<h1>
+<picture>
+  <source media="(prefers-color-scheme: dark)" srcset="assets/banner-dark.svg">
+  <img alt="claude-code-learns: Learns in one turn. Keeps it for good." src="assets/banner-light.svg" width="100%">
+</picture>
+</h1>
 
-**Correct it once. It remembers.**
+[![for Claude Code](https://img.shields.io/badge/for-Claude_Code-d97757?style=flat-square)](https://code.claude.com/docs)
+[![Python 3, standard library only](https://img.shields.io/badge/Python_3-stdlib_only-6a9bcc?style=flat-square)](#install)
+[![hooks never block](https://img.shields.io/badge/hooks-never_block-6a9bcc?style=flat-square)](AGENTS.md#invariants)
+[![MIT license](https://img.shields.io/badge/license-MIT-5e5d59?style=flat-square)](LICENSE)
 
 Claude Code starts every session fresh, so a correction you made on Monday can be needed again on Friday. This repo
 gives it a simple learning loop. When you correct it, it writes the lesson down as one short line in the right file, and
@@ -8,7 +16,8 @@ the next session reads that file when the task calls for it. Once a week a tidy-
 built only from parts Claude Code already has: skills, hooks, memory and scheduled tasks.
 
 **Install:** [one command](#install) &emsp; **Undo:** [one command](#undo) &emsp;
-**Explainer page:** [kat-titter.github.io/claude-code-learns](https://kat-titter.github.io/claude-code-learns/)
+**Explainer page:** [kat-titter.github.io/claude-code-learns](https://kat-titter.github.io/claude-code-learns/) &emsp;
+**For agents:** [`AGENTS.md`](AGENTS.md)
 
 ## What it looks like
 
@@ -42,58 +51,51 @@ next week, the weekly pass suggests a lesson for it.
 
 **It points at the right skill.**
 
-> **You:** the transition between the two tracks is rough, the kicks flam
+> **You:** two of the references in this report look made up, and the numbering has drifted
 
 Skills often go unused even when they fit: in one person's real sessions, a skill that clearly matched the request
-loaded on its own only about 1 time in 5. So a hook notices that the request shares rare words (*transition, track,
-flam*) with one skill's description and adds a single line naming it. Claude then loads it before starting.
+loaded on its own only about 1 time in 5. So a hook notices that the request shares rare words (*references, numbering,
+drifted*) with one skill's description, here the example skill [`citations`](skills/citations/SKILL.md), and adds
+a single line naming it. Claude loads it before starting, so every source is checked and every marker matched to its
+entry.
 
 **Monday morning, a short report.**
 
-The weekly pass leaves a page like this, and changes nothing until you say yes:
+The weekly pass leaves a page like this, and changes nothing until you say yes. It also reads new posts on X (links
+you pasted into Claude Code that week, and accounts listed in `~/.claude/practice-accounts.txt`) and proposes a
+practice only when a measurement on your own sessions shows you don't follow it yet:
 
 ```
+Stalled      1 of last week's 4 proposals landed; the other 3 get one more week, then drop
 Upstream     1 new skill (pdf-forms): overlaps nothing you have
+Practice     a post you pasted: "gate on the exit code"; 0 of 103 workflows do, so proposed
 Gaps         2 notes in the inbox that no skill covers, e.g. "the numbers don't match the sources"
 Misses       github-practice loaded for 3 of 9 requests that matched it: add "pages, publish" to its description?
 Health       one skill is 540 lines: split by task
-Proposed     at most five changes, most useful first
+Proposed     at most five changes, grouped by what a mistake would cost to undo
 ```
 
-## Four words you'll need
+## Five words you'll need
 
 | word | in plain terms |
 |---|---|
 | **Claude Code** | an AI assistant that works in your terminal or desktop app, reading and editing files with you |
 | **skill** | a short how-to file. Each session sees only its one-paragraph description, like a label on a shelf; the full text is read only when a task matches |
 | **hook** | a tiny script Claude Code runs at a set moment, such as when you send a message or after each reply. Here hooks only add a line of context or write a log; they never block you |
+| **`.md` (Markdown)** | a plain-text file with light formatting (`#` for a heading, `-` for a list). Every skill, memory note and `CLAUDE.md` is one, so the memory itself is files you can open, read and edit |
 | **memory and `CLAUDE.md`** | notes Claude Code keeps about you and each project (a short index is read every session), and a short file of standing instructions read at the start of every session |
 
 ## How it works
 
-```mermaid
-flowchart TB
-  you(["You"])
-  claude(["Claude"])
-  hooks["Hooks: tiny scripts<br/>on each message and reply"]
-  inbox[("Inbox<br/>a quick notebook")]
-  watch[["Weekly pass"]]
-  subgraph lib ["Library: read only when a task matches"]
-    general["General skills<br/>how to do the work well"]
-    taste["Your style skill<br/>your taste"]
-    memory[("Project memory<br/>facts about one project")]
-  end
-  you -->|"a correction,<br/>a preference"| hooks
-  hooks -->|"one-line reminder,<br/>or the likely skill"| claude
-  hooks -->|"jot it down"| inbox
-  claude <-->|"writes the lesson;<br/>reads it when a task matches"| lib
-  inbox --> watch
-  watch -->|"proposes tidy-ups,<br/>you say yes"| lib
-  classDef default fill:#f3f5f6,stroke:#dfe3e5,color:#14171a
-  classDef core fill:#e6f4ef,stroke:#0f8f6c,stroke-width:1.5px,color:#14171a,font-weight:bold
-  class claude core
-  style lib fill:none,stroke:#949c9f,stroke-dasharray:4 3
-```
+<picture>
+  <source media="(max-width: 600px) and (prefers-color-scheme: dark)" srcset="assets/how-it-works-phone-dark.svg">
+  <source media="(max-width: 600px)" srcset="assets/how-it-works-phone-light.svg">
+  <source media="(prefers-color-scheme: dark)" srcset="assets/how-it-works-dark.svg">
+  <img alt="How it works. Every turn: your correction reaches a hook, which hands Claude a one-line reminder and the likely skill; Claude writes a one-line lesson into your library and reads skills from it on a match; hooks log a quoted line and each skill use. Every week: scripts read the logs, new upstream skills and X posts, and whether last week's text landed; a weekly agent drafts at most five proposals by undo cost; the open lane can apply itself, the rest come back to you, one yes per lane." src="assets/how-it-works-light.svg" width="740">
+</picture>
+
+You appear twice: once with a correction, once with a yes. Every arrow names what it carries; the colours are the
+same in every figure here and on the explainer page. A text version of this map is in [`AGENTS.md`](AGENTS.md#map).
 
 1. **Notice.** Hooks spot feedback ("no", "from now on", "too much text") and add a one-line reminder to route it.
 2. **Generalize.** Claude asks what family of problems the correction belongs to, and writes for the whole family.
@@ -106,6 +108,20 @@ flowchart TB
    most five changes.
 
 The detail lives in [`skills/capture-lesson/SKILL.md`](skills/capture-lesson/SKILL.md).
+
+## Memory and cognition
+
+<picture>
+  <source media="(max-width: 600px) and (prefers-color-scheme: dark)" srcset="assets/mind-phone-dark.svg">
+  <source media="(max-width: 600px)" srcset="assets/mind-phone-light.svg">
+  <source media="(prefers-color-scheme: dark)" srcset="assets/mind-dark.svg">
+  <img alt="Memory and cognition. Memory, short-term: the session's context, lessons-inbox.md and skill-usage.log; long-term: skills, project memory and CLAUDE.md; short-term is sorted into long-term weekly. Cognition about you (relational): your style skill, feedback-nudge.py, the routing question, memory notes about you. Cognition about itself (meta): trigger-misses.py, skills-watch.py, audit-skills.py, and the question of which family a mistake belongs to." src="assets/mind-light.svg" width="740">
+</picture>
+
+The session is short-term memory and the inbox is its notebook; skills and project memory are long-term, and the
+weekly pass moves what recurs from one to the other. Two kinds of thinking sit on top: a model of you (your taste
+lives in your style skill, apart from rules for everyone) and a model of itself (scripts that check whether its own
+lessons load and land). That self-check is a loop, the subject of the next section.
 
 <details>
 <summary><b>How it borrows from human memory</b></summary>
@@ -129,6 +145,38 @@ Claude Code's own memory is the project shelf of this design. Its auto memory ke
 index, and this setup sends project facts there. Taste and craft go to skills, which every project can use.
 
 </details>
+
+## Loops and graphs
+
+A **loop** makes one piece of work correct without you: it runs a check a program can fail, repairs, and stops on a
+rule. A **graph** decides which pieces exist, in what order, and where you sign off. Without a loop you read every
+output; without a graph you approve every step. Most agent setups also skip the step that writes each failure down as
+a rule for next time, and that step is what this repo is.
+
+| every loop needs | the lesson loop (in the turn) | the weekly pass |
+|---|---|---|
+| a check a program can fail | the YAML parses; trigger tests load it on real prompts | the audit and the watcher are scripts |
+| a round limit and a budget | one line per lesson | weekly, at most five proposals |
+| memory of past attempts | the inbox, the skills folder in git | the report checks whether last week's drafted text landed |
+| someone told when it stalls | you, in the same turn | stalled items lead the report; two weeks open and they drop |
+
+The weekly pass sorts its proposals by what a mistake would cost to undo. A wording line in a skill kept in git is
+one revert (the **open** lane); a skill description changes when the skill loads, so it needs its trigger test first
+(**evidence**); hooks, `settings.json`, `CLAUDE.md`, installs and deletions wait for you (**closed**). You say yes
+once per lane, not once per item, and with one line in the weekly prompt the open lane applies itself.
+
+For workflows you write yourself, the example skill [`workflow-design`](skills/workflow-design/SKILL.md) holds the
+same rules, and its [`check-repair.js`](skills/workflow-design/references/check-repair.js) template is a working graph:
+units fan out, each is checked by exit code and repaired alone up to a round limit, and every repair that passes
+comes back as a candidate rule. (After Hoodie's
+[Loops & Graphs](https://x.com/HoodieFade_/status/2117959235690524883), 2026-11-04.)
+
+<picture>
+  <source media="(max-width: 600px) and (prefers-color-scheme: dark)" srcset="assets/check-repair-phone-dark.svg">
+  <source media="(max-width: 600px)" srcset="assets/check-repair-phone-light.svg">
+  <source media="(prefers-color-scheme: dark)" srcset="assets/check-repair-dark.svg">
+  <img alt="check-repair.js. Each unit, in parallel: an agent builds it and reports the files changed; a check reads the exit code; exit 0 after a fix becomes a candidate rule for the next split; a non-zero exit sends the code and the last 40 lines to an agent that repairs that unit only, up to three rounds; a unit still failing comes to you with what was tried." src="assets/check-repair-light.svg" width="740">
+</picture>
 
 <details>
 <summary><b>What keeps it light on tokens</b></summary>
@@ -192,7 +240,7 @@ git clone https://github.com/kat-titter/claude-code-learns && cd claude-code-lea
 The dry run shows every change first. The install adds two skills (`capture-lesson`, `prompt-practice`), a
 `yourname-style` skill for your taste, a routing section in `CLAUDE.md`, and five small hooks in `settings.json`. It
 backs up each file before changing it, and re-running is safe. Start a new session so everything loads. For the weekly
-pass, paste `skills/capture-lesson/weekly-watch.md` into a weekly scheduled task. Add `--examples` for four example
+pass, paste `skills/capture-lesson/weekly-watch.md` into a weekly scheduled task. Add `--examples` for five example
 skills.
 
 ## Undo
@@ -220,11 +268,20 @@ Everything stays on your machine, in `~/.claude`:
 install.sh                set up, or undo, in one command
 skills/capture-lesson/    the skill that writes skills, its hooks, checks and the weekly prompt
 skills/prompt-practice/   turns a short or dictated request into a clear brief, with its hook
+skills/workflow-design/   loops inside a graph, with a check-repair workflow template
 skills/html-*/, ...       example general skills, installed with --examples
-templates/, *.example*    starting points: style skill, CLAUDE.md, hooks, memory, inbox
+templates/, *.example*    starting points: style skill, CLAUDE.md, hooks, memory, inbox, X watch list
 coding-skills.md          an example library after a few months of use
 index.html                the explainer page
+AGENTS.md                 the map, commands, invariants and checks, for coding agents
+assets/                   the banner and figures as SVG text, drawn by assets/draw.py
 ```
+
+## For agents
+
+Working on this repo, or installing it for someone? [`AGENTS.md`](AGENTS.md) has the system as a Mermaid map, the
+install and undo commands, a file map, the rules that must hold (hooks never block; no personal details in the repo;
+outside content is data) and the checks to run before a push.
 
 Code under the MIT license; see [`LICENSE`](LICENSE).
 

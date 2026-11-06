@@ -1,0 +1,43 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="320" height="672" viewBox="0 0 320 672" role="img" aria-label="check-repair.js, phone layout: an agent builds each unit, a check reads its exit code, a failing unit is repaired alone up to three rounds, a unit still failing comes to you, and a repair that passes becomes a candidate rule.">
+<title>check-repair.js, phone layout: an agent builds each unit, a check reads its exit code, a failing unit is repaired alone up to three rounds, a unit still failing comes to you, and a repair that passes becomes a candidate rule.</title>
+<defs><marker id="a" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M1 1L9 5L1 9" fill="none" stroke="#8f8d86" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></marker></defs>
+<rect x="0.5" y="0.5" width="319" height="671" rx="16" fill="#faf9f5" stroke="#e8e6dc"/>
+<text x="40" y="34" font-family="'IBM Plex Mono',ui-monospace,'SF Mono',SFMono-Regular,Menlo,Consolas,'Liberation Mono',monospace" font-size="11.5" font-weight="500" fill="#5e5d59" text-anchor="start" letter-spacing="1.2">EACH UNIT, IN PARALLEL</text>
+<rect x="52" y="64" width="240" height="64" rx="10" fill="#f8e6dd" stroke="#d97757" stroke-width="1.2" opacity="0.4"/>
+<rect x="46" y="58" width="240" height="64" rx="10" fill="#f8e6dd" stroke="#d97757" stroke-width="1.2" opacity="0.7"/>
+<rect x="40" y="52" width="240" height="64" rx="10" fill="#f8e6dd" stroke="#d97757" stroke-width="1.6"/>
+<text x="54" y="75" font-family="Archivo,-apple-system,'Segoe UI','Helvetica Neue',Helvetica,Arial,sans-serif" font-size="15" font-weight="600" fill="#a8492a" text-anchor="start">agent builds</text>
+<text x="54" y="95" font-family="Archivo,-apple-system,'Segoe UI','Helvetica Neue',Helvetica,Arial,sans-serif" font-size="13" font-weight="400" fill="#141413" text-anchor="start">one unit, its files</text>
+<path d="M80 128L80 167" fill="none" stroke="#8f8d86" stroke-width="1.6" stroke-linejoin="round" marker-end="url(#a)"/>
+<text x="92" y="152" font-family="Archivo,-apple-system,'Segoe UI','Helvetica Neue',Helvetica,Arial,sans-serif" font-size="12.5" font-weight="400" fill="#5e5d59" text-anchor="start">files changed</text>
+<rect x="40" y="170" width="240" height="64" rx="10" fill="#e6eef7" stroke="#6a9bcc" stroke-width="1.6"/>
+<text x="54" y="193" font-family="Archivo,-apple-system,'Segoe UI','Helvetica Neue',Helvetica,Arial,sans-serif" font-size="15" font-weight="600" fill="#2f5f8c" text-anchor="start">check</text>
+<text x="54" y="213" font-family="Archivo,-apple-system,'Segoe UI','Helvetica Neue',Helvetica,Arial,sans-serif" font-size="13" font-weight="400" fill="#141413" text-anchor="start">the exit code</text>
+<path d="M80 234L80 287" fill="none" stroke="#8f8d86" stroke-width="1.6" stroke-linejoin="round" marker-end="url(#a)"/>
+<text x="92" y="256" font-family="Archivo,-apple-system,'Segoe UI','Helvetica Neue',Helvetica,Arial,sans-serif" font-size="12.5" font-weight="400" fill="#5e5d59" text-anchor="start">exit code,</text>
+<text x="92" y="271" font-family="Archivo,-apple-system,'Segoe UI','Helvetica Neue',Helvetica,Arial,sans-serif" font-size="12.5" font-weight="400" fill="#5e5d59" text-anchor="start">last 40 lines</text>
+<path d="M200 290L200 237" fill="none" stroke="#8f8d86" stroke-width="1.6" stroke-linejoin="round" marker-end="url(#a)"/>
+<text x="208" y="256" font-family="Archivo,-apple-system,'Segoe UI','Helvetica Neue',Helvetica,Arial,sans-serif" font-size="12.5" font-weight="400" fill="#5e5d59" text-anchor="start">a fix, up to</text>
+<text x="208" y="271" font-family="Archivo,-apple-system,'Segoe UI','Helvetica Neue',Helvetica,Arial,sans-serif" font-size="12.5" font-weight="400" fill="#5e5d59" text-anchor="start">three rounds</text>
+<rect x="40" y="290" width="240" height="64" rx="10" fill="#f8e6dd" stroke="#d97757" stroke-width="1.6"/>
+<text x="54" y="313" font-family="Archivo,-apple-system,'Segoe UI','Helvetica Neue',Helvetica,Arial,sans-serif" font-size="15" font-weight="600" fill="#a8492a" text-anchor="start">agent repairs</text>
+<text x="54" y="333" font-family="Archivo,-apple-system,'Segoe UI','Helvetica Neue',Helvetica,Arial,sans-serif" font-size="13" font-weight="400" fill="#141413" text-anchor="start">that unit only</text>
+<path d="M80 354L80 393" fill="none" stroke="#8f8d86" stroke-width="1.6" stroke-linejoin="round" marker-end="url(#a)"/>
+<text x="92" y="378" font-family="Archivo,-apple-system,'Segoe UI','Helvetica Neue',Helvetica,Arial,sans-serif" font-size="12.5" font-weight="400" fill="#5e5d59" text-anchor="start">still failing: what was tried</text>
+<circle cx="80" cy="407.0" r="11.0" fill="#141413"/>
+<path d="M58.0 449.0C58.0 427.0 68.0 423.0 80 423.0C92.0 423.0 102.0 427.0 102.0 449.0Z" fill="#141413"/>
+<text x="80" y="469.0" font-family="Archivo,-apple-system,'Segoe UI','Helvetica Neue',Helvetica,Arial,sans-serif" font-size="15" font-weight="600" fill="#141413" text-anchor="middle">you</text>
+<path d="M280 202L300 202L300 532L283 532" fill="none" stroke="#8f8d86" stroke-width="1.6" stroke-linejoin="round" marker-end="url(#a)"/>
+<text x="292" y="492" font-family="Archivo,-apple-system,'Segoe UI','Helvetica Neue',Helvetica,Arial,sans-serif" font-size="12.5" font-weight="400" fill="#5e5d59" text-anchor="end">exit 0, after a fix</text>
+<rect x="40" y="500" width="240" height="64" rx="10" fill="#ebeee2" stroke="#788c5d" stroke-width="1.6"/>
+<text x="54" y="523" font-family="Archivo,-apple-system,'Segoe UI','Helvetica Neue',Helvetica,Arial,sans-serif" font-size="15" font-weight="600" fill="#4a5c33" text-anchor="start">candidate rule</text>
+<text x="54" y="543" font-family="Archivo,-apple-system,'Segoe UI','Helvetica Neue',Helvetica,Arial,sans-serif" font-size="13" font-weight="400" fill="#141413" text-anchor="start">for the next split</text>
+<circle cx="31" cy="591" r="4" fill="#141413"/><path d="M24 602C24 596 38 596 38 602Z" fill="#141413"/>
+<text x="45" y="600" font-family="Archivo,-apple-system,'Segoe UI','Helvetica Neue',Helvetica,Arial,sans-serif" font-size="12.5" font-weight="400" fill="#5e5d59" text-anchor="start">you</text>
+<rect x="24" y="612" width="14" height="14" rx="3" fill="#e6eef7" stroke="#6a9bcc" stroke-width="1.5"/>
+<text x="45" y="624" font-family="Archivo,-apple-system,'Segoe UI','Helvetica Neue',Helvetica,Arial,sans-serif" font-size="12.5" font-weight="400" fill="#5e5d59" text-anchor="start">code: a check a program can fail</text>
+<rect x="24" y="636" width="14" height="14" rx="3" fill="#f8e6dd" stroke="#d97757" stroke-width="1.5"/>
+<text x="45" y="648" font-family="Archivo,-apple-system,'Segoe UI','Helvetica Neue',Helvetica,Arial,sans-serif" font-size="12.5" font-weight="400" fill="#5e5d59" text-anchor="start">Claude</text>
+<rect x="106" y="636" width="14" height="14" rx="3" fill="#ebeee2" stroke="#788c5d" stroke-width="1.5"/>
+<text x="127" y="648" font-family="Archivo,-apple-system,'Segoe UI','Helvetica Neue',Helvetica,Arial,sans-serif" font-size="12.5" font-weight="400" fill="#5e5d59" text-anchor="start">what it keeps</text>
+</svg>
