@@ -76,7 +76,8 @@ templates/, *.example*, memory.example/       starting files the installer copie
 assets/draw.py                     draws the README banner and figures: *-light.svg, *-dark.svg, and *-phone-*.svg
                                    for screens under 600 px; one data list per figure feeds both layouts
 index.html                         the explainer page (GitHub Pages)
-tests/checks.sh                    the six program checks, run by .github/workflows/checks.yml on every pull request
+tests/checks.sh                    the seven program checks, run by .github/workflows/checks.yml on every pull request
+tests/privacy.py                   the privacy check: emails, home paths and private words kept outside the repo
 tests/check-repair.test.mjs        runs the check-repair.js template against stub agents
 .github/workflows/                 checks.yml (the checks), claude-review.yml (the agent review, once its secret is set)
 ```
@@ -99,10 +100,13 @@ tests/check-repair.test.mjs        runs the check-repair.js template against stu
 ## Checks before a push
 
 ```bash
-sh tests/checks.sh          # the six checks CI runs: python, audit, install, watch, check-repair, mermaid
+sh tests/checks.sh          # the seven checks CI runs: python, audit, install, watch, check-repair, mermaid, privacy
 python3 assets/draw.py      # after a figure edit: exits 1 if a figure's text falls under WCAG AA contrast
-git diff origin/main | grep -nE "/Users/|/home/|@gmail|$USER"    # should print nothing
 ```
+
+The privacy check looks for names only where it is given them: one per line in
+`~/.config/claude-code-learns/private-words` locally, and in the `PRIVATE_WORDS` repository secret in CI. Without
+them it checks emails, home paths and your login name, and says that names went unchecked.
 
 `sh tests/checks.sh audit install` runs some of them; the mermaid check fetches mermaid-cli and a headless Chrome
 through `npx` the first time (about 200 MB). After editing a figure, redraw both its layouts and open each light, dark
@@ -113,7 +117,7 @@ and phone file to check that no label overlaps another.
 Three gates, in the order their evidence is strong. A program's exit code first, an agent's review second, a person
 last and only where a mistake is hard to undo.
 
-1. **Checks.** `.github/workflows/checks.yml` runs the six checks above on every pull request, one job each. All six
+1. **Checks.** `.github/workflows/checks.yml` runs the seven checks above on every pull request, one job each. All seven
    green, or nothing merges. A red check is fixed on the branch, never skipped.
 2. **Agent review.** `.github/workflows/claude-review.yml` has Claude review the diff with the `code-review` plugin and
    leave inline comments, once the repo has a `CLAUDE_CODE_OAUTH_TOKEN` secret. The plugin reviews a pull request once,

@@ -1,10 +1,10 @@
 #!/bin/sh
 # The program checks every pull request runs (.github/workflows/checks.yml runs each as its own job).
 #   sh tests/checks.sh                  run them all, print ok or FAIL per check, exit 1 if any failed
-#   sh tests/checks.sh audit install    run some: python audit install watch check-repair mermaid
+#   sh tests/checks.sh audit install    run some: python audit install watch check-repair mermaid privacy
 # Each check is a command that exits non-zero when something broke; nothing here asks a model. The mermaid check
 # fetches @mermaid-js/mermaid-cli and a headless Chrome through npx the first time (about 200 MB).
-ALL="python audit install watch check-repair mermaid"
+ALL="python audit install watch check-repair mermaid privacy"
 S=skills/capture-lesson/scripts
 MMDC=@mermaid-js/mermaid-cli@11.17.1
 say() { printf '%s\n' "$*"; }
@@ -57,6 +57,8 @@ one() {
       [ "$got" = "$want" ] || { say "$f: $want Mermaid blocks, $got rendered"; return 1; }
       say "$f: $got Mermaid block(s) rendered"
     done ;;
+  privacy)  # no email, home path or private word in a tracked file (the words live outside the repo: tests/privacy.py)
+    python3 tests/privacy.py ;;
   *) say "unknown check: $1 (checks: $ALL)"; return 2 ;;
   esac
 }
