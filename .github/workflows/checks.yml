@@ -1,0 +1,21 @@
+# The program checks, first gate of a merge (AGENTS.md, "Merging"): one job per check in tests/checks.sh, each red on
+# a non-zero exit. Runs with a read-only token and no secrets, so a pull request from a fork runs it too.
+name: checks
+on:
+  pull_request:
+  push:
+    branches: [main]
+permissions:
+  contents: read
+jobs:
+  check:
+    name: ${{ matrix.check }}
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    strategy:
+      fail-fast: false
+      matrix:
+        check: [python, audit, install, watch, check-repair, mermaid]
+    steps:
+      - uses: actions/checkout@v7
+      - run: sh tests/checks.sh ${{ matrix.check }}
