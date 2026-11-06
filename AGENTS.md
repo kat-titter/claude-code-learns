@@ -58,7 +58,8 @@ keeps, grey pages are files, and you are the one dark node.
 ```
 
 Set `CLAUDE_CONFIG_DIR` to a temporary folder to try it without touching `~/.claude`. Re-running is safe. The weekly
-pass is `skills/capture-lesson/weekly-watch.md`, pasted into a weekly scheduled task.
+pass is `skills/capture-lesson/weekly-watch.md`, pasted into a weekly scheduled task; the daily nudge is `daily-nudge.md`
+beside it, pasted into a daily one.
 
 ## Files
 
@@ -67,8 +68,9 @@ install.sh                         set up or undo; merges hooks into settings.js
 skills/capture-lesson/SKILL.md     how a lesson is generalized, routed and written (one line, an example, the date)
 skills/capture-lesson/scripts/     hooks (feedback-nudge, skill-router, scan-corrections, skill-usage-log) and the
                                    weekly scripts (skills-watch, trigger-misses, practice-watch, audit-skills,
-                                   trigger-evals, refactor-gate); lessonlib.py is shared
+                                   trigger-evals, refactor-gate), the daily scanner (loose-ends); lessonlib.py is shared
 skills/capture-lesson/weekly-watch.md   the weekly agent's prompt: steps, lanes, scope
+skills/capture-lesson/daily-nudge.md    the daily agent's prompt: read only, one pick, at most 8 loose ends, one push line
 skills/prompt-practice/            turns a terse request into a brief; prompt-nudge.py is its hook
 skills/workflow-design/            loops inside a graph; references/check-repair.js is a working Workflow template
 skills/citations, html-*, macos-long-render   example skills (--examples)

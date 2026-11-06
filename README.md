@@ -244,8 +244,9 @@ git clone https://github.com/kat-titter/claude-code-learns && cd claude-code-lea
 The dry run shows every change first. The install adds two skills (`capture-lesson`, `prompt-practice`), a
 `yourname-style` skill for your taste, a routing section in `CLAUDE.md`, and five small hooks in `settings.json`. It
 backs up each file before changing it, and re-running is safe. Start a new session so everything loads. For the weekly
-pass, paste `skills/capture-lesson/weekly-watch.md` into a weekly scheduled task. Add `--examples` for five example
-skills.
+pass, paste `skills/capture-lesson/weekly-watch.md` into a weekly scheduled task; for a daily nudge with the one thing
+to do next and the loose ends worth closing, paste `daily-nudge.md` from the same folder into a daily one. Add
+`--examples` for five example skills.
 
 ## Undo
 
@@ -263,6 +264,7 @@ Everything stays on your machine, in `~/.claude`:
   so prune it freely.
 - `skill-usage.log`: one line per skill use (time, skill, session id).
 - `skills-watch/`: the weekly reports.
+- `nudges/`: the daily nudges, and the date each loose end was first seen.
 - `.skill-index.json`: the router's word list, rebuilt when a skill changes.
 - Your skills and memory notes, which you can read and edit like any other file.
 

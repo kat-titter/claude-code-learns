@@ -47,10 +47,14 @@ one() {
     env -u CLAUDE_CONFIG_DIR HOME="$h" ./install.sh --uninstall >/dev/null
     n=$(our_hooks "$h/.claude/settings.json"); [ "$n" = 0 ] || { say "uninstall left $n hooks"; return 1; }
     for s in capture-lesson prompt-practice; do [ ! -e "$h/.claude/skills/$s" ] || { say "uninstall left $s"; return 1; }; done ;;
-  watch)    # the weekly scripts run: skills-watch writes its report offline, practice-watch answers --help
+  watch)    # the routine scripts run: skills-watch writes its report offline, loose-ends passes its self-test and
+            # scans read only, practice-watch answers --help
     h=$(mktemp -d)
     env -u CLAUDE_CONFIG_DIR HOME="$h" python3 "$S/skills-watch.py" --skills skills --out "$h/out" --upstream
     [ -s "$h/out/$(date +%Y-%m-%d).md" ] || { say "skills-watch wrote no report"; return 1; }
+    env -u CLAUDE_CONFIG_DIR HOME="$h" python3 "$S/loose-ends.py" --test
+    o=$(env -u CLAUDE_CONFIG_DIR HOME="$h" python3 "$S/loose-ends.py" --no-gh --no-state --roots "$h")
+    case "$o" in '# Loose ends'*) ;; *) say "loose-ends printed no report"; return 1 ;; esac
     env -u CLAUDE_CONFIG_DIR HOME="$h" python3 "$S/practice-watch.py" --help >/dev/null ;;
   check-repair)   # the Workflow template, run against stub agents
     node --version
