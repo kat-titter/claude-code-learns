@@ -118,7 +118,30 @@ The detail lives in [`skills/capture-lesson/SKILL.md`](skills/capture-lesson/SKI
 The session is short-term memory and the inbox is its notebook; skills and project memory are long-term, and the
 weekly pass moves what recurs from one to the other. Two kinds of thinking sit on top: a model of you (your taste
 lives in your style skill, apart from rules for everyone) and a model of itself (scripts that check whether its own
-lessons load and land).
+lessons load and land). That self-check is a loop, the subject of the next section.
+
+<details>
+<summary><b>How it borrows from human memory</b></summary>
+
+The design copies a few well-tested ideas about how people learn. The plain idea comes first, then the scientific term
+in brackets for anyone who wants to look it up. It's an analogy, not a claim that the software works like a brain.
+
+| how people learn | what this setup does |
+|---|---|
+| We learn fast in a quick notebook and slowly in a tidy library; the slow store builds general knowledge from many cases (complementary learning systems[^1][^2]) | the inbox catches moments cheaply; skills hold the general lesson, written for the whole family of cases |
+| Surprise teaches: learning follows the gap between what we expected and what happened (prediction error[^3]) | a correction is that gap, so the feedback hook fires on corrections and surprise, not on every message |
+| Sleep replays the day and sorts what to keep (replay and consolidation[^4][^5]) | the weekly pass re-reads the notebook while you're away and proposes what to keep |
+| Something new that fits what you already know is learned in one go (schemas[^6]) | a new case folds into the section that already owns it, instead of starting a new file |
+| We find a memory through the same cues it was stored with (encoding specificity[^7]) | skill descriptions use the words people actually say when they need them; the router matches those words |
+| Testing yourself beats rereading (testing effect[^8]) | trigger tests and the miss report check that each skill loads when it should, instead of rereading it |
+| Spread-out repeats stick better than one cram (spacing[^9]) | a note that comes back in a later session is promoted; one that never returns stays in the notebook |
+| Forgetting is useful: it drops stale detail and keeps the system lean (adaptive forgetting[^10][^11]) | the weekly pass merges, compresses and archives |
+| We hold only about four things in mind at once (working memory[^12]) | the always-loaded layer stays a few lines; everything else waits on disk until a task needs it |
+
+Claude Code's own memory is the project shelf of this design. Its auto memory keeps one fact per note with a one-line
+index, and this setup sends project facts there. Taste and craft go to skills, which every project can use.
+
+</details>
 
 ## Loops and graphs
 
@@ -149,29 +172,6 @@ comes back as a candidate rule. (After Hoodie's
   <source media="(prefers-color-scheme: dark)" srcset="assets/check-repair-dark.svg">
   <img alt="check-repair.js. Each unit, in parallel: an agent builds it and reports the files changed; a check reads the exit code; exit 0 after a fix becomes a candidate rule for the next split; a non-zero exit sends the code and the last 40 lines to an agent that repairs that unit only, up to three rounds; a unit still failing comes to you with what was tried." src="assets/check-repair-light.svg" width="740">
 </picture>
-
-<details>
-<summary><b>How it borrows from human memory</b></summary>
-
-The design copies a few well-tested ideas about how people learn. The plain idea comes first, then the scientific term
-in brackets for anyone who wants to look it up. It's an analogy, not a claim that the software works like a brain.
-
-| how people learn | what this setup does |
-|---|---|
-| We learn fast in a quick notebook and slowly in a tidy library; the slow store builds general knowledge from many cases (complementary learning systems[^1][^2]) | the inbox catches moments cheaply; skills hold the general lesson, written for the whole family of cases |
-| Surprise teaches: learning follows the gap between what we expected and what happened (prediction error[^3]) | a correction is that gap, so the feedback hook fires on corrections and surprise, not on every message |
-| Sleep replays the day and sorts what to keep (replay and consolidation[^4][^5]) | the weekly pass re-reads the notebook while you're away and proposes what to keep |
-| Something new that fits what you already know is learned in one go (schemas[^6]) | a new case folds into the section that already owns it, instead of starting a new file |
-| We find a memory through the same cues it was stored with (encoding specificity[^7]) | skill descriptions use the words people actually say when they need them; the router matches those words |
-| Testing yourself beats rereading (testing effect[^8]) | trigger tests and the miss report check that each skill loads when it should, instead of rereading it |
-| Spread-out repeats stick better than one cram (spacing[^9]) | a note that comes back in a later session is promoted; one that never returns stays in the notebook |
-| Forgetting is useful: it drops stale detail and keeps the system lean (adaptive forgetting[^10][^11]) | the weekly pass merges, compresses and archives |
-| We hold only about four things in mind at once (working memory[^12]) | the always-loaded layer stays a few lines; everything else waits on disk until a task needs it |
-
-Claude Code's own memory is the project shelf of this design. Its auto memory keeps one fact per note with a one-line
-index, and this setup sends project facts there. Taste and craft go to skills, which every project can use.
-
-</details>
 
 <details>
 <summary><b>What keeps it light on tokens</b></summary>
