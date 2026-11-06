@@ -75,13 +75,14 @@ Health       one skill is 540 lines: split by task
 Proposed     at most five changes, grouped by what a mistake would cost to undo
 ```
 
-## Four words you'll need
+## Five words you'll need
 
 | word | in plain terms |
 |---|---|
 | **Claude Code** | an AI assistant that works in your terminal or desktop app, reading and editing files with you |
 | **skill** | a short how-to file. Each session sees only its one-paragraph description, like a label on a shelf; the full text is read only when a task matches |
 | **hook** | a tiny script Claude Code runs at a set moment, such as when you send a message or after each reply. Here hooks only add a line of context or write a log; they never block you |
+| **`.md` (Markdown)** | a plain-text file with light formatting (`#` for a heading, `-` for a list). Every skill, memory note and `CLAUDE.md` is one, so the memory itself is files you can open, read and edit |
 | **memory and `CLAUDE.md`** | notes Claude Code keeps about you and each project (a short index is read every session), and a short file of standing instructions read at the start of every session |
 
 ## How it works
