@@ -1,5 +1,6 @@
 # The program checks, first gate of a merge (AGENTS.md, "Merging"): one job per check in tests/checks.sh, each red on
-# a non-zero exit. Runs with a read-only token and no secrets, so a pull request from a fork runs it too.
+# a non-zero exit. Runs with a read-only token; the one secret, PRIVATE_WORDS (names the privacy check looks for), goes
+# to that job only. A pull request from a fork runs without it, and the privacy check then skips names and says so.
 name: checks
 on:
   pull_request:
@@ -15,7 +16,9 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        check: [python, audit, install, watch, check-repair, mermaid]
+        check: [python, audit, install, watch, check-repair, mermaid, privacy]
     steps:
       - uses: actions/checkout@v7
       - run: sh tests/checks.sh ${{ matrix.check }}
+        env:
+          PRIVATE_WORDS: ${{ matrix.check == 'privacy' && secrets.PRIVATE_WORDS || '' }}

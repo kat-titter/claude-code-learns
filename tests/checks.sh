@@ -1,10 +1,10 @@
 #!/bin/sh
 # The program checks every pull request runs (.github/workflows/checks.yml runs each as its own job).
 #   sh tests/checks.sh                  run them all, print ok or FAIL per check, exit 1 if any failed
-#   sh tests/checks.sh audit install    run some: python audit install watch check-repair mermaid
+#   sh tests/checks.sh audit install    run some: python audit install watch check-repair mermaid privacy
 # Each check is a command that exits non-zero when something broke; nothing here asks a model. The mermaid check
 # fetches @mermaid-js/mermaid-cli and a headless Chrome through npx the first time (about 200 MB).
-ALL="python audit install watch check-repair mermaid"
+ALL="python audit install watch check-repair mermaid privacy"
 S=skills/capture-lesson/scripts
 MMDC=@mermaid-js/mermaid-cli@11.17.1
 say() { printf '%s\n' "$*"; }
@@ -28,11 +28,17 @@ one() {
     [ -z "$(ls -A "$h")" ] || { say "the dry run wrote files:"; ls -A "$h"; return 1; }
     env -u CLAUDE_CONFIG_DIR HOME="$h" ./install.sh --name ci >/dev/null
     n=$(our_hooks "$h/.claude/settings.json"); [ "$n" = 6 ] || { say "install added $n hooks, want 6"; return 1; }
+    grep -q capture-lesson "$h/.claude/CLAUDE.md" || { say "install wrote no routing to CLAUDE.md"; return 1; }
     o=$(env -u CLAUDE_CONFIG_DIR HOME="$h" ./install.sh --name ci)   # in $(), so a failing re-run stops the check
     case "$o" in *'hooks: nothing to add'*) ;; *) say "a re-run added hooks again"; return 1 ;; esac
     env -u CLAUDE_CONFIG_DIR HOME="$h" ./install.sh --uninstall >/dev/null
     n=$(our_hooks "$h/.claude/settings.json"); [ "$n" = 0 ] || { say "uninstall left $n hooks"; return 1; }
-    for s in capture-lesson prompt-practice; do [ ! -e "$h/.claude/skills/$s" ] || { say "uninstall left $s"; return 1; }; done ;;
+    for s in capture-lesson prompt-practice; do [ ! -e "$h/.claude/skills/$s" ] || { say "uninstall left $s"; return 1; }; done
+    [ ! -e "$h/.claude/CLAUDE.md" ] || { say "uninstall left the CLAUDE.md install wrote"; return 1; }
+    h=$(mktemp -d); mkdir "$h/.claude"; printf '# mine\n- a rule of my own\n' > "$h/.claude/CLAUDE.md"   # a CLAUDE.md you already had
+    env -u CLAUDE_CONFIG_DIR HOME="$h" ./install.sh --name ci >/dev/null
+    env -u CLAUDE_CONFIG_DIR HOME="$h" ./install.sh --uninstall >/dev/null
+    [ "$(cat "$h/.claude/CLAUDE.md")" = "$(printf '# mine\n- a rule of my own')" ] || { say "uninstall did not give back your CLAUDE.md:"; cat "$h/.claude/CLAUDE.md"; return 1; } ;;
   watch)    # the weekly scripts run: skills-watch writes its report offline, practice-watch answers --help
     h=$(mktemp -d)
     env -u CLAUDE_CONFIG_DIR HOME="$h" python3 "$S/skills-watch.py" --skills skills --out "$h/out" --upstream
@@ -51,6 +57,8 @@ one() {
       [ "$got" = "$want" ] || { say "$f: $want Mermaid blocks, $got rendered"; return 1; }
       say "$f: $got Mermaid block(s) rendered"
     done ;;
+  privacy)  # no email, home path or private word in a tracked file (the words live outside the repo: tests/privacy.py)
+    python3 tests/privacy.py ;;
   *) say "unknown check: $1 (checks: $ALL)"; return 2 ;;
   esac
 }
