@@ -28,11 +28,17 @@ one() {
     [ -z "$(ls -A "$h")" ] || { say "the dry run wrote files:"; ls -A "$h"; return 1; }
     env -u CLAUDE_CONFIG_DIR HOME="$h" ./install.sh --name ci >/dev/null
     n=$(our_hooks "$h/.claude/settings.json"); [ "$n" = 6 ] || { say "install added $n hooks, want 6"; return 1; }
+    grep -q capture-lesson "$h/.claude/CLAUDE.md" || { say "install wrote no routing to CLAUDE.md"; return 1; }
     o=$(env -u CLAUDE_CONFIG_DIR HOME="$h" ./install.sh --name ci)   # in $(), so a failing re-run stops the check
     case "$o" in *'hooks: nothing to add'*) ;; *) say "a re-run added hooks again"; return 1 ;; esac
     env -u CLAUDE_CONFIG_DIR HOME="$h" ./install.sh --uninstall >/dev/null
     n=$(our_hooks "$h/.claude/settings.json"); [ "$n" = 0 ] || { say "uninstall left $n hooks"; return 1; }
-    for s in capture-lesson prompt-practice; do [ ! -e "$h/.claude/skills/$s" ] || { say "uninstall left $s"; return 1; }; done ;;
+    for s in capture-lesson prompt-practice; do [ ! -e "$h/.claude/skills/$s" ] || { say "uninstall left $s"; return 1; }; done
+    [ ! -e "$h/.claude/CLAUDE.md" ] || { say "uninstall left the CLAUDE.md install wrote"; return 1; }
+    h=$(mktemp -d); mkdir "$h/.claude"; printf '# mine\n- a rule of my own\n' > "$h/.claude/CLAUDE.md"   # a CLAUDE.md you already had
+    env -u CLAUDE_CONFIG_DIR HOME="$h" ./install.sh --name ci >/dev/null
+    env -u CLAUDE_CONFIG_DIR HOME="$h" ./install.sh --uninstall >/dev/null
+    [ "$(cat "$h/.claude/CLAUDE.md")" = "$(printf '# mine\n- a rule of my own')" ] || { say "uninstall did not give back your CLAUDE.md:"; cat "$h/.claude/CLAUDE.md"; return 1; } ;;
   watch)    # the weekly scripts run: skills-watch writes its report offline, practice-watch answers --help
     h=$(mktemp -d)
     env -u CLAUDE_CONFIG_DIR HOME="$h" python3 "$S/skills-watch.py" --skills skills --out "$h/out" --upstream
