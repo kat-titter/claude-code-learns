@@ -164,6 +164,16 @@ def banner(t):
     s.save(f'banner-{name_of(t)}.svg')
 
 
+def mark_inline(cell=9):
+    """The banner's character for index.html, coloured by the page's own tokens so it follows its theme."""
+    paint = {'o': 'var(--mark)', 'E': '#141413', 'g': 'var(--keep)', 'L': 'var(--bg)'}
+    rows = CHARACTER.splitlines()
+    w, h = len(rows[0]) * cell, len(rows) * cell
+    cells = ''.join(f'<rect x="{c * cell}" y="{r * cell}" width="{cell}" height="{cell}" fill="{paint[ch]}"/>'
+                    for r, row in enumerate(rows) for c, ch in enumerate(row) if ch in paint)
+    return (f'<svg viewBox="0 0 {w} {h}" width="{w}" height="{h}" shape-rendering="crispEdges" role="img" '
+            f'aria-label="Claude keeping one line">{cells}</svg>')
+
 HOOKS = [('feedback-nudge.py', 1), ('skill-router.py', 1), ('prompt-nudge.py', 1), ('scan-corrections.py', 1),
          ('skill-usage-log.py', 1), ('add a line or log, never block', 0)]   # the first three add a line, the last two log
 
@@ -372,6 +382,12 @@ if __name__ == '__main__':
         check_repair_phone(t)
         mind(t)
         mind_phone(t)
+    page = os.path.join(HERE, '..', 'index.html')
+    if os.path.exists(page):   # the page's copy of the character, between its <!--mark--> markers
+        html = open(page).read()
+        a, b = html.find('<!--mark-->'), html.find('<!--/mark-->')
+        if a >= 0 and b > a:
+            open(page, 'w').write(html[:a + 11] + mark_inline() + html[b:])
     bad = sorted({(a, b, round(contrast(a, b), 2)) for a, b in CHECK if contrast(a, b) < 4.5})
     for a, b, c in bad:
         print(f'text {a} on {b}: {c}:1, under 4.5')

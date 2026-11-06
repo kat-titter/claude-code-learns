@@ -9,13 +9,13 @@
 <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500&family=Archivo:wght@400;500;600&display=swap">
 <style>
 :root{
-  --bg:#faf9f5; --panel:#f0eee6; --line:#e8e6dc; --ink:#141413; --dim:#5e5d59; --acc:#d97757; --acc-text:#a8492a; --bar:#b0aea5;
+  --bg:#faf9f5; --panel:#f0eee6; --line:#e8e6dc; --ink:#141413; --dim:#5e5d59; --acc:#d97757; --acc-text:#a8492a; --bar:#b0aea5; --mark:#c96442; --keep:#788c5d;
   --mono:"IBM Plex Mono",ui-monospace,Menlo,monospace; --sans:Archivo,"Helvetica Neue",Helvetica,Arial,sans-serif;
   color-scheme:light;
 }
 @media (prefers-color-scheme:dark){ :root:not([data-theme="light"]){
-  --bg:#1f1e1d; --panel:#2a2927; --line:#3d3d3a; --ink:#faf9f5; --dim:#b0aea5; --acc:#d97757; --acc-text:#f0a284; --bar:#6b6a65; color-scheme:dark }}
-:root[data-theme="dark"]{ --bg:#1f1e1d; --panel:#2a2927; --line:#3d3d3a; --ink:#faf9f5; --dim:#b0aea5; --acc:#d97757; --acc-text:#f0a284; --bar:#6b6a65; color-scheme:dark }
+  --bg:#1f1e1d; --panel:#2a2927; --line:#3d3d3a; --ink:#faf9f5; --dim:#b0aea5; --acc:#d97757; --acc-text:#f0a284; --bar:#6b6a65; --mark:#d97757; --keep:#788c5d; color-scheme:dark }}
+:root[data-theme="dark"]{ --bg:#1f1e1d; --panel:#2a2927; --line:#3d3d3a; --ink:#faf9f5; --dim:#b0aea5; --acc:#d97757; --acc-text:#f0a284; --bar:#6b6a65; --mark:#d97757; --keep:#788c5d; color-scheme:dark }
 *{box-sizing:border-box}
 body{margin:0;background:var(--bg);color:var(--ink);font:16px/1.6 var(--sans)}
 main{max-width:760px;margin:0 auto;padding:32px 16px 64px}
@@ -23,9 +23,11 @@ main{max-width:760px;margin:0 auto;padding:32px 16px 64px}
 .top a{color:var(--dim)}
 h1{font-family:var(--mono);font-weight:500;font-size:clamp(1.6rem,4.6vw,2.2rem);line-height:1.2;margin:28px 0 12px;letter-spacing:-.01em}
 h1 b{color:var(--acc-text);font-weight:500}
+.hero{display:flex;align-items:center;justify-content:space-between;gap:21px}
+.hero svg{flex:none;width:117px;height:auto}
 .lede{margin:0 0 28px;max-width:62ch}
 h2{font-family:var(--mono);font-weight:500;font-size:1rem;margin:44px 0 10px;padding-top:14px;border-top:1px solid var(--line)}
-h2 span{color:var(--acc-text);margin-right:12px}
+h2 span{color:var(--dim);margin-right:12px}
 p{margin:0 0 12px;max-width:66ch}
 .three{display:grid;grid-template-columns:repeat(auto-fit,minmax(min(100%,210px),1fr));gap:20px 28px;margin:8px 0 0}
 .three h3{font-family:var(--mono);font-weight:500;font-size:.95rem;margin:0 0 4px}
@@ -33,7 +35,7 @@ p{margin:0 0 12px;max-width:66ch}
 ol.loop{list-style:none;padding:0;margin:6px 0 0;display:grid;gap:6px;counter-reset:s}
 ol.loop li{display:grid;grid-template-columns:7.5rem 1fr;gap:12px;counter-increment:s}
 ol.loop b{font-family:var(--mono);font-weight:500}
-ol.loop b::before{content:counter(s) "  ";color:var(--acc-text)}
+ol.loop b::before{content:counter(s) "  ";color:var(--dim)}
 ol.flow{list-style:none;padding:0;margin:8px 0 14px;display:grid;gap:2px}
 ol.flow li{display:grid;grid-template-columns:7.5rem 1fr;gap:12px;padding:8px 12px;background:var(--panel);border:1px solid var(--line);border-radius:6px;font-size:.93rem}
 ol.flow li.edge{display:block;background:none;border:0;padding:1px 12px;font-family:var(--mono);font-size:.8rem;color:var(--dim)}
@@ -57,19 +59,20 @@ ul.tight{margin:0 0 12px;padding-left:20px;max-width:66ch} ul.tight li{margin:4p
 .key i{display:inline-block;width:12px;height:12px;border-radius:2px;vertical-align:-1px;margin-right:6px;background:var(--bar)}
 .key i.on{background:var(--acc)}
 sup.ref{font-size:.7em;line-height:0}
-sup.ref a{color:var(--acc-text);text-decoration:none}
+sup.ref a{color:var(--dim);text-decoration:none}
 ol.refs{padding-left:22px;font-size:.88rem;color:var(--dim)} ol.refs li{margin:6px 0} ol.refs a{color:var(--dim)}
-a{color:var(--ink);text-decoration-color:var(--acc);text-underline-offset:2px}
+a{color:var(--ink);text-decoration-color:var(--bar);text-underline-offset:2px}
 footer{margin-top:44px;padding-top:14px;border-top:1px solid var(--line);font-size:.85rem;color:var(--dim);display:flex;flex-wrap:wrap;gap:6px 24px}
 footer a{color:var(--dim)}
-@media (max-width:520px){ pre{white-space:pre-wrap;overflow-wrap:anywhere} ol.loop li,ol.flow li{grid-template-columns:1fr;gap:0} .bars{grid-template-columns:1fr 3.8rem} .bars span:first-child{grid-column:1/-1;margin-top:4px} }
+@media (max-width:520px){ .hero{flex-direction:column-reverse;align-items:flex-start;gap:13px} .hero svg{width:78px} pre{white-space:pre-wrap;overflow-wrap:anywhere} ol.loop li,ol.flow li{grid-template-columns:1fr;gap:0} .bars{grid-template-columns:1fr 3.8rem} .bars span:first-child{grid-column:1/-1;margin-top:4px} }
 </style>
 </head>
 <body>
 <main>
 <div class="top"><a href="https://github.com/kat-titter/claude-code-learns">github.com/kat-titter/claude-code-learns</a><span>updated Nov 2026</span></div>
 
-<h1>Let Claude Code <b>keep what you teach it</b></h1>
+<div class="hero"><h1>Learns in one turn.<br><b>Keeps it for good.</b></h1>
+<!--mark--><svg viewBox="0 0 117 72" width="117" height="72" shape-rendering="crispEdges" role="img" aria-label="Claude keeping one line"><rect x="18" y="0" width="9" height="9" fill="var(--mark)"/><rect x="27" y="0" width="9" height="9" fill="var(--mark)"/><rect x="36" y="0" width="9" height="9" fill="var(--mark)"/><rect x="45" y="0" width="9" height="9" fill="var(--mark)"/><rect x="54" y="0" width="9" height="9" fill="var(--mark)"/><rect x="9" y="9" width="9" height="9" fill="var(--mark)"/><rect x="18" y="9" width="9" height="9" fill="var(--mark)"/><rect x="27" y="9" width="9" height="9" fill="var(--mark)"/><rect x="36" y="9" width="9" height="9" fill="var(--mark)"/><rect x="45" y="9" width="9" height="9" fill="var(--mark)"/><rect x="54" y="9" width="9" height="9" fill="var(--mark)"/><rect x="63" y="9" width="9" height="9" fill="var(--mark)"/><rect x="81" y="9" width="9" height="9" fill="var(--keep)"/><rect x="90" y="9" width="9" height="9" fill="var(--keep)"/><rect x="99" y="9" width="9" height="9" fill="var(--keep)"/><rect x="9" y="18" width="9" height="9" fill="var(--mark)"/><rect x="18" y="18" width="9" height="9" fill="#141413"/><rect x="27" y="18" width="9" height="9" fill="var(--mark)"/><rect x="36" y="18" width="9" height="9" fill="var(--mark)"/><rect x="45" y="18" width="9" height="9" fill="var(--mark)"/><rect x="54" y="18" width="9" height="9" fill="#141413"/><rect x="63" y="18" width="9" height="9" fill="var(--mark)"/><rect x="81" y="18" width="9" height="9" fill="var(--keep)"/><rect x="90" y="18" width="9" height="9" fill="var(--keep)"/><rect x="99" y="18" width="9" height="9" fill="var(--keep)"/><rect x="108" y="18" width="9" height="9" fill="var(--keep)"/><rect x="9" y="27" width="9" height="9" fill="var(--mark)"/><rect x="18" y="27" width="9" height="9" fill="var(--mark)"/><rect x="27" y="27" width="9" height="9" fill="var(--mark)"/><rect x="36" y="27" width="9" height="9" fill="var(--mark)"/><rect x="45" y="27" width="9" height="9" fill="var(--mark)"/><rect x="54" y="27" width="9" height="9" fill="var(--mark)"/><rect x="63" y="27" width="9" height="9" fill="var(--mark)"/><rect x="81" y="27" width="9" height="9" fill="var(--keep)"/><rect x="90" y="27" width="9" height="9" fill="var(--keep)"/><rect x="99" y="27" width="9" height="9" fill="var(--keep)"/><rect x="108" y="27" width="9" height="9" fill="var(--keep)"/><rect x="0" y="36" width="9" height="9" fill="var(--mark)"/><rect x="9" y="36" width="9" height="9" fill="var(--mark)"/><rect x="18" y="36" width="9" height="9" fill="var(--mark)"/><rect x="27" y="36" width="9" height="9" fill="var(--mark)"/><rect x="36" y="36" width="9" height="9" fill="var(--mark)"/><rect x="45" y="36" width="9" height="9" fill="var(--mark)"/><rect x="54" y="36" width="9" height="9" fill="var(--mark)"/><rect x="63" y="36" width="9" height="9" fill="var(--mark)"/><rect x="72" y="36" width="9" height="9" fill="var(--mark)"/><rect x="81" y="36" width="9" height="9" fill="var(--keep)"/><rect x="90" y="36" width="9" height="9" fill="var(--bg)"/><rect x="99" y="36" width="9" height="9" fill="var(--bg)"/><rect x="108" y="36" width="9" height="9" fill="var(--keep)"/><rect x="9" y="45" width="9" height="9" fill="var(--mark)"/><rect x="18" y="45" width="9" height="9" fill="var(--mark)"/><rect x="27" y="45" width="9" height="9" fill="var(--mark)"/><rect x="36" y="45" width="9" height="9" fill="var(--mark)"/><rect x="45" y="45" width="9" height="9" fill="var(--mark)"/><rect x="54" y="45" width="9" height="9" fill="var(--mark)"/><rect x="63" y="45" width="9" height="9" fill="var(--mark)"/><rect x="81" y="45" width="9" height="9" fill="var(--keep)"/><rect x="90" y="45" width="9" height="9" fill="var(--keep)"/><rect x="99" y="45" width="9" height="9" fill="var(--keep)"/><rect x="108" y="45" width="9" height="9" fill="var(--keep)"/><rect x="18" y="54" width="9" height="9" fill="var(--mark)"/><rect x="54" y="54" width="9" height="9" fill="var(--mark)"/><rect x="81" y="54" width="9" height="9" fill="var(--keep)"/><rect x="90" y="54" width="9" height="9" fill="var(--keep)"/><rect x="99" y="54" width="9" height="9" fill="var(--keep)"/><rect x="108" y="54" width="9" height="9" fill="var(--keep)"/><rect x="18" y="63" width="9" height="9" fill="var(--mark)"/><rect x="54" y="63" width="9" height="9" fill="var(--mark)"/></svg><!--/mark--></div>
 <p class="lede">You correct the agent once and it keeps the lesson. Feedback in any chat becomes a short guideline in a
 Skill, the library organizes itself, and a weekly check looks for new skills that fill a gap. It is built only on what
 Claude Code already has: Skills, hooks, memory and scheduled tasks.</p>
