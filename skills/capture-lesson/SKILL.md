@@ -97,6 +97,8 @@ Every guideline should have one obvious home, so the next lesson knows where to 
 - **Find the owner before writing.** Scan descriptions and headings (`grep -n '^## ' <config>/skills/*/SKILL.md`), then
   extend the line that already answers the question. A new section is for a new sub-question; a new skill for a new
   question someone would ask. Grep the lesson's key words too: a parallel session may have captured it minutes ago.
+- **See the library whole.** `python3 ${CLAUDE_SKILL_DIR}/scripts/skills-browser.py --open` draws every file as one
+  page: hover a file to read it, skill names link to their skill, search finds any text, uncommitted edits are marked.
 - **Edit on a clean diff.** Keep the skills folder in a local git repo. Before editing, `git status --short`: an
   uncommitted change is another session's work in progress, so leave those files to it. Commit only your own files.
 - **Compress as you go.** A second case folds into the existing line ("caught again in X, 2026-10-24"). Long references
