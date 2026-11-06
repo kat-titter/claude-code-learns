@@ -68,7 +68,8 @@ install.sh                         set up or undo; merges hooks into settings.js
 skills/capture-lesson/SKILL.md     how a lesson is generalized, routed and written (one line, an example, the date)
 skills/capture-lesson/scripts/     hooks (feedback-nudge, skill-router, scan-corrections, skill-usage-log) and the
                                    weekly scripts (skills-watch, trigger-misses, practice-watch, audit-skills,
-                                   trigger-evals, refactor-gate), the daily scanner (loose-ends); lessonlib.py is shared
+                                   trigger-evals, refactor-gate), the daily scanner (loose-ends), the library page
+                                   (skills-browser); lessonlib.py is shared
 skills/capture-lesson/weekly-watch.md   the weekly agent's prompt: steps, lanes, scope
 skills/capture-lesson/daily-nudge.md    the daily agent's prompt: read only, one pick, at most 8 loose ends, one push line
 skills/prompt-practice/            turns a terse request into a brief; prompt-nudge.py is its hook

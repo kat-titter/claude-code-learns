@@ -248,6 +248,12 @@ pass, paste `skills/capture-lesson/weekly-watch.md` into a weekly scheduled task
 to do next and the loose ends worth closing, paste `daily-nudge.md` from the same folder into a daily one. Add
 `--examples` for five example skills.
 
+To see your whole library on one page, where hovering a file shows it rendered and a search finds any text:
+
+```bash
+python3 ~/.claude/skills/capture-lesson/scripts/skills-browser.py --open
+```
+
 ## Undo
 
 ```bash
@@ -266,13 +272,14 @@ Everything stays on your machine, in `~/.claude`:
 - `skills-watch/`: the weekly reports.
 - `nudges/`: the daily nudges, and the date each loose end was first seen.
 - `.skill-index.json`: the router's word list, rebuilt when a skill changes.
+- `skills-browser/index.html`: your library as one page, redrawn each time you run `skills-browser.py`.
 - Your skills and memory notes, which you can read and edit like any other file.
 
 ## Files
 
 ```
 install.sh                set up, or undo, in one command
-skills/capture-lesson/    the skill that writes skills, its hooks, checks and the weekly prompt
+skills/capture-lesson/    the skill that writes skills, its hooks, checks, prompts and library browser
 skills/prompt-practice/   turns a short or dictated request into a clear brief, with its hook
 skills/workflow-design/   loops inside a graph, with a check-repair workflow template
 skills/html-*/, ...       example general skills, installed with --examples
