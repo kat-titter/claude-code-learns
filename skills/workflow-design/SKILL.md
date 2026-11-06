@@ -1,7 +1,7 @@
 ---
 name: workflow-design
 description: Designs agent workflows as loops inside a graph - a check a program can fail in each node, a stop rule on every cycle, a named value on every arrow, code where code will do, failures sent back one unit at a time, a person only where a mistake cannot be undone. Use when writing a Workflow script, fanning out subagents or scheduling an agent, or on "loop", "graph", "fan-out", "orchestrate" or "approve only the last step".
-when_to_use: Before a workflow script or fan-out; when a workflow is rerun whole, its verify step is an agent's opinion, the same workflow is drawn fresh again, or proposals pile up unapplied.
+when_to_use: Before a workflow script or fan-out; when a workflow is rerun whole, its verify step is an agent's opinion, the same workflow is drawn fresh, or proposals pile up unapplied.
 ---
 
 # Workflow design
