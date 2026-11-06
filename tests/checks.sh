@@ -8,6 +8,7 @@ ALL="python audit install watch check-repair mermaid"
 S=skills/capture-lesson/scripts
 MMDC=@mermaid-js/mermaid-cli@11.17.1
 say() { printf '%s\n' "$*"; }
+SELF=$(cd "$(dirname "$0")" && pwd)/checks.sh   # before the cd, so a relative $0 still finds it
 cd "$(dirname "$0")/.." || exit 1
 
 # count settings.json hook entries that run one of our scripts
@@ -27,8 +28,8 @@ one() {
     [ -z "$(ls -A "$h")" ] || { say "the dry run wrote files:"; ls -A "$h"; return 1; }
     env -u CLAUDE_CONFIG_DIR HOME="$h" ./install.sh --name ci >/dev/null
     n=$(our_hooks "$h/.claude/settings.json"); [ "$n" = 6 ] || { say "install added $n hooks, want 6"; return 1; }
-    env -u CLAUDE_CONFIG_DIR HOME="$h" ./install.sh --name ci | grep -q 'hooks: nothing to add' \
-      || { say "a re-run added hooks again"; return 1; }
+    o=$(env -u CLAUDE_CONFIG_DIR HOME="$h" ./install.sh --name ci)   # in $(), so a failing re-run stops the check
+    case "$o" in *'hooks: nothing to add'*) ;; *) say "a re-run added hooks again"; return 1 ;; esac
     env -u CLAUDE_CONFIG_DIR HOME="$h" ./install.sh --uninstall >/dev/null
     n=$(our_hooks "$h/.claude/settings.json"); [ "$n" = 0 ] || { say "uninstall left $n hooks"; return 1; }
     for s in capture-lesson prompt-practice; do [ ! -e "$h/.claude/skills/$s" ] || { say "uninstall left $s"; return 1; }; done ;;
@@ -63,6 +64,6 @@ fi
 [ $# -gt 0 ] || set -- $ALL
 failed=
 for c; do
-  if sh "$0" --one "$c"; then say "ok    $c"; else say "FAIL  $c"; failed="$failed $c"; fi
+  if sh "$SELF" --one "$c"; then say "ok    $c"; else say "FAIL  $c"; failed="$failed $c"; fi
 done
 [ -z "$failed" ] || { say "failed:$failed"; exit 1; }
