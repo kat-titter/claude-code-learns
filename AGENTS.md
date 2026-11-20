@@ -77,7 +77,7 @@ skills/workflow-design/            loops inside a graph; references/check-repair
 skills/code-practice/              clean code and repo layout (--examples); scripts/code_audit.py checks a repo
                                    against page-design rules read as code (focus, once, front, clutter, space,
                                    legend, light)
-skills/citations, html-*, macos-long-render   example skills (--examples)
+skills/citations, html-*, macos-long-render, judgement-calls   example skills (--examples)
 templates/, *.example*, memory.example/       starting files the installer copies
 assets/draw.py                     draws the README banner and figures: *-light.svg, *-dark.svg, and *-phone-*.svg
                                    for screens under 600 px; one data list per figure feeds both layouts
