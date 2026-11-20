@@ -246,7 +246,7 @@ The dry run shows every change first. The install adds two skills (`capture-less
 backs up each file before changing it, and re-running is safe. Start a new session so everything loads. For the weekly
 pass, paste `skills/capture-lesson/weekly-watch.md` into a weekly scheduled task; for a daily nudge with the one thing
 to do next and the loose ends worth closing, paste `daily-nudge.md` from the same folder into a daily one. Add
-`--examples` for five example skills.
+`--examples` for six example skills.
 
 ## Undo
 
@@ -275,6 +275,7 @@ install.sh                set up, or undo, in one command
 skills/capture-lesson/    the skill that writes skills, its hooks, checks and the weekly prompt
 skills/prompt-practice/   turns a short or dictated request into a clear brief, with its hook
 skills/workflow-design/   loops inside a graph, with a check-repair workflow template
+skills/code-practice/    clean code and a tidy repo, with code_audit.py: page-design rules read as code
 skills/html-*/, ...       example general skills, installed with --examples
 templates/, *.example*    starting points: style skill, CLAUDE.md, hooks, memory, inbox, X watch list
 coding-skills.md          an example library after a few months of use
