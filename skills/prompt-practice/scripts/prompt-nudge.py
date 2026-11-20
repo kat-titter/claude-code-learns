@@ -15,7 +15,7 @@ HARNESS = re.compile(
     r'<task-notification>|<system-reminder>|<command-name>|<local-command-|<side-sessions-event>|<ci-monitor-event>|'
     r'^Background \(from the session|<agent-message |<cross-session-message |<scheduled-task |\[Subagent hand-back\]|\[SYSTEM NOTIFICATION|\[Request interrupted')
 NOTE = ("Terse or dictated prompt: rewrite it silently into a brief first (prompt-practice §1): outcome, deliverable, "
-        "context, the field's words, prior work, a check that can fail. Say the reading only if it changes the work.")
+        "context, the field's words, prior work, a check that can fail, the skills that apply. Say the reading only if it changes the work.")
 
 
 def terse(prompt):

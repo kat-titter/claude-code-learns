@@ -96,7 +96,8 @@ Claude Code already has: Skills, hooks, memory and scheduled tasks.</p>
 <h2><span>01</span>notice</h2>
 <p>Hooks are tiny scripts Claude Code runs at set moments. When your message reads like feedback, one adds a line of
 context: <em>does this apply beyond the task? if so, route it.</em> When a request shares rare words with a skill's
-description, another names that skill, because skills often go unused even when they fit. After each reply, a third
+description, another names that skill, because skills often go unused even when they fit; when nothing matches and no skill has
+loaded yet, it asks Claude to pick from the skill list itself. After each reply, a third
 jots any feedback into a lessons inbox, a quick notebook. The agent also counts its own surprise ("17 s a frame seems
 like a lot") and its own debugging as signals. Most messages trigger none of this.</p>
 

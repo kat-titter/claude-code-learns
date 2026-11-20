@@ -3,7 +3,7 @@ what counts as feedback, and how to read the person's own prompts from a transcr
 
 Import-safe: nothing runs on import (a hook that reads stdin at import time hangs whoever imports it).
 """
-import json, os, re
+import json, mmap, os, re
 
 # the Claude config folder this skill is installed in: <config>/skills/capture-lesson/scripts/<this file>
 CONFIG = os.path.dirname(os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__)))))
@@ -171,6 +171,23 @@ def session_transcripts(n):
     real = [p for p in glob.glob(os.path.join(CONFIG, 'projects', '*', '*.jsonl'))
             if not re.match(r'-(private-)?(var-folders|tmp)', os.path.basename(os.path.dirname(p)))]
     return sorted(real, key=os.path.getmtime)[-n:]
+
+
+# bytes that mark a loaded skill in a transcript: a Skill tool call (a tool's definition has "description" there
+# instead, and every transcript carries the definitions), and the text block a typed /skill opens with
+SKILL_LOADED = (b'"name":"Skill","input"', b'"text":"Base directory for this skill: ')
+
+
+def scan_transcript(path, max_calls=10):
+    """(tool calls, counted up to max_calls; whether any skill loaded) for one transcript, without parsing it."""
+    try:
+        with open(path, 'rb') as f, mmap.mmap(f.fileno(), 0, access=mmap.ACCESS_READ) as m:
+            calls, at = 0, m.find(b'"type":"tool_use"')
+            while at >= 0 and calls < max_calls:
+                calls, at = calls + 1, m.find(b'"type":"tool_use"', at + 1)
+            return calls, any(m.find(b) >= 0 for b in SKILL_LOADED)
+    except (OSError, ValueError):       # no transcript yet, or an empty one
+        return 0, False
 
 
 def skill_index(skills_dir=SKILLS, transcripts=None):

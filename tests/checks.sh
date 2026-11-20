@@ -16,9 +16,37 @@ our_hooks() { python3 -c 'import json,sys; h=json.load(open(sys.argv[1])).get("h
 
 one() {
   case "$1" in
-  python)   # every script parses: Python compiles, shell passes bash -n
+  python)   # every script parses (Python compiles, shell passes bash -n); code_audit.py flags a seeded repo on
+            # four rules and passes a clean one; and the router's skill pick fires only where no skill has loaded:
+            # tool definitions and a quoted mention do not count as a load
     python3 -m py_compile skills/*/scripts/*.py
-    for f in skills/*/scripts/*.sh; do bash -n "$f"; done ;;
+    for f in skills/*/scripts/*.sh; do bash -n "$f"; done
+    A=skills/code-practice/scripts/code_audit.py
+    r=$(mktemp -d); git init -q "$r"
+    printf '# seeded\nSee [the guide](docs/missing.md).\n' > "$r/README.md"
+    { echo 'def long():'; i=0; while [ $i -lt 61 ]; do echo "    x$i = $i"; i=$((i+1)); done; echo '# y = long()'; } > "$r/run_v2.py"
+    git -C "$r" add -A
+    o=$(python3 "$A" "$r" --detail 9) && { say "code_audit passed a seeded repo"; return 1; }
+    for rule in focus front clutter legend; do
+      case "$o" in *"  $rule "*) ;; *) say "code_audit missed $rule:"; say "$o"; return 1 ;; esac
+    done
+    r=$(mktemp -d); git init -q "$r"
+    printf '# clean\nRun `ok.py`.\n' > "$r/README.md"; printf '"""Say hello."""\nprint("hello")\n' > "$r/ok.py"
+    git -C "$r" add -A
+    python3 "$A" "$r" >/dev/null || { say "code_audit flagged a clean repo:"; python3 "$A" "$r"; return 1; }
+    t=$(mktemp -d)
+    printf '%s\n' '{"tools":[{"name":"Skill","description":"Invoke a skill"}]}' > "$t/defs.jsonl"
+    printf '%s\n' '{"type":"user","message":{"content":[{"type":"text","text":"a regex: \"Base directory for this skill\""}]}}' > "$t/quoted.jsonl"
+    printf '%s\n' '{"type":"assistant","message":{"content":[{"type":"tool_use","id":"t1","name":"Skill","input":{"skill":"x"}}]}}' > "$t/called.jsonl"
+    printf '%s\n' '{"type":"user","message":{"content":[{"type":"text","text":"Base directory for this skill: /x"}]}}' > "$t/typed.jsonl"
+    got=
+    for c in defs quoted called typed; do
+      for q in 'make the readme better and check it all still holds up' continue; do
+        o=$(printf '{"prompt": "%s", "transcript_path": "%s"}' "$q" "$t/$c.jsonl" | python3 "$S/skill-router.py")
+        case "$o" in *'Skill pick'*) got="$got $c:${q%% *}" ;; esac
+      done
+    done
+    [ "$got" = " defs:make quoted:make" ] || { say "skill pick fired for:$got (want: defs:make quoted:make)"; return 1; } ;;
   audit)    # the skill library passes its own audit with no flag at all
     python3 "$S/audit-skills.py" --strict skills ;;
   install)  # the installer parses, a dry run writes nothing, a real run installs, re-runs and undoes in a temp HOME
@@ -39,10 +67,16 @@ one() {
     env -u CLAUDE_CONFIG_DIR HOME="$h" ./install.sh --name ci >/dev/null
     env -u CLAUDE_CONFIG_DIR HOME="$h" ./install.sh --uninstall >/dev/null
     [ "$(cat "$h/.claude/CLAUDE.md")" = "$(printf '# mine\n- a rule of my own')" ] || { say "uninstall did not give back your CLAUDE.md:"; cat "$h/.claude/CLAUDE.md"; return 1; } ;;
-  watch)    # the weekly scripts run: skills-watch writes its report offline, practice-watch answers --help
+  watch)    # the routine scripts run: skills-watch writes its report offline, loose-ends passes its self-test and
+            # scans read only, practice-watch answers --help, skills-browser draws the library as one page
     h=$(mktemp -d)
     env -u CLAUDE_CONFIG_DIR HOME="$h" python3 "$S/skills-watch.py" --skills skills --out "$h/out" --upstream
     [ -s "$h/out/$(date +%Y-%m-%d).md" ] || { say "skills-watch wrote no report"; return 1; }
+    env -u CLAUDE_CONFIG_DIR HOME="$h" python3 "$S/loose-ends.py" --test
+    o=$(env -u CLAUDE_CONFIG_DIR HOME="$h" python3 "$S/loose-ends.py" --no-gh --no-state --roots "$h")
+    case "$o" in '# Loose ends'*) ;; *) say "loose-ends printed no report"; return 1 ;; esac
+    python3 "$S/skills-browser.py" --repo skills --out "$h/browser.html"
+    grep -q '"path": "capture-lesson/SKILL.md"' "$h/browser.html" || { say "skills-browser drew no capture-lesson"; return 1; }
     env -u CLAUDE_CONFIG_DIR HOME="$h" python3 "$S/practice-watch.py" --help >/dev/null ;;
   check-repair)   # the Workflow template, run against stub agents
     node --version

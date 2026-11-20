@@ -14,7 +14,9 @@ One loop, in the order the work runs: notice feedback (§1), find the general le
 
 - **Skills undertrigger.** In one real library, a skill whose description strongly matched the prompt loaded on its own
   about 1 time in 5; when the prompt named the skill, about 1 in 2. Rewriting descriptions alone made no measurable
-  difference. So `skill-router.py` names the likely skill, and `trigger-misses.py` finds the misses (§5).
+  difference. So `skill-router.py` names the likely skill, and `trigger-misses.py` finds the misses (§5). A vague prompt
+  matches no description, so until the session loads a skill the router asks Claude to pick from the list itself:
+  over 30 days, 260 of 315 big turns with no skill loaded yet loaded none (2026-11-05).
 - **One eval run per prompt can't separate two descriptions**: differences seen at one run vanished at three. Use
   `--runs 3` or more. `run_eval.py` counts a skill only when it is the first tool call, so short prompts understate recall.
 - **Corrections credited to "the skill loaded last" are mostly about the task**, since a skill stays loaded all session
@@ -36,7 +38,7 @@ can block a prompt:
 | hook | runs | does |
 |---|---|---|
 | `feedback-nudge.py` | on each prompt | one line of context when the prompt reads like feedback (about 1 prompt in 7) |
-| `skill-router.py` | on each prompt | names the likely skill when the prompt shares 3+ rare words with its description (about 1 in 16) |
+| `skill-router.py` | on each prompt | names the likely skill when the prompt shares 3+ rare words with its description (about 1 in 16); with no match and no skill loaded yet, asks for a pick from the skill list (about 1 in 3) |
 | `scan-corrections.py` | after each reply | logs each feedback-like prompt once to `lessons-inbox.md`, including messages typed while Claude worked |
 | `skill-usage-log.py` | on each skill load | one line to `skill-usage.log`; `--report [DAYS]` lists skills nobody used |
 
@@ -48,6 +50,13 @@ weekly watch promotes it if it comes back.
 
 Ask what family of problems this belongs to and write for the siblings. One deck's mislabelled control becomes "name
 each control by what was in the well"; one page's separator dots become a taste note for that person.
+
+**Climb as high as the reason holds, and no higher.** A lesson sits on one rung of a ladder: this case, this project,
+this person, everyone. Test each rung with a sibling. Would the reason hold in another project? Then it's at least
+personal. Would it hold for another person? Then it's general. Too low, and the next project learns it again. Too
+high, and one person's taste becomes everyone's rule. A general line still carrying a name, a project or a hex code
+has drifted, so move the specific down a rung and keep the reason up top. (2026-11-20: 27 general skill files still
+named their author; the attributions kept their dates and quotes, the names went.)
 
 ## 3. Route: general, personal, project
 
@@ -62,6 +71,9 @@ each control by what was in the well"; one page's separator dots become a taste 
 
 - **What to do, the example, the reason**, in one line where it fits: "Put the legend outside the plot, below it, so
   it never covers data (a chart's legend hid two points, 2026-10-02)." Positive phrasing; judgement over rules.
+- **The reason makes it a guideline.** A line with its why lets a later reader see where it bends; a known exception
+  goes in the line ("..., except on album art"). A lesson that contradicts an old line replaces it, dated, or names
+  the scope where each holds, never sits beside it (judgement-calls §5).
 - **Only what Claude lacks.** Each line earns its tokens: a fact, a taste or a case Claude would not know.
 - **The description is the trigger**: third person, what it does and then when, the key use first, and the words people
   actually say when they need it (they are the cues it is found by).
@@ -95,6 +107,8 @@ Every guideline should have one obvious home, so the next lesson knows where to 
 - **Find the owner before writing.** Scan descriptions and headings (`grep -n '^## ' <config>/skills/*/SKILL.md`), then
   extend the line that already answers the question. A new section is for a new sub-question; a new skill for a new
   question someone would ask. Grep the lesson's key words too: a parallel session may have captured it minutes ago.
+- **See the library whole.** `python3 ${CLAUDE_SKILL_DIR}/scripts/skills-browser.py --open` draws every file as one
+  page: hover a file to read it, skill names link to their skill, search finds any text, uncommitted edits are marked.
 - **Edit on a clean diff.** Keep the skills folder in a local git repo. Before editing, `git status --short`: an
   uncommitted change is another session's work in progress, so leave those files to it. Commit only your own files.
 - **Compress as you go.** A second case folds into the existing line ("caught again in X, 2026-10-24"). Long references
@@ -109,6 +123,7 @@ Every guideline should have one obvious home, so the next lesson knows where to 
 | personal taste in a general skill | move it to `<name>-style` |
 | a project fact in a skill | move it to that project's memory |
 | a name that no longer says what it does | rename, fix links |
+| two lines contradict | keep the newer or narrower, rewrite the other with its scope or "replaced <date>" (judgement-calls) |
 | a line no task has needed in months | archive it |
 
 ## 6b. Each skill passes the rubric

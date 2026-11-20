@@ -21,7 +21,7 @@ during the work; this skill turns both into a prompt.
 
 ## 1. Rewrite an incoming prompt into its brief
 
-Before the first tool call, fill six slots from the prompt and from what is already known:
+Before the first tool call, fill seven slots from the prompt and from what is already known:
 
 | Slot | What it holds | Where it comes from |
 |---|---|---|
@@ -31,7 +31,11 @@ Before the first tool call, fill six slots from the prompt and from what is alre
 | Words | the field's terms and grammar; a dictated slip becomes the term it aimed at | the field's own docs and papers, the project's glossary |
 | Prior work | what already does most of it | the person's own repos and sessions first, then docs, libraries, papers, published prompts |
 | Check | the fastest test that can fail and shows it is done | tests, a script, a measurement, a screenshot to compare |
+| Skills | the one to three skills whose guidance the work needs, named in the plan's first step | the skill list, read against the outcome, the medium and the field |
 
+- **Pick the skills from the list, not from the words.** A vague prompt shares few words with any skill's description,
+  so nothing loads on its own: in one library over 30 days, 260 of 315 big turns in sessions with no skill
+  loaded yet loaded none (2026-11-05). The skill-router hook says so when it happens.
 - **Fill gaps from the record before asking.** Memory, notes, files and the docs answer most open slots; a question to
   the person is for a decision only they can make, asked once, with the likely answer as the default.
 - **Show the rewrite only when it changes the work**, as one line: "Reading this as: ...". Otherwise the brief stays

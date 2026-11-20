@@ -171,7 +171,7 @@ def write_atomic(path, text):
     os.replace(tmp, path)
 
 
-def main():
+def parse_args():
     ap = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
     ap.add_argument('--skills', default=SKILLS, help='the local skills folder (default: %(default)s)')
     ap.add_argument('--upstream', nargs='*', default=['anthropics/skills'],
@@ -181,18 +181,11 @@ def main():
                     help='project memory folders (default: every <config>/projects/*/memory)')
     ap.add_argument('--out', default=os.path.join(CONFIG, 'skills-watch'), help='where reports and state go (default: %(default)s)')
     ap.add_argument('--days', type=int, default=7, help='the feedback window in days (default: %(default)s)')
-    a = ap.parse_args()
+    return ap.parse_args()
 
-    local_paths = sorted(glob.glob(os.path.join(a.skills, '*', 'SKILL.md')))
-    if not local_paths:
-        sys.exit(f'no skills found in {a.skills}: pass --skills <folder with <name>/SKILL.md>')
-    os.makedirs(a.out, exist_ok=True)
-    today = dt.date.today()
-    since = today - dt.timedelta(days=a.days)
-    STATE = os.path.join(a.out, 'state.json')
-    state, state_note = load_state(STATE, today.isoformat())
 
-    # local library: what each skill says it covers
+def read_library(local_paths):
+    """Local library: what each skill says it covers; the newest copy of each plugin skill; marketplace skills on offer."""
     local = {}
     for p in local_paths:
         desc, when = fields(p)
@@ -203,17 +196,19 @@ def main():
             n = os.path.basename(os.path.dirname(p))
             if n not in plugin_paths or os.path.getmtime(p) > os.path.getmtime(plugin_paths[n]):
                 plugin_paths[n] = p                                       # newest copy of each plugin skill
-    plugin_skills = set(plugin_paths)
     offered = {}
     for p in glob.glob(os.path.join(CONFIG, 'plugins/marketplaces/*/**/skills/*/SKILL.md'), recursive=True):
         m = re.search(r'marketplaces/([^/]+)/(?:.*/)?([^/]+)/skills/([^/]+)/SKILL.md$', p)
         if m:
             offered[f'{m.group(1)}: {m.group(2)}/{m.group(3)}'] = (m.group(3), p)
+    return local, plugin_paths, offered
 
-    # upstream: folders added or changed since the last run (a folder's git sha changes whenever any file in it changes)
+
+def check_upstream(specs, state, local, plugin_skills):
+    """Upstream: folders added or changed since the last run (a folder's git sha changes whenever any file in it changes)."""
     upstream_notes, upstream_seen, unreadable = [], [], 0
     seen = state.get('upstream') if isinstance(state.get('upstream'), dict) else {}
-    for spec in a.upstream:
+    for spec in specs:
         repo, _, sub = spec.partition(':')
         sub = sub.strip('/') or 'skills'
         try:
@@ -239,31 +234,44 @@ def main():
         for name in sorted(set(before or {}) - set(now)):
             upstream_notes.append(f'- {spec}: `{name}` was removed upstream')
         seen[spec] = now
-    state['upstream'] = seen
+    return upstream_notes, upstream_seen, unreadable, seen
 
-    # marketplaces: plugin skills on offer locally that were not there last run
+
+def new_offers(state, offered):
+    """Marketplaces: plugin skills on offer locally that were not there last run."""
     before_offer = state.get('offered') if isinstance(state.get('offered'), list) else None
     new_offer = [] if before_offer is None else sorted(k for k in offered if k not in before_offer)
     offer_desc = {k: fields(offered[k][1])[0] for k in offered}
-    state['offered'] = sorted(offered)
+    return before_offer, new_offer, offer_desc
 
-    # gaps: recent feedback that no skill's description covers (harness text is noise, not feedback)
-    have_inbox = os.path.exists(a.inbox)
-    lines = open(a.inbox, encoding='utf-8', errors='replace').read().splitlines() if have_inbox else []
+
+def recent_feedback(inbox, since):
+    """Gaps: the inbox's feedback lines dated in the window (harness text is noise, not feedback)."""
+    have_inbox = os.path.exists(inbox)
+    lines = open(inbox, encoding='utf-8', errors='replace').read().splitlines() if have_inbox else []
     recent = []
     for line in lines:
         m = DATE.search(line)
         if m and m.group(1) >= since.isoformat() and not HARNESS.search(line):
             recent.append(line.strip())
+    return have_inbox, recent
+
+
+def skill_vocab(local, plugin_paths, claude_md):
+    """The words each skill's description covers: local skills, installed plugin skills and CLAUDE.md."""
     vocab = {n: set(words(s['desc'] + ' ' + s['when'] + ' ' + n.replace('-', ' '))) for n, s in local.items()}
     for n, p in plugin_paths.items():
         if n not in vocab:                                                # an installed plugin skill covers its words too
             d, w = fields(p)
             vocab[n] = set(words(d + ' ' + w + ' ' + n.replace('-', ' ')))
-    claude_md = os.path.join(CONFIG, 'CLAUDE.md')
     if os.path.exists(claude_md):                                         # habits live here too
         vocab['CLAUDE.md'] = set(words(open(claude_md, encoding='utf-8', errors='replace').read()))
-    in_git = bool(shutil.which('git')) and subprocess.run(['git', '-C', a.skills, 'rev-parse', '--is-inside-work-tree'],
+    return vocab
+
+
+def route_feedback(recent, local, vocab, skills):
+    """Each recent line to the skill it names or shares two words with; open ones dated after that skill's last update."""
+    in_git = bool(shutil.which('git')) and subprocess.run(['git', '-C', skills, 'rev-parse', '--is-inside-work-tree'],
                                                           capture_output=True, text=True).stdout.strip() == 'true'
     updated = {}
     unmatched, routed = [], Counter()
@@ -282,24 +290,32 @@ def main():
         routed[hit] += 1
         if hit in local and OPEN.search(line) and not CLOSED.search(line):
             if hit not in updated:
-                updated[hit] = last_updated(a.skills, hit, in_git)
+                updated[hit] = last_updated(skills, hit, in_git)
             if DATE.search(line).group(1) > updated[hit]:
                 after.setdefault(hit, []).append(line)
+    return updated, unmatched, routed, after
+
+
+def find_fills(unmatched, upstream_seen, offered, offer_desc, local, plugin_skills):
+    """Words that recur among unmatched lines, and skills not installed (upstream or marketplace) sharing two of them."""
     counts = Counter(w for l in unmatched for w in set(words(l)))
     recurring = [w for w, c in sorted(counts.items(), key=lambda kv: (-kv[1], kv[0]))[:12] if c >= 2]
     fills = []
     candidates = [(u['name'], u['name'], u['desc'], u['have']) for u in upstream_seen] + \
                  [(k, n, offer_desc[k], 'installed' if n in local or n in plugin_skills else 'offered')
                   for k, (n, _) in sorted(offered.items())]
-    for label, name, desc, have in candidates:
+    for label, _, desc, have in candidates:
         shared = sorted(set(recurring) & set(words(desc)))
         if len(shared) >= 2 and have != 'installed':
             fills.append((label, shared))
+    return recurring, fills
 
-    # health: the audit, condensed to one line per flagged skill, plus its library-wide sections
+
+def run_audit(skills):
+    """Health: the audit, condensed to one line per flagged skill, plus its library-wide sections."""
     audit = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'audit-skills.py')
     try:
-        r = subprocess.run([sys.executable, audit, a.skills], capture_output=True, text=True, timeout=120)
+        r = subprocess.run([sys.executable, audit, skills], capture_output=True, text=True, timeout=120)
         out = r.stdout
         audit_error = '' if r.returncode == 0 else \
             (r.stderr.strip().splitlines() or [f'exit code {r.returncode}'])[-1]
@@ -308,18 +324,21 @@ def main():
     flagged = re.findall(r'^([^\s:]+): *\n((?:  - .*\n)+)', out, re.M)
     library = re.findall(r'^((?:trigger collisions|repeats across skills): [1-9].*\n(?:  - .*\n)*)', out, re.M)
     inbox_line = re.search(r'^inbox: .*$', out, re.M)
+    return flagged, library, inbox_line, audit_error
 
-    # footprint: what loads every session against what waits on disk. A session loads its own project's MEMORY.md
-    # only, so the largest index is the realistic per-session cost; summing every project's index overstates it.
+
+def measure_footprint(local, skills, claude_md, memory, today, state):
+    """Footprint: what loads every session against what waits on disk. A session loads its own project's MEMORY.md
+    only, so the largest index is the realistic per-session cost; summing every project's index overstates it."""
     desc_bytes = sum(len((s['desc'] + s['when']).encode()) for s in local.values())
     skill_bytes = sum(s['bytes'] for s in local.values())
-    extra_bytes = sum(os.path.getsize(f) for n in local for f in glob.glob(os.path.join(a.skills, n, '**', '*'), recursive=True)
+    extra_bytes = sum(os.path.getsize(f) for n in local for f in glob.glob(os.path.join(skills, n, '**', '*'), recursive=True)
                       if os.path.isfile(f) and os.path.basename(f) != 'SKILL.md')
     claude_bytes = os.path.getsize(claude_md) if os.path.exists(claude_md) else 0
     enabled = enabled_plugin_skills()
     plugin_bytes = sum(len(' '.join(fields(p)).encode()) for p in enabled)
     mem = []
-    for d in a.memory:
+    for d in memory:
         idx = os.path.join(d, 'MEMORY.md')
         notes = [f for f in glob.glob(os.path.join(d, '*.md')) if os.path.basename(f) != 'MEMORY.md']
         if os.path.exists(idx):
@@ -332,18 +351,11 @@ def main():
     foot['every_session_kb'] = kb(desc_bytes + plugin_bytes + claude_bytes + biggest[0])
     history = [h for h in state.get('footprint', []) if isinstance(h, dict)] if isinstance(state.get('footprint'), list) else []
     prev = next((h for h in reversed(history) if h.get('date') != foot['date']), None)
-    state['footprint'] = ([h for h in history if h.get('date') != foot['date']] + [foot])[-26:]
+    return foot, enabled, biggest, prev, ([h for h in history if h.get('date') != foot['date']] + [foot])[-26:]
 
-    # last week's proposals: a loop that waits on a person must say when it is stuck, at the top of the report
-    corpus = flat(' '.join(open(f, encoding='utf-8', errors='replace').read() for d in [a.skills] + a.memory
-                           for f in glob.glob(os.path.join(d, '**', '*.md'), recursive=True)) +
-                  (open(claude_md, encoding='utf-8', errors='replace').read() if os.path.exists(claude_md) else ''))
-    proposed_on, proposals = last_proposals(a.out, corpus)
 
-    # report
-    md = [f'# Skills watch, {today.isoformat()}', '', f'Window: {since.isoformat()} to {today.isoformat()}.', '']
-    if state_note:
-        md += [state_note, '']
+def proposals_section(proposed_on, proposals):
+    md = []
     if proposals:
         checked = [p for p in proposals if p[2] != 'no drafted text']
         landed = [p for p in checked if p[2] == 'landed']
@@ -351,9 +363,11 @@ def main():
                f'{len(landed)} of {len(checked)} drafted proposals from {proposed_on} are in the library or memory now.'
                + (' The rest are stalled: apply them, or say no so they stop coming back.' if len(landed) < len(checked) else '')]
         md += [f'- {n}. {t}: {s}' for n, t, s in proposals] + ['']
-    md += ['## New or updated upstream', '']
-    first = [u for u in upstream_seen if u['status'] == 'first look']
-    changed = [u for u in upstream_seen if u['status'] != 'first look']
+    return md
+
+
+def upstream_section(first, changed, upstream_notes, unreadable, offered, before_offer, new_offer, offer_desc):
+    md = ['## New or updated upstream', '']
     for repo in sorted({u['repo'] for u in first}):
         names = [u['name'] for u in first if u['repo'] == repo]
         md.append(f"- first look at {repo}: {len(names)} skills you do not have yet, recorded as the baseline: " + ', '.join(names))
@@ -365,14 +379,23 @@ def main():
         md.append(f'- **{k}** (new in a plugin marketplace): {offer_desc[k][:240]}')
     if not changed and not new_offer and not first and before_offer is not None and not unreadable:
         md.append('- nothing new since the last run')
-    md += upstream_notes + ['', '## Effect', '']
+    md += upstream_notes
+    return md
+
+
+def effect_section(after, updated):
+    md = ['', '## Effect', '']
     md.append('Open feedback dated after the skill it belongs to was last updated: the update has not settled it yet.'
               if after else 'No open feedback arrived after the last update of the skill it belongs to.')
     for n, ls in sorted(after.items(), key=lambda kv: (-len(kv[1]), kv[0])):
         md.append(f'- **{n}** (updated {updated[n]}): {len(ls)} line(s), e.g. {unbullet(ls[0])[:140]}')
-    md += ['', '## Gaps in the library', '']
+    return md
+
+
+def gaps_section(inbox, have_inbox, recent, routed, unmatched, recurring, fills):
+    md = ['', '## Gaps in the library', '']
     if not have_inbox:
-        md.append(f'No inbox at {a.inbox}: nothing to compare.')
+        md.append(f'No inbox at {inbox}: nothing to compare.')
     else:
         md.append(f'{len(recent)} feedback lines in the window; ' +
                   (', '.join(f'{n} {c}' for n, c in sorted(routed.items(), key=lambda kv: (-kv[1], kv[0]))) or 'none routed') + '.')
@@ -382,7 +405,11 @@ def main():
     if fills:
         md += ['', 'Skills that share those words (upstream or marketplace, not installed; read before installing):']
         md += [f"  - `{n}`: {', '.join(s)}" for n, s in fills]
-    md += ['', '## Library health', '']
+    return md
+
+
+def health_section(audit_error, flagged, library, inbox_line):
+    md = ['', '## Library health', '']
     if audit_error:
         md.append(f'- audit FAILED ({audit_error}): the library was not checked this run')
     md += [f"- **{n}**: " + '; '.join(x.strip()[2:] for x in body.strip().splitlines()) for n, body in flagged]
@@ -393,17 +420,68 @@ def main():
         md.append(f'- {inbox_line.group(0)}')
     if not audit_error and not flagged and not library:
         md.append('- the audit flags nothing')
-    md += ['', '## Footprint', '',
-           f"- every session carries about {foot['every_session_kb']} KB: {foot['descriptions_kb']} KB of descriptions for "
-           f"{foot['skills']} local skills, {foot['plugin_descriptions_kb']} KB for {len(enabled)} skills of enabled "
-           f"plugins, {foot['claude_md_kb']} KB of CLAUDE.md, and one project's memory index (largest "
-           f"{foot['memory_index_max_kb']} KB" + (f", {biggest[3]})" if biggest[3] else ')'),
-           f"- on disk until a task needs them: {foot['skill_file_kb']} KB of SKILL.md files and {foot['skill_extra_kb']} KB "
-           f"of references and scripts; {foot['memory_kb']} KB across {foot['memory_notes']} memory notes in "
-           f"{foot['memory_projects']} projects, read when recalled"]
+    return md
+
+
+def footprint_section(foot, enabled, biggest, prev):
+    md = ['', '## Footprint', '',
+          f"- every session carries about {foot['every_session_kb']} KB: {foot['descriptions_kb']} KB of descriptions for "
+          f"{foot['skills']} local skills, {foot['plugin_descriptions_kb']} KB for {len(enabled)} skills of enabled "
+          f"plugins, {foot['claude_md_kb']} KB of CLAUDE.md, and one project's memory index (largest "
+          f"{foot['memory_index_max_kb']} KB" + (f", {biggest[3]})" if biggest[3] else ')'),
+          f"- on disk until a task needs them: {foot['skill_file_kb']} KB of SKILL.md files and {foot['skill_extra_kb']} KB "
+          f"of references and scripts; {foot['memory_kb']} KB across {foot['memory_notes']} memory notes in "
+          f"{foot['memory_projects']} projects, read when recalled"]
     if prev and 'every_session_kb' in prev:
         md.append(f"- since {prev['date']}: skills {prev['skills']} to {foot['skills']}, every session {prev['every_session_kb']} "
                   f"to {foot['every_session_kb']} KB, descriptions {prev['descriptions_kb']} to {foot['descriptions_kb']} KB")
+    return md
+
+
+def main():
+    a = parse_args()
+    local_paths = sorted(glob.glob(os.path.join(a.skills, '*', 'SKILL.md')))
+    if not local_paths:
+        sys.exit(f'no skills found in {a.skills}: pass --skills <folder with <name>/SKILL.md>')
+    os.makedirs(a.out, exist_ok=True)
+    today = dt.date.today()
+    since = today - dt.timedelta(days=a.days)
+    STATE = os.path.join(a.out, 'state.json')
+    state, state_note = load_state(STATE, today.isoformat())
+    claude_md = os.path.join(CONFIG, 'CLAUDE.md')
+
+    local, plugin_paths, offered = read_library(local_paths)
+    plugin_skills = set(plugin_paths)
+    upstream_notes, upstream_seen, unreadable, seen = check_upstream(a.upstream, state, local, plugin_skills)
+    state['upstream'] = seen
+    before_offer, new_offer, offer_desc = new_offers(state, offered)
+    state['offered'] = sorted(offered)
+
+    have_inbox, recent = recent_feedback(a.inbox, since)
+    vocab = skill_vocab(local, plugin_paths, claude_md)
+    updated, unmatched, routed, after = route_feedback(recent, local, vocab, a.skills)
+    recurring, fills = find_fills(unmatched, upstream_seen, offered, offer_desc, local, plugin_skills)
+
+    flagged, library, inbox_line, audit_error = run_audit(a.skills)
+    foot, enabled, biggest, prev, state['footprint'] = measure_footprint(local, a.skills, claude_md, a.memory, today, state)
+    # last week's proposals: a loop that waits on a person must say when it is stuck, at the top of the report
+    corpus = flat(' '.join(open(f, encoding='utf-8', errors='replace').read() for d in [a.skills] + a.memory
+                           for f in glob.glob(os.path.join(d, '**', '*.md'), recursive=True)) +
+                  (open(claude_md, encoding='utf-8', errors='replace').read() if os.path.exists(claude_md) else ''))
+    proposed_on, proposals = last_proposals(a.out, corpus)
+
+    # report
+    first = [u for u in upstream_seen if u['status'] == 'first look']
+    changed = [u for u in upstream_seen if u['status'] != 'first look']
+    md = [f'# Skills watch, {today.isoformat()}', '', f'Window: {since.isoformat()} to {today.isoformat()}.', '']
+    if state_note:
+        md += [state_note, '']
+    md += proposals_section(proposed_on, proposals)
+    md += upstream_section(first, changed, upstream_notes, unreadable, offered, before_offer, new_offer, offer_desc)
+    md += effect_section(after, updated)
+    md += gaps_section(a.inbox, have_inbox, recent, routed, unmatched, recurring, fills)
+    md += health_section(audit_error, flagged, library, inbox_line)
+    md += footprint_section(foot, enabled, biggest, prev)
     path = report_path(a.out, today.isoformat())
     write_atomic(path, '\n'.join(md) + '\n')
     state['last_run'] = today.isoformat()

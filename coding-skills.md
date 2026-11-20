@@ -9,7 +9,7 @@ own skills folder and are listed to show the shape.
 
 | Skill | What it is for |
 |---|---|
-| [`capture-lesson`](skills/capture-lesson/SKILL.md) | Turns feedback into guidance in the same turn and keeps the library compact and current: audit, trigger evals, weekly watch, and hooks that nudge on feedback, scan for missed corrections and log skill use. |
+| [`capture-lesson`](skills/capture-lesson/SKILL.md) | Turns feedback into guidance in the same turn and keeps the library compact and current: audit, trigger evals, weekly watch, a daily nudge on what to do next, and hooks that nudge on feedback, scan for missed corrections and log skill use. |
 | `metacognition` | Asks "what am I learning?" during the work and links it to sibling projects, so a lesson reaches every place it holds. |
 | `<name>-style`, `<name>-visual-house-style` | The author's personal layer, kept private: how they like to work, voice, design and colour taste, figure house style. |
 
@@ -21,7 +21,8 @@ own skills folder and are listed to show the shape.
 | [`workflow-design`](skills/workflow-design/SKILL.md) | Agent workflows as loops inside a graph: a check a program can fail in each node, a stop rule on every cycle, failures sent back one unit at a time, a person only where a mistake cannot be undone (`check-repair.js` template). |
 | [`prompt-practice`](skills/prompt-practice/SKILL.md) | Turns a terse or dictated request into a brief before work starts, and writes briefs, system prompts and generator prompts well; a hook nudges on terse prompts. |
 | `token-budget` | Estimates a build's cost in tokens, money and agent time, and which parts can run on a cheaper model or lower effort (`usage.py`, `context-nudge.py`). |
-| `code-practice` | Clean code and tidy repos: one home per helper, one path per setting, behaviour-preserving refactors. |
+| [`judgement-calls`](skills/judgement-calls/SKILL.md) | When lessons, notes or sources disagree: rules read as guidelines with reasons, a fixed order for which source wins, past choices for the unsure, and the call written down so it stays settled. |
+| [`code-practice`](skills/code-practice/SKILL.md) | Clean code and tidy repos: one home per helper, one path per setting, behaviour-preserving refactors, page-design rules read as code (`code_audit.py`). |
 | `debug-practice` | Fixes bugs for good: reproduce, shrink the case, one hypothesis at a time, read the artifact, pin the fix with a test. |
 | `systems-practice` | Software on real machines: memory, light repos, useful logs, servers and background jobs that survive, privacy by default. |
 | `github-practice` | Small commits with a why, a branch and PR per change, nothing private or binary in history, pushes that never clobber shared work (`push-guard.py`). |
@@ -57,6 +58,6 @@ own skills folder and are listed to show the shape.
 | Skill | What it is for |
 |---|---|
 | `beat-align-audio` | Beat-aligns two pieces of music before they overlap, so kicks land together with no flam (`check_beat_alignment.py`). |
-| [`macos-long-render`](skills/macos-long-render/SKILL.md) | Keeps long Mac jobs awake with `caffeinate`, and tells sleep and idle-throttling from thermal slowdowns or a busy machine. |
+| [`macos-long-render`](skills/macos-long-render/SKILL.md) | Long Mac jobs that neither sleep nor run out of memory: `caffeinate`, a worker count from measured memory with Claude sessions counted (`mem-watch.py budget`), a watcher that pauses the newest worker under pressure and resumes it when calm (`mem-watch.py watch`), units that survive a kill, and diagnosis of sleep, memory, thermal or CPU (`mem-watch.py summary`, the kernel log). |
 
 To add a lesson, follow `capture-lesson`: find the section that owns it, write the gist, update this index.
