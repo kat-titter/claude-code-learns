@@ -16,10 +16,24 @@ our_hooks() { python3 -c 'import json,sys; h=json.load(open(sys.argv[1])).get("h
 
 one() {
   case "$1" in
-  python)   # every script parses (Python compiles, shell passes bash -n), and the router's skill pick fires only
-            # where no skill has loaded: tool definitions and a quoted mention do not count as a load
+  python)   # every script parses (Python compiles, shell passes bash -n); code_audit.py flags a seeded repo on
+            # four rules and passes a clean one; and the router's skill pick fires only where no skill has loaded:
+            # tool definitions and a quoted mention do not count as a load
     python3 -m py_compile skills/*/scripts/*.py
     for f in skills/*/scripts/*.sh; do bash -n "$f"; done
+    A=skills/code-practice/scripts/code_audit.py
+    r=$(mktemp -d); git init -q "$r"
+    printf '# seeded\nSee [the guide](docs/missing.md).\n' > "$r/README.md"
+    { echo 'def long():'; i=0; while [ $i -lt 61 ]; do echo "    x$i = $i"; i=$((i+1)); done; echo '# y = long()'; } > "$r/run_v2.py"
+    git -C "$r" add -A
+    o=$(python3 "$A" "$r" --detail 9) && { say "code_audit passed a seeded repo"; return 1; }
+    for rule in focus front clutter legend; do
+      case "$o" in *"  $rule "*) ;; *) say "code_audit missed $rule:"; say "$o"; return 1 ;; esac
+    done
+    r=$(mktemp -d); git init -q "$r"
+    printf '# clean\nRun `ok.py`.\n' > "$r/README.md"; printf '"""Say hello."""\nprint("hello")\n' > "$r/ok.py"
+    git -C "$r" add -A
+    python3 "$A" "$r" >/dev/null || { say "code_audit flagged a clean repo:"; python3 "$A" "$r"; return 1; }
     t=$(mktemp -d)
     printf '%s\n' '{"tools":[{"name":"Skill","description":"Invoke a skill"}]}' > "$t/defs.jsonl"
     printf '%s\n' '{"type":"user","message":{"content":[{"type":"text","text":"a regex: \"Base directory for this skill\""}]}}' > "$t/quoted.jsonl"

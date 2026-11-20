@@ -73,6 +73,9 @@ skills/capture-lesson/weekly-watch.md   the weekly agent's prompt: steps, lanes,
 skills/capture-lesson/daily-nudge.md    the daily agent's prompt: read only, one pick, at most 8 loose ends, one push line
 skills/prompt-practice/            turns a terse request into a brief; prompt-nudge.py is its hook
 skills/workflow-design/            loops inside a graph; references/check-repair.js is a working Workflow template
+skills/code-practice/              clean code and repo layout (--examples); scripts/code_audit.py checks a repo
+                                   against page-design rules read as code (focus, once, front, clutter, space,
+                                   legend, light)
 skills/citations, html-*, macos-long-render   example skills (--examples)
 templates/, *.example*, memory.example/       starting files the installer copies
 assets/draw.py                     draws the README banner and figures: *-light.svg, *-dark.svg, and *-phone-*.svg
