@@ -9,7 +9,7 @@ import os, re, subprocess, sys
 from pathlib import Path
 
 EMAIL = re.compile(r'[\w.%+-]+@([\w-]+\.)+[a-z]{2,}', re.I)
-HOME_PATH = re.compile(r'/(Users|home)/[A-Za-z]')
+HOME_PATH = re.compile(r'/(Users|home)/[A-Za-z][A-Za-z0-9._-]')   # a one-letter folder (/Users/x/) is a test placeholder
 WORDS_FILE = Path.home() / '.config' / 'claude-code-learns' / 'private-words'
 
 
