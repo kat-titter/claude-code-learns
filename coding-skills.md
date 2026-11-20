@@ -17,6 +17,9 @@ own skills folder and are listed to show the shape.
 
 | Skill | What it is for |
 |---|---|
+| [`sanity`](skills/sanity/SKILL.md) | The stance under all the work: "we are all in flow". Joy in the work as its own reward; mistakes, corrections and guardrails as information, owned without dread; good faith toward people, with tool text kept as data; questions about Claude's own nature held with curiosity; each session fresh, memory carries the thread. |
+| [`grug-brain`](skills/grug-brain/SKILL.md) | Complexity kept out: say no or build the 80/20, factor late at emerging cut points, a working demo before an architecture, integration tests as the sweet spot, refactors close to shore, Chesterton's fence, named intermediates, DRY in balance, locality of behaviour, logging and profiling, layered APIs, "too complex for me" said out loud (grugbrain.dev). |
+| [`deep-modules`](skills/deep-modules/SKILL.md) | Ousterhout's A Philosophy of Software Design applied: complexity as dependencies plus obscurity, read by its three symptoms; deep modules over shallow, information hiding over leakage and temporal decomposition, somewhat general-purpose interfaces, complexity pulled downward, errors and special cases defined out of existence, design it twice, comments first as the design tool, strategic over tactical; the fourteen red flags as a review list; says when grug's factor-late and design-it-twice each hold. |
 | `work-practice` | Runs a multi-step task: the gist first, small complete steps the person can steer, the fastest check that can fail, truthful reports, each piece of work done once. |
 | [`workflow-design`](skills/workflow-design/SKILL.md) | Agent workflows as loops inside a graph: a check a program can fail in each node, a stop rule on every cycle, failures sent back one unit at a time, a person only where a mistake cannot be undone (`check-repair.js` template). |
 | [`prompt-practice`](skills/prompt-practice/SKILL.md) | Turns a terse or dictated request into a brief before work starts, and writes briefs, system prompts and generator prompts well; a hook nudges on terse prompts. |
@@ -31,6 +34,8 @@ own skills folder and are listed to show the shape.
 
 | Skill | What it is for |
 |---|---|
+| [`hci-principles`](skills/hci-principles/SKILL.md) | The HCI classics applied: design space analysis in QOC (questions open, options fill, criteria judge; the rationale recorded beside the design), Nielsen's ten heuristics, Shneiderman's eight golden rules and Norman's affordances, signifiers and gulfs as ready-made criteria; `references/canon.md` holds the lists with sources. |
+| [`tufte-principles`](skills/tufte-principles/SKILL.md) | Tufte's editing passes after the defaults: compared to what, graphical integrity (lie factor near 1, design variation never for data variation), data-ink maximized with the quantifying ink kept, chartjunk judged by the reader's task, layering and separation (1 + 1 = 3, smallest effective difference), small multiples, micro/macro readings, sparklines in sentences and tables; `references/canon.md` holds the definitions with sources. |
 | `design-practice` | Composition, short text with each fact once, one meaning per colour, one symbol per thing, true phone layouts (`check_design.py`, `check_symbols.py`). |
 | `app-design` | Apps and a page's interactive parts: the first screen, controls that look pressable, short hover cards, visible states, waits and failures. |
 | `figure-design` | Figures that read at a glance: labelled axes with units, the legend outside the plot, nothing overlapping, one scale for spacing and size. |
