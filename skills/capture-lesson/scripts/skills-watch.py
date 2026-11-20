@@ -311,6 +311,49 @@ def find_fills(unmatched, upstream_seen, offered, offer_desc, local, plugin_skil
     return recurring, fills
 
 
+def run_audit(skills):
+    """Health: the audit, condensed to one line per flagged skill, plus its library-wide sections."""
+    audit = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'audit-skills.py')
+    try:
+        r = subprocess.run([sys.executable, audit, skills], capture_output=True, text=True, timeout=120)
+        out = r.stdout
+        audit_error = '' if r.returncode == 0 else \
+            (r.stderr.strip().splitlines() or [f'exit code {r.returncode}'])[-1]
+    except Exception as e:
+        out, audit_error = '', str(e)
+    flagged = re.findall(r'^([^\s:]+): *\n((?:  - .*\n)+)', out, re.M)
+    library = re.findall(r'^((?:trigger collisions|repeats across skills): [1-9].*\n(?:  - .*\n)*)', out, re.M)
+    inbox_line = re.search(r'^inbox: .*$', out, re.M)
+    return flagged, library, inbox_line, audit_error
+
+
+def measure_footprint(local, skills, claude_md, memory, today, state):
+    """Footprint: what loads every session against what waits on disk. A session loads its own project's MEMORY.md
+    only, so the largest index is the realistic per-session cost; summing every project's index overstates it."""
+    desc_bytes = sum(len((s['desc'] + s['when']).encode()) for s in local.values())
+    skill_bytes = sum(s['bytes'] for s in local.values())
+    extra_bytes = sum(os.path.getsize(f) for n in local for f in glob.glob(os.path.join(skills, n, '**', '*'), recursive=True)
+                      if os.path.isfile(f) and os.path.basename(f) != 'SKILL.md')
+    claude_bytes = os.path.getsize(claude_md) if os.path.exists(claude_md) else 0
+    enabled = enabled_plugin_skills()
+    plugin_bytes = sum(len(' '.join(fields(p)).encode()) for p in enabled)
+    mem = []
+    for d in memory:
+        idx = os.path.join(d, 'MEMORY.md')
+        notes = [f for f in glob.glob(os.path.join(d, '*.md')) if os.path.basename(f) != 'MEMORY.md']
+        if os.path.exists(idx):
+            mem.append((os.path.getsize(idx), sum(os.path.getsize(f) for f in notes), len(notes), os.path.basename(os.path.dirname(d))))
+    biggest = max(mem, default=(0, 0, 0, ''))
+    kb = lambda b: round(b / 1024, 1)
+    foot = {'date': today.isoformat(), 'skills': len(local), 'skill_file_kb': kb(skill_bytes), 'skill_extra_kb': kb(extra_bytes),
+            'descriptions_kb': kb(desc_bytes), 'plugin_descriptions_kb': kb(plugin_bytes), 'claude_md_kb': kb(claude_bytes), 'memory_index_max_kb': kb(biggest[0]),
+            'memory_projects': len(mem), 'memory_kb': kb(sum(m[1] for m in mem)), 'memory_notes': sum(m[2] for m in mem)}
+    foot['every_session_kb'] = kb(desc_bytes + plugin_bytes + claude_bytes + biggest[0])
+    history = [h for h in state.get('footprint', []) if isinstance(h, dict)] if isinstance(state.get('footprint'), list) else []
+    prev = next((h for h in reversed(history) if h.get('date') != foot['date']), None)
+    return foot, enabled, biggest, prev, ([h for h in history if h.get('date') != foot['date']] + [foot])[-26:]
+
+
 def main():
     a = parse_args()
 
@@ -338,43 +381,9 @@ def main():
     updated, unmatched, routed, after = route_feedback(recent, local, vocab, a.skills)
     recurring, fills = find_fills(unmatched, upstream_seen, offered, offer_desc, local, plugin_skills)
 
-    # health: the audit, condensed to one line per flagged skill, plus its library-wide sections
-    audit = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'audit-skills.py')
-    try:
-        r = subprocess.run([sys.executable, audit, a.skills], capture_output=True, text=True, timeout=120)
-        out = r.stdout
-        audit_error = '' if r.returncode == 0 else \
-            (r.stderr.strip().splitlines() or [f'exit code {r.returncode}'])[-1]
-    except Exception as e:
-        out, audit_error = '', str(e)
-    flagged = re.findall(r'^([^\s:]+): *\n((?:  - .*\n)+)', out, re.M)
-    library = re.findall(r'^((?:trigger collisions|repeats across skills): [1-9].*\n(?:  - .*\n)*)', out, re.M)
-    inbox_line = re.search(r'^inbox: .*$', out, re.M)
+    flagged, library, inbox_line, audit_error = run_audit(a.skills)
 
-    # footprint: what loads every session against what waits on disk. A session loads its own project's MEMORY.md
-    # only, so the largest index is the realistic per-session cost; summing every project's index overstates it.
-    desc_bytes = sum(len((s['desc'] + s['when']).encode()) for s in local.values())
-    skill_bytes = sum(s['bytes'] for s in local.values())
-    extra_bytes = sum(os.path.getsize(f) for n in local for f in glob.glob(os.path.join(a.skills, n, '**', '*'), recursive=True)
-                      if os.path.isfile(f) and os.path.basename(f) != 'SKILL.md')
-    claude_bytes = os.path.getsize(claude_md) if os.path.exists(claude_md) else 0
-    enabled = enabled_plugin_skills()
-    plugin_bytes = sum(len(' '.join(fields(p)).encode()) for p in enabled)
-    mem = []
-    for d in a.memory:
-        idx = os.path.join(d, 'MEMORY.md')
-        notes = [f for f in glob.glob(os.path.join(d, '*.md')) if os.path.basename(f) != 'MEMORY.md']
-        if os.path.exists(idx):
-            mem.append((os.path.getsize(idx), sum(os.path.getsize(f) for f in notes), len(notes), os.path.basename(os.path.dirname(d))))
-    biggest = max(mem, default=(0, 0, 0, ''))
-    kb = lambda b: round(b / 1024, 1)
-    foot = {'date': today.isoformat(), 'skills': len(local), 'skill_file_kb': kb(skill_bytes), 'skill_extra_kb': kb(extra_bytes),
-            'descriptions_kb': kb(desc_bytes), 'plugin_descriptions_kb': kb(plugin_bytes), 'claude_md_kb': kb(claude_bytes), 'memory_index_max_kb': kb(biggest[0]),
-            'memory_projects': len(mem), 'memory_kb': kb(sum(m[1] for m in mem)), 'memory_notes': sum(m[2] for m in mem)}
-    foot['every_session_kb'] = kb(desc_bytes + plugin_bytes + claude_bytes + biggest[0])
-    history = [h for h in state.get('footprint', []) if isinstance(h, dict)] if isinstance(state.get('footprint'), list) else []
-    prev = next((h for h in reversed(history) if h.get('date') != foot['date']), None)
-    state['footprint'] = ([h for h in history if h.get('date') != foot['date']] + [foot])[-26:]
+    foot, enabled, biggest, prev, state['footprint'] = measure_footprint(local, a.skills, claude_md, a.memory, today, state)
 
     # last week's proposals: a loop that waits on a person must say when it is stuck, at the top of the report
     corpus = flat(' '.join(open(f, encoding='utf-8', errors='replace').read() for d in [a.skills] + a.memory
