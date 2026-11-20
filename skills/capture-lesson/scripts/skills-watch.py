@@ -354,9 +354,92 @@ def measure_footprint(local, skills, claude_md, memory, today, state):
     return foot, enabled, biggest, prev, ([h for h in history if h.get('date') != foot['date']] + [foot])[-26:]
 
 
+def proposals_section(proposed_on, proposals):
+    md = []
+    if proposals:
+        checked = [p for p in proposals if p[2] != 'no drafted text']
+        landed = [p for p in checked if p[2] == 'landed']
+        md += ['## Last proposals', '',
+               f'{len(landed)} of {len(checked)} drafted proposals from {proposed_on} are in the library or memory now.'
+               + (' The rest are stalled: apply them, or say no so they stop coming back.' if len(landed) < len(checked) else '')]
+        md += [f'- {n}. {t}: {s}' for n, t, s in proposals] + ['']
+    return md
+
+
+def upstream_section(first, changed, upstream_notes, unreadable, offered, before_offer, new_offer, offer_desc):
+    md = ['## New or updated upstream', '']
+    for repo in sorted({u['repo'] for u in first}):
+        names = [u['name'] for u in first if u['repo'] == repo]
+        md.append(f"- first look at {repo}: {len(names)} skills you do not have yet, recorded as the baseline: " + ', '.join(names))
+    for u in changed:
+        md.append(f"- **{u['name']}** ({u['repo']}, {u['status']}, {u['have']}): {u['desc'][:240]} ({u['url']})")
+    if before_offer is None:
+        md.append(f'- first look at local plugin marketplaces: {len(offered)} skills on offer, recorded as the baseline')
+    for k in new_offer:
+        md.append(f'- **{k}** (new in a plugin marketplace): {offer_desc[k][:240]}')
+    if not changed and not new_offer and not first and before_offer is not None and not unreadable:
+        md.append('- nothing new since the last run')
+    md += upstream_notes
+    return md
+
+
+def effect_section(after, updated):
+    md = ['', '## Effect', '']
+    md.append('Open feedback dated after the skill it belongs to was last updated: the update has not settled it yet.'
+              if after else 'No open feedback arrived after the last update of the skill it belongs to.')
+    for n, ls in sorted(after.items(), key=lambda kv: (-len(kv[1]), kv[0])):
+        md.append(f'- **{n}** (updated {updated[n]}): {len(ls)} line(s), e.g. {unbullet(ls[0])[:140]}')
+    return md
+
+
+def gaps_section(inbox, have_inbox, recent, routed, unmatched, recurring, fills):
+    md = ['', '## Gaps in the library', '']
+    if not have_inbox:
+        md.append(f'No inbox at {inbox}: nothing to compare.')
+    else:
+        md.append(f'{len(recent)} feedback lines in the window; ' +
+                  (', '.join(f'{n} {c}' for n, c in sorted(routed.items(), key=lambda kv: (-kv[1], kv[0]))) or 'none routed') + '.')
+    if unmatched:
+        md.append(f'{len(unmatched)} lines match no skill' + (f"; words that recur among them: {', '.join(recurring)}." if recurring else '.'))
+        md += [f'  - {unbullet(l)[:200]}' for l in unmatched[:12]]
+    if fills:
+        md += ['', 'Skills that share those words (upstream or marketplace, not installed; read before installing):']
+        md += [f"  - `{n}`: {', '.join(s)}" for n, s in fills]
+    return md
+
+
+def health_section(audit_error, flagged, library, inbox_line):
+    md = ['', '## Library health', '']
+    if audit_error:
+        md.append(f'- audit FAILED ({audit_error}): the library was not checked this run')
+    md += [f"- **{n}**: " + '; '.join(x.strip()[2:] for x in body.strip().splitlines()) for n, body in flagged]
+    for block in library:
+        head, *rest = block.strip().splitlines()
+        md += [f'- {head}'] + [f'  {x.strip()}' for x in rest]
+    if inbox_line:
+        md.append(f'- {inbox_line.group(0)}')
+    if not audit_error and not flagged and not library:
+        md.append('- the audit flags nothing')
+    return md
+
+
+def footprint_section(foot, enabled, biggest, prev):
+    md = ['', '## Footprint', '',
+          f"- every session carries about {foot['every_session_kb']} KB: {foot['descriptions_kb']} KB of descriptions for "
+          f"{foot['skills']} local skills, {foot['plugin_descriptions_kb']} KB for {len(enabled)} skills of enabled "
+          f"plugins, {foot['claude_md_kb']} KB of CLAUDE.md, and one project's memory index (largest "
+          f"{foot['memory_index_max_kb']} KB" + (f", {biggest[3]})" if biggest[3] else ')'),
+          f"- on disk until a task needs them: {foot['skill_file_kb']} KB of SKILL.md files and {foot['skill_extra_kb']} KB "
+          f"of references and scripts; {foot['memory_kb']} KB across {foot['memory_notes']} memory notes in "
+          f"{foot['memory_projects']} projects, read when recalled"]
+    if prev and 'every_session_kb' in prev:
+        md.append(f"- since {prev['date']}: skills {prev['skills']} to {foot['skills']}, every session {prev['every_session_kb']} "
+                  f"to {foot['every_session_kb']} KB, descriptions {prev['descriptions_kb']} to {foot['descriptions_kb']} KB")
+    return md
+
+
 def main():
     a = parse_args()
-
     local_paths = sorted(glob.glob(os.path.join(a.skills, '*', 'SKILL.md')))
     if not local_paths:
         sys.exit(f'no skills found in {a.skills}: pass --skills <folder with <name>/SKILL.md>')
@@ -369,10 +452,8 @@ def main():
 
     local, plugin_paths, offered = read_library(local_paths)
     plugin_skills = set(plugin_paths)
-
     upstream_notes, upstream_seen, unreadable, seen = check_upstream(a.upstream, state, local, plugin_skills)
     state['upstream'] = seen
-
     before_offer, new_offer, offer_desc = new_offers(state, offered)
     state['offered'] = sorted(offered)
 
@@ -382,9 +463,7 @@ def main():
     recurring, fills = find_fills(unmatched, upstream_seen, offered, offer_desc, local, plugin_skills)
 
     flagged, library, inbox_line, audit_error = run_audit(a.skills)
-
     foot, enabled, biggest, prev, state['footprint'] = measure_footprint(local, a.skills, claude_md, a.memory, today, state)
-
     # last week's proposals: a loop that waits on a person must say when it is stuck, at the top of the report
     corpus = flat(' '.join(open(f, encoding='utf-8', errors='replace').read() for d in [a.skills] + a.memory
                            for f in glob.glob(os.path.join(d, '**', '*.md'), recursive=True)) +
@@ -392,69 +471,17 @@ def main():
     proposed_on, proposals = last_proposals(a.out, corpus)
 
     # report
+    first = [u for u in upstream_seen if u['status'] == 'first look']
+    changed = [u for u in upstream_seen if u['status'] != 'first look']
     md = [f'# Skills watch, {today.isoformat()}', '', f'Window: {since.isoformat()} to {today.isoformat()}.', '']
     if state_note:
         md += [state_note, '']
-    if proposals:
-        checked = [p for p in proposals if p[2] != 'no drafted text']
-        landed = [p for p in checked if p[2] == 'landed']
-        md += ['## Last proposals', '',
-               f'{len(landed)} of {len(checked)} drafted proposals from {proposed_on} are in the library or memory now.'
-               + (' The rest are stalled: apply them, or say no so they stop coming back.' if len(landed) < len(checked) else '')]
-        md += [f'- {n}. {t}: {s}' for n, t, s in proposals] + ['']
-    md += ['## New or updated upstream', '']
-    first = [u for u in upstream_seen if u['status'] == 'first look']
-    changed = [u for u in upstream_seen if u['status'] != 'first look']
-    for repo in sorted({u['repo'] for u in first}):
-        names = [u['name'] for u in first if u['repo'] == repo]
-        md.append(f"- first look at {repo}: {len(names)} skills you do not have yet, recorded as the baseline: " + ', '.join(names))
-    for u in changed:
-        md.append(f"- **{u['name']}** ({u['repo']}, {u['status']}, {u['have']}): {u['desc'][:240]} ({u['url']})")
-    if before_offer is None:
-        md.append(f'- first look at local plugin marketplaces: {len(offered)} skills on offer, recorded as the baseline')
-    for k in new_offer:
-        md.append(f'- **{k}** (new in a plugin marketplace): {offer_desc[k][:240]}')
-    if not changed and not new_offer and not first and before_offer is not None and not unreadable:
-        md.append('- nothing new since the last run')
-    md += upstream_notes + ['', '## Effect', '']
-    md.append('Open feedback dated after the skill it belongs to was last updated: the update has not settled it yet.'
-              if after else 'No open feedback arrived after the last update of the skill it belongs to.')
-    for n, ls in sorted(after.items(), key=lambda kv: (-len(kv[1]), kv[0])):
-        md.append(f'- **{n}** (updated {updated[n]}): {len(ls)} line(s), e.g. {unbullet(ls[0])[:140]}')
-    md += ['', '## Gaps in the library', '']
-    if not have_inbox:
-        md.append(f'No inbox at {a.inbox}: nothing to compare.')
-    else:
-        md.append(f'{len(recent)} feedback lines in the window; ' +
-                  (', '.join(f'{n} {c}' for n, c in sorted(routed.items(), key=lambda kv: (-kv[1], kv[0]))) or 'none routed') + '.')
-    if unmatched:
-        md.append(f'{len(unmatched)} lines match no skill' + (f"; words that recur among them: {', '.join(recurring)}." if recurring else '.'))
-        md += [f'  - {unbullet(l)[:200]}' for l in unmatched[:12]]
-    if fills:
-        md += ['', 'Skills that share those words (upstream or marketplace, not installed; read before installing):']
-        md += [f"  - `{n}`: {', '.join(s)}" for n, s in fills]
-    md += ['', '## Library health', '']
-    if audit_error:
-        md.append(f'- audit FAILED ({audit_error}): the library was not checked this run')
-    md += [f"- **{n}**: " + '; '.join(x.strip()[2:] for x in body.strip().splitlines()) for n, body in flagged]
-    for block in library:
-        head, *rest = block.strip().splitlines()
-        md += [f'- {head}'] + [f'  {x.strip()}' for x in rest]
-    if inbox_line:
-        md.append(f'- {inbox_line.group(0)}')
-    if not audit_error and not flagged and not library:
-        md.append('- the audit flags nothing')
-    md += ['', '## Footprint', '',
-           f"- every session carries about {foot['every_session_kb']} KB: {foot['descriptions_kb']} KB of descriptions for "
-           f"{foot['skills']} local skills, {foot['plugin_descriptions_kb']} KB for {len(enabled)} skills of enabled "
-           f"plugins, {foot['claude_md_kb']} KB of CLAUDE.md, and one project's memory index (largest "
-           f"{foot['memory_index_max_kb']} KB" + (f", {biggest[3]})" if biggest[3] else ')'),
-           f"- on disk until a task needs them: {foot['skill_file_kb']} KB of SKILL.md files and {foot['skill_extra_kb']} KB "
-           f"of references and scripts; {foot['memory_kb']} KB across {foot['memory_notes']} memory notes in "
-           f"{foot['memory_projects']} projects, read when recalled"]
-    if prev and 'every_session_kb' in prev:
-        md.append(f"- since {prev['date']}: skills {prev['skills']} to {foot['skills']}, every session {prev['every_session_kb']} "
-                  f"to {foot['every_session_kb']} KB, descriptions {prev['descriptions_kb']} to {foot['descriptions_kb']} KB")
+    md += proposals_section(proposed_on, proposals)
+    md += upstream_section(first, changed, upstream_notes, unreadable, offered, before_offer, new_offer, offer_desc)
+    md += effect_section(after, updated)
+    md += gaps_section(a.inbox, have_inbox, recent, routed, unmatched, recurring, fills)
+    md += health_section(audit_error, flagged, library, inbox_line)
+    md += footprint_section(foot, enabled, biggest, prev)
     path = report_path(a.out, today.isoformat())
     write_atomic(path, '\n'.join(md) + '\n')
     state['last_run'] = today.isoformat()
