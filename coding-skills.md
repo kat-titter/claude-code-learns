@@ -57,6 +57,6 @@ own skills folder and are listed to show the shape.
 | Skill | What it is for |
 |---|---|
 | `beat-align-audio` | Beat-aligns two pieces of music before they overlap, so kicks land together with no flam (`check_beat_alignment.py`). |
-| [`macos-long-render`](skills/macos-long-render/SKILL.md) | Keeps long Mac jobs awake with `caffeinate`, and tells sleep and idle-throttling from thermal slowdowns or a busy machine. |
+| [`macos-long-render`](skills/macos-long-render/SKILL.md) | Long Mac jobs that neither sleep nor run out of memory: `caffeinate`, a worker count from measured memory with Claude sessions counted (`mem-watch.py budget`), a watcher that pauses the newest worker under pressure and resumes it when calm (`mem-watch.py watch`), units that survive a kill, and diagnosis of sleep, memory, thermal or CPU (`mem-watch.py summary`, the kernel log). |
 
 To add a lesson, follow `capture-lesson`: find the section that owns it, write the gist, update this index.
