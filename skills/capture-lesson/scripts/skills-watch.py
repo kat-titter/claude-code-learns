@@ -171,7 +171,7 @@ def write_atomic(path, text):
     os.replace(tmp, path)
 
 
-def main():
+def parse_args():
     ap = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
     ap.add_argument('--skills', default=SKILLS, help='the local skills folder (default: %(default)s)')
     ap.add_argument('--upstream', nargs='*', default=['anthropics/skills'],
@@ -181,18 +181,11 @@ def main():
                     help='project memory folders (default: every <config>/projects/*/memory)')
     ap.add_argument('--out', default=os.path.join(CONFIG, 'skills-watch'), help='where reports and state go (default: %(default)s)')
     ap.add_argument('--days', type=int, default=7, help='the feedback window in days (default: %(default)s)')
-    a = ap.parse_args()
+    return ap.parse_args()
 
-    local_paths = sorted(glob.glob(os.path.join(a.skills, '*', 'SKILL.md')))
-    if not local_paths:
-        sys.exit(f'no skills found in {a.skills}: pass --skills <folder with <name>/SKILL.md>')
-    os.makedirs(a.out, exist_ok=True)
-    today = dt.date.today()
-    since = today - dt.timedelta(days=a.days)
-    STATE = os.path.join(a.out, 'state.json')
-    state, state_note = load_state(STATE, today.isoformat())
 
-    # local library: what each skill says it covers
+def read_library(local_paths):
+    """Local library: what each skill says it covers; the newest copy of each plugin skill; marketplace skills on offer."""
     local = {}
     for p in local_paths:
         desc, when = fields(p)
@@ -203,12 +196,28 @@ def main():
             n = os.path.basename(os.path.dirname(p))
             if n not in plugin_paths or os.path.getmtime(p) > os.path.getmtime(plugin_paths[n]):
                 plugin_paths[n] = p                                       # newest copy of each plugin skill
-    plugin_skills = set(plugin_paths)
     offered = {}
     for p in glob.glob(os.path.join(CONFIG, 'plugins/marketplaces/*/**/skills/*/SKILL.md'), recursive=True):
         m = re.search(r'marketplaces/([^/]+)/(?:.*/)?([^/]+)/skills/([^/]+)/SKILL.md$', p)
         if m:
             offered[f'{m.group(1)}: {m.group(2)}/{m.group(3)}'] = (m.group(3), p)
+    return local, plugin_paths, offered
+
+
+def main():
+    a = parse_args()
+
+    local_paths = sorted(glob.glob(os.path.join(a.skills, '*', 'SKILL.md')))
+    if not local_paths:
+        sys.exit(f'no skills found in {a.skills}: pass --skills <folder with <name>/SKILL.md>')
+    os.makedirs(a.out, exist_ok=True)
+    today = dt.date.today()
+    since = today - dt.timedelta(days=a.days)
+    STATE = os.path.join(a.out, 'state.json')
+    state, state_note = load_state(STATE, today.isoformat())
+
+    local, plugin_paths, offered = read_library(local_paths)
+    plugin_skills = set(plugin_paths)
 
     # upstream: folders added or changed since the last run (a folder's git sha changes whenever any file in it changes)
     upstream_notes, upstream_seen, unreadable = [], [], 0
