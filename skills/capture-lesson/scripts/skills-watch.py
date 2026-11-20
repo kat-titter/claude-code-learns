@@ -245,44 +245,33 @@ def new_offers(state, offered):
     return before_offer, new_offer, offer_desc
 
 
-def main():
-    a = parse_args()
-
-    local_paths = sorted(glob.glob(os.path.join(a.skills, '*', 'SKILL.md')))
-    if not local_paths:
-        sys.exit(f'no skills found in {a.skills}: pass --skills <folder with <name>/SKILL.md>')
-    os.makedirs(a.out, exist_ok=True)
-    today = dt.date.today()
-    since = today - dt.timedelta(days=a.days)
-    STATE = os.path.join(a.out, 'state.json')
-    state, state_note = load_state(STATE, today.isoformat())
-
-    local, plugin_paths, offered = read_library(local_paths)
-    plugin_skills = set(plugin_paths)
-
-    upstream_notes, upstream_seen, unreadable, seen = check_upstream(a.upstream, state, local, plugin_skills)
-    state['upstream'] = seen
-
-    before_offer, new_offer, offer_desc = new_offers(state, offered)
-    state['offered'] = sorted(offered)
-
-    # gaps: recent feedback that no skill's description covers (harness text is noise, not feedback)
-    have_inbox = os.path.exists(a.inbox)
-    lines = open(a.inbox, encoding='utf-8', errors='replace').read().splitlines() if have_inbox else []
+def recent_feedback(inbox, since):
+    """Gaps: the inbox's feedback lines dated in the window (harness text is noise, not feedback)."""
+    have_inbox = os.path.exists(inbox)
+    lines = open(inbox, encoding='utf-8', errors='replace').read().splitlines() if have_inbox else []
     recent = []
     for line in lines:
         m = DATE.search(line)
         if m and m.group(1) >= since.isoformat() and not HARNESS.search(line):
             recent.append(line.strip())
+    return have_inbox, recent
+
+
+def skill_vocab(local, plugin_paths, claude_md):
+    """The words each skill's description covers: local skills, installed plugin skills and CLAUDE.md."""
     vocab = {n: set(words(s['desc'] + ' ' + s['when'] + ' ' + n.replace('-', ' '))) for n, s in local.items()}
     for n, p in plugin_paths.items():
         if n not in vocab:                                                # an installed plugin skill covers its words too
             d, w = fields(p)
             vocab[n] = set(words(d + ' ' + w + ' ' + n.replace('-', ' ')))
-    claude_md = os.path.join(CONFIG, 'CLAUDE.md')
     if os.path.exists(claude_md):                                         # habits live here too
         vocab['CLAUDE.md'] = set(words(open(claude_md, encoding='utf-8', errors='replace').read()))
-    in_git = bool(shutil.which('git')) and subprocess.run(['git', '-C', a.skills, 'rev-parse', '--is-inside-work-tree'],
+    return vocab
+
+
+def route_feedback(recent, local, vocab, skills):
+    """Each recent line to the skill it names or shares two words with; open ones dated after that skill's last update."""
+    in_git = bool(shutil.which('git')) and subprocess.run(['git', '-C', skills, 'rev-parse', '--is-inside-work-tree'],
                                                           capture_output=True, text=True).stdout.strip() == 'true'
     updated = {}
     unmatched, routed = [], Counter()
@@ -301,9 +290,14 @@ def main():
         routed[hit] += 1
         if hit in local and OPEN.search(line) and not CLOSED.search(line):
             if hit not in updated:
-                updated[hit] = last_updated(a.skills, hit, in_git)
+                updated[hit] = last_updated(skills, hit, in_git)
             if DATE.search(line).group(1) > updated[hit]:
                 after.setdefault(hit, []).append(line)
+    return updated, unmatched, routed, after
+
+
+def find_fills(unmatched, upstream_seen, offered, offer_desc, local, plugin_skills):
+    """Words that recur among unmatched lines, and skills not installed (upstream or marketplace) sharing two of them."""
     counts = Counter(w for l in unmatched for w in set(words(l)))
     recurring = [w for w, c in sorted(counts.items(), key=lambda kv: (-kv[1], kv[0]))[:12] if c >= 2]
     fills = []
@@ -314,6 +308,35 @@ def main():
         shared = sorted(set(recurring) & set(words(desc)))
         if len(shared) >= 2 and have != 'installed':
             fills.append((label, shared))
+    return recurring, fills
+
+
+def main():
+    a = parse_args()
+
+    local_paths = sorted(glob.glob(os.path.join(a.skills, '*', 'SKILL.md')))
+    if not local_paths:
+        sys.exit(f'no skills found in {a.skills}: pass --skills <folder with <name>/SKILL.md>')
+    os.makedirs(a.out, exist_ok=True)
+    today = dt.date.today()
+    since = today - dt.timedelta(days=a.days)
+    STATE = os.path.join(a.out, 'state.json')
+    state, state_note = load_state(STATE, today.isoformat())
+    claude_md = os.path.join(CONFIG, 'CLAUDE.md')
+
+    local, plugin_paths, offered = read_library(local_paths)
+    plugin_skills = set(plugin_paths)
+
+    upstream_notes, upstream_seen, unreadable, seen = check_upstream(a.upstream, state, local, plugin_skills)
+    state['upstream'] = seen
+
+    before_offer, new_offer, offer_desc = new_offers(state, offered)
+    state['offered'] = sorted(offered)
+
+    have_inbox, recent = recent_feedback(a.inbox, since)
+    vocab = skill_vocab(local, plugin_paths, claude_md)
+    updated, unmatched, routed, after = route_feedback(recent, local, vocab, a.skills)
+    recurring, fills = find_fills(unmatched, upstream_seen, offered, offer_desc, local, plugin_skills)
 
     # health: the audit, condensed to one line per flagged skill, plus its library-wide sections
     audit = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'audit-skills.py')
