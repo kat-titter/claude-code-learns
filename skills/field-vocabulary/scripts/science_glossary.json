@@ -1,0 +1,11 @@
+{
+ "prefer": {
+  "untreated": "DMSO control, when the wells got vehicle (JUMP's untreated wells are a different control)",
+  "untreated wells": "DMSO wells"
+ },
+ "ignore": [
+  "Untreated</em>",
+  "truly untreated",
+  "untreated (no DMSO)"
+ ]
+}

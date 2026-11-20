@@ -255,6 +255,18 @@ between words" is your taste, so it stays in your style skill. "Staging is on po
 low, and the next project learns it again. Too high, and your taste becomes everyone's rule. The audit flags a general
 skill that still names you or talks about "my taste", which is a lesson that climbed too far.
 
+## What's in the box
+
+Two skills run the loop: [`capture-lesson`](skills/capture-lesson/SKILL.md) writes lessons down, and [`prompt-practice`](skills/prompt-practice/SKILL.md) turns a mumbled request
+into a clear brief. The other 28 are examples, each one a month or so of real corrections boiled down to guidelines
+with their reasons. Take the ones you like.
+
+- **How work runs:** [`work-practice`](skills/work-practice/SKILL.md), [`judgement-calls`](skills/judgement-calls/SKILL.md), [`sanity`](skills/sanity/SKILL.md), [`metacognition`](skills/metacognition/SKILL.md), [`token-budget`](skills/token-budget/SKILL.md), [`workflow-design`](skills/workflow-design/SKILL.md)
+- **Code:** [`grug-brain`](skills/grug-brain/SKILL.md), [`deep-modules`](skills/deep-modules/SKILL.md), [`code-practice`](skills/code-practice/SKILL.md), [`debug-practice`](skills/debug-practice/SKILL.md), [`github-practice`](skills/github-practice/SKILL.md), [`systems-practice`](skills/systems-practice/SKILL.md), [`macos-long-render`](skills/macos-long-render/SKILL.md)
+- **Pages and figures:** [`tufte-principles`](skills/tufte-principles/SKILL.md), [`hci-principles`](skills/hci-principles/SKILL.md), [`interactive-figures`](skills/interactive-figures/SKILL.md), [`page-legibility-check`](skills/page-legibility-check/SKILL.md), [`verify-animated-page`](skills/verify-animated-page/SKILL.md), [`html-docs`](skills/html-docs/SKILL.md), [`html-slide-deck`](skills/html-slide-deck/SKILL.md)
+- **Writing and science:** [`storytelling`](skills/storytelling/SKILL.md), [`prose-voice`](skills/prose-voice/SKILL.md), [`humanize-science-writing`](skills/humanize-science-writing/SKILL.md), [`field-vocabulary`](skills/field-vocabulary/SKILL.md), [`citations`](skills/citations/SKILL.md), [`controlled-comparisons`](skills/controlled-comparisons/SKILL.md), [`viral-tweet`](skills/viral-tweet/SKILL.md)
+- **Audio:** [`beat-align-audio`](skills/beat-align-audio/SKILL.md), for when two songs must overlap without the kicks flamming.
+
 ## Install
 
 You need Claude Code and Python 3. From a terminal:
@@ -276,7 +288,7 @@ The dry run shows every change first. The install adds two skills (`capture-less
 backs up each file before changing it, and re-running is safe. Start a new session so everything loads. For the weekly
 pass, paste `skills/capture-lesson/weekly-watch.md` into a weekly scheduled task; for a daily nudge with the one thing
 to do next and the loose ends worth closing, paste `daily-nudge.md` from the same folder into a daily one. Add
-`--examples` for seven example skills.
+`--examples` for all 28 example skills.
 
 To see your whole library on one page, where hovering a file shows it rendered and a search finds any text:
 

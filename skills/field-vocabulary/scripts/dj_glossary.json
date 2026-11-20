@@ -1,0 +1,2 @@
+{"banned": {"crate": "playlist", "seam": "transition", "single shot": "top pick", "wall": "guideline", "pocket": "(say what it means)", "batch": "options"},
+ "ignore": ["crate_map", "data-crate", "crate.json", "seams/", "seam_space", "src/", "tools/"]}
