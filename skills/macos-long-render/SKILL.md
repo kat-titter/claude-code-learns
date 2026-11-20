@@ -66,16 +66,24 @@ running and paused workers, the top five processes. Workers are the job's innerm
 | pressure warn, free under 10%, swap up 2 GB since the last calm point and rising, or the job over `--job-gb` | `--pause-at warn` | SIGSTOP the newest running worker, one per reading, keeping `--keep 1` running |
 | critical, free under 10% or over the cap for 60 s with only `--keep` running | `--term-after 60` | SIGTERM the newest paused worker; the job reruns its unit (§4) |
 | pressure normal, free 15%+, swap flat for 30 s | `--calm 30` | SIGCONT the oldest paused worker, one per calm window |
-| the watcher exits or is killed | | SIGCONT every paused worker |
+| the watcher exits (SIGTERM, SIGINT, SIGHUP, even twice) | | SIGCONT every paused worker; after a `kill -9`, `mem-watch.py resume watch.jsonl` does it from the log |
 
-It never signals the Claude app, CLI or helpers (matched on the executable path, so a job in a folder named Claude is
-still a worker), the watcher, its parents or other users. The thresholds are set, not measured; tune them from the log.
-`--self-test` runs the rules on synthetic readings (18 checks, including the pressure and swap paths a test cannot
+It never signals the Claude app, CLI, helpers or the MCP servers they start (a job run from a Claude shell is still a
+worker, even in a folder named Claude), the watcher, its parents or other users. Prefer `--pid`: `--match` alone
+governs every matching process you own, and `--match` the worker's own command so a worker that spawns ffmpeg is paused
+with it. RSS misses compressed pages, so `--job-gb` is a coarse cap and pressure, free % and swap are the real guards;
+the cap counts paused workers too, so a trip over it ends in a SIGTERM unless the job shrinks. The thresholds are set,
+not measured; tune them from the log.
+`--self-test` runs the rules on synthetic readings (26 checks, including the pressure and swap paths a test cannot
 safely force).
 Tested 2026-11-19: 4 units of 0.25 GB on 3 workers, `--job-gb 0.6`, readings every second. It paused at 0.68 and 0.73 GB,
 terminated the newest paused worker 5 s later, resumed the other after 4 s calm, and the rerun pass finished the killed
 unit: 40 s against 30 s unwatched. Cost: 77 ms CPU per reading (under 1% of a core at 10 s), 13 MB. Killing the watcher
-mid-pause set both paused workers running again.
+mid-pause set both paused workers running again. A review then found four bugs, fixed and pinned: a paused worker that
+swapped under 100 MB was forgotten and left frozen, a second SIGTERM cut the exit cleanup short, `--match node` could
+pause MCP servers, and the SIGTERM clock started at the first warn. A rerun hit real pressure (warn on 71% of readings,
+swap 3.0 to 6.5 GB beside a rebuild): the watcher paused the test's workers, they swapped down to 3 MB and stayed
+governed, and it resumed each one when pressure eased.
 
 ## 4. Units that survive a kill
 

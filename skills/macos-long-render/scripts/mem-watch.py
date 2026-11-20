@@ -4,10 +4,11 @@
   mem-watch.py budget [--peak-gb G | -- CMD ...]    worker count from free memory and one unit's measured peak
   mem-watch.py watch --pid JOB [--match RE] [...]   log every N s; SIGSTOP/SIGCONT/SIGTERM the job's newest workers
   mem-watch.py summary LOG                          memory, thermal or CPU: what the log says went wrong
+  mem-watch.py resume LOG                           after a kill -9 of the watcher, SIGCONT what its log left paused
   mem-watch.py --self-test                          the pause/resume/terminate rules on synthetic readings
 
-Only the job's own descendants (or processes matching --match) are ever signalled, never the Claude app or CLI,
-never this watcher or its parents. Paused workers are resumed when the watcher exits. Stdlib only, macOS only.
+Only the job's own descendants (or processes matching --match) are ever signalled, never the Claude app, CLI,
+helpers or MCP servers, never this watcher or its parents. Paused workers are resumed when the watcher exits. Stdlib only, macOS only.
 """
 import argparse, json, os, re, signal, subprocess, sys, time
 
@@ -16,8 +17,9 @@ LEVELS = {1: "normal", 2: "warn", 4: "critical"}
 THERMAL = ["nominal", "moderate", "heavy", "trapping", "sleeping"]
 # Executables that are never signalled. Matched on the executable path, not the arguments, so a job script that
 # lives under ~/Claude/Projects is still a worker.
-PROTECT = re.compile(r"(?i)(/Claude\.app/|/claude-code/|/\.claude-science/|/claude$|WindowServer|loginwindow|"
-                     r"/Finder\.app/|/Dock\.app/|kernel_task|/launchd$|/caffeinate$)")
+PROTECT = re.compile(r"(?i)(/Claude\.app/|/claude-code/|/\.claude-science/|(^|/)claude$|WindowServer|loginwindow|"
+                     r"/Finder\.app/|/Dock\.app/|kernel_task|(^|/)launchd$|(^|/)caffeinate$)")
+SHELLS = {"zsh", "bash", "sh", "dash", "fish"}
 
 
 def sh(*cmd):
@@ -77,13 +79,26 @@ def descendants(procs, root):
 
 
 def untouchable(procs):
-    """This watcher, its ancestors, pid <= 1, other users and protected executables."""
+    """This watcher, its ancestors, pid <= 1, other users, protected executables, and anything a protected process
+    started with no shell in between (Claude's MCP servers); a job run from a Claude shell is still a worker."""
     keep, pid = set(), os.getpid()
     while pid > 1 and pid in procs:
         keep.add(pid)
         pid = procs[pid]["ppid"]
     uid = os.getuid()
-    return keep | {p for p, v in procs.items() if p <= 1 or v["uid"] != uid or PROTECT.search(v["exe"])}
+    keep |= {p for p, v in procs.items() if p <= 1 or v["uid"] != uid or PROTECT.search(v["exe"])}
+
+    def started_by_protected(p):
+        q = procs[p]["ppid"]
+        while q in procs and q > 1:
+            if os.path.basename(procs[q]["exe"]).lstrip("-") in SHELLS:
+                return False
+            if PROTECT.search(procs[q]["exe"]):
+                return True
+            q = procs[q]["ppid"]
+        return False
+
+    return keep | {p for p in procs if started_by_protected(p)}
 
 
 def find_workers(procs, root, match, min_mb, no_touch):
@@ -111,7 +126,7 @@ class Governor:
 
     def __init__(self, a):
         self.a, self.paused, self.swap_base, self.prev_swap = a, set(), None, None
-        self.over_since, self.calm_since, self.calm_swap = None, None, None
+        self.stuck_since, self.calm_since, self.calm_swap = None, None, None
 
     def reasons(self, m, job_gb, rising):
         a, why = self.a, []
@@ -139,21 +154,24 @@ class Governor:
         why = self.reasons(m, job_gb, rising)
         if why:
             self.calm_since = None
-            if self.over_since is None:
-                self.over_since = now
             if len(running) > a.keep:
+                self.stuck_since = None
                 w = min(running, key=lambda w: (w["age"], -w["pid"]))
                 self.paused.add(w["pid"])
-                self.over_since = now
                 return [("pause", w, ", ".join(why))]
             severe = m["level"] >= 4 or m["free"] < a.min_free or (a.job_gb and job_gb > a.job_gb)
-            if severe and paused and now - self.over_since >= a.term_after:
+            if not (severe and paused):
+                self.stuck_since = None                 # the SIGTERM clock runs only while severe with nothing to pause
+                return []
+            if self.stuck_since is None:
+                self.stuck_since = now
+            if now - self.stuck_since >= a.term_after:
                 w = min(paused, key=lambda w: (w["age"], -w["pid"]))
                 self.paused.discard(w["pid"])
-                self.over_since = now
+                self.stuck_since = now
                 return [("term", w, ", ".join(why) + " for %ds with %d running" % (a.term_after, len(running)))]
             return []
-        self.over_since = None
+        self.stuck_since = None
         calm = (m["level"] == 1 and m["free"] >= a.min_free + 5 and
                 (not a.job_gb or job_gb <= 0.85 * a.job_gb))
         if not calm:
@@ -198,23 +216,17 @@ def cmd_watch(a):
     log = open(a.log, "a", buffering=1)
     gov = Governor(a)
     caf = None if a.no_caffeinate else subprocess.Popen(["caffeinate", "-i", "-w", str(os.getpid())])
-    groups = {}
+    stopped = {}                     # worker pid -> every pid SIGSTOPped with it, kept until resumed, killed or gone
+    exits = (signal.SIGTERM, signal.SIGINT, signal.SIGHUP)
 
     def emit(rec):
         log.write(json.dumps(rec) + "\n")
 
-    def resume_all(*_):
-        no_touch = untouchable(processes())
-        for pid in list(gov.paused):
-            signal_group(groups.get(pid, [pid]), signal.SIGCONT, no_touch)
-            emit({"t": now_iso(), "event": "resume", "pid": pid, "why": "watcher exit"})
-        gov.paused.clear()
-
     def bye(sig, _):
         raise SystemExit(128 + sig)
 
-    signal.signal(signal.SIGTERM, bye)
-    signal.signal(signal.SIGINT, bye)
+    for sig in exits:
+        signal.signal(sig, bye)
     emit({"t": now_iso(), "event": "start", "pid": a.pid, "match": a.match, "args": vars(a)})
     t0 = time.time()
     try:
@@ -223,34 +235,64 @@ def cmd_watch(a):
             if a.pid and a.pid not in procs:
                 break
             no_touch = untouchable(procs)
+            for pid in [p for p in stopped if p not in procs]:    # a paused worker died: free what it left stopped
+                signal_group(stopped.pop(pid), signal.SIGCONT, no_touch)
             m = machine()
             workers = find_workers(procs, a.pid, a.match, a.min_rss_mb, no_touch)
-            for w in workers:
-                groups[w["pid"]] = w["group"]
+            seen = {w["pid"] for w in workers}
+            for pid in stopped:          # a paused worker stays governed while it lives, even swapped under --min-rss-mb
+                if pid not in seen:
+                    group = [pid] + [d for d in descendants(procs, pid) if d not in no_touch]
+                    workers.append({"pid": pid, "age": procs[pid]["age"], "group": group,
+                                    "mb": sum(procs[g]["mb"] for g in group)})
             for act, w, why in gov.step(time.time(), m, workers):
                 if act == "pause":
                     signal_group(w["group"], signal.SIGSTOP, no_touch)
+                    stopped[w["pid"]] = list(w["group"])
                 elif act == "resume":
-                    signal_group(w["group"], signal.SIGCONT, no_touch)
+                    signal_group(stopped.pop(w["pid"], w["group"]), signal.SIGCONT, no_touch)
                 else:
-                    signal_group(w["group"], signal.SIGTERM, no_touch)
-                    signal_group(w["group"], signal.SIGCONT, no_touch)   # a stopped process only dies once continued
-                emit({"t": now_iso(), "event": act, "pid": w["pid"], "mb": w["mb"], "why": why})
+                    group = stopped.pop(w["pid"], w["group"])
+                    signal_group(group, signal.SIGTERM, no_touch)
+                    signal_group(group, signal.SIGCONT, no_touch)    # a stopped process only dies once continued
+                emit({"t": now_iso(), "event": act, "pid": w["pid"], "group": w["group"], "mb": w["mb"], "why": why})
                 print("%s %s %d (%d MB): %s" % (now_iso(), act, w["pid"], w["mb"], why), file=sys.stderr)
             top = sorted(procs.items(), key=lambda kv: -kv[1]["mb"])[:5]
             m.update({"t": now_iso(), "job": round(sum(w["mb"] for w in workers) / 1024, 2),
-                      "run": len(workers) - len(gov.paused & {w["pid"] for w in workers}),
-                      "paused": len(gov.paused),
+                      "run": len(workers) - len(stopped), "paused": len(stopped),
                       "top": [[p, v["mb"], os.path.basename(v["exe"])[:40]] for p, v in top]})
             emit(m)
             if a.duration and time.time() - t0 > a.duration:
                 break
             time.sleep(a.every)
     finally:
-        resume_all()
+        for sig in exits:
+            signal.signal(sig, signal.SIG_IGN)       # a second signal must not cut the cleanup short
+        no_touch = untouchable(processes())
+        for pid, group in stopped.items():
+            signal_group(group, signal.SIGCONT, no_touch)
+            emit({"t": now_iso(), "event": "resume", "pid": pid, "why": "watcher exit"})
         emit({"t": now_iso(), "event": "end"})
         if caf:
             caf.terminate()
+
+
+def cmd_resume(a):
+    """After the watcher died by SIGKILL: SIGCONT every pid its log paused and never resumed or terminated."""
+    left = {}
+    for line in open(a.log):
+        try:
+            r = json.loads(line)
+        except ValueError:
+            continue
+        if r.get("event") == "pause":
+            left[r["pid"]] = r.get("group", [r["pid"]])
+        elif r.get("event") in ("resume", "term"):
+            left.pop(r["pid"], None)
+    procs = processes()
+    pids = [p for g in left.values() for p in g if p in procs]
+    signal_group(pids, signal.SIGCONT, untouchable(procs))
+    print("resumed %d process(es): %s" % (len(pids), " ".join(map(str, pids)) or "none"))
 
 
 def footprints():
@@ -322,7 +364,10 @@ def cmd_budget(a):
 def cmd_summary(a):
     ticks, events = [], []
     for line in open(a.log):
-        r = json.loads(line)
+        try:
+            r = json.loads(line)
+        except ValueError:                         # a line cut short when the watcher was killed
+            continue
         (events if "event" in r else ticks).append(r)
     if not ticks:
         sys.exit("no readings in %s" % a.log)
@@ -364,6 +409,7 @@ def self_test():
     g = Governor(a)
     ok = lambda m: dict({"level": 1, "free": 60, "swap": 1.0}, **m)
     ws = [{"pid": 10, "age": 300, "mb": 900}, {"pid": 11, "age": 200, "mb": 900}, {"pid": 12, "age": 100, "mb": 900}]
+    ws3 = list(ws)
     fails, n = [], [0]
 
     def expect(got, want, label):
@@ -376,10 +422,17 @@ def self_test():
     expect(g.step(10, ok({"level": 4}), ws), [("pause", 12)], "critical pauses newest")
     expect(g.step(20, ok({"level": 4}), ws), [("pause", 11)], "then the next newest")
     expect(g.step(30, ok({"level": 4}), ws), [], "keeps the last worker")
-    expect(g.step(85, ok({"level": 4}), ws), [("term", 12)], "terminates newest paused after term_after")
+    expect(g.step(85, ok({"level": 4}), ws), [], "no SIGTERM before term_after of being stuck")
+    expect(g.step(90, ok({"level": 4}), ws), [("term", 12)], "terminates newest paused after term_after")
     ws = ws[:2]
-    expect(g.step(90, ok({}), ws), [], "calm begins")
+    expect(g.step(95, ok({}), ws), [], "calm begins")
     expect(g.step(125, ok({}), ws), [("resume", 11)], "resumes after calm")
+    g = Governor(a)
+    expect(g.step(0, ok({"level": 2}), ws3), [("pause", 12)], "warn pauses")
+    expect(g.step(10, ok({"level": 2}), ws3), [("pause", 11)], "warn pauses the next")
+    expect(g.step(300, ok({"level": 2}), ws3), [], "long warn never terminates")
+    expect(g.step(310, ok({"level": 4}), ws3), [], "one critical reading after a long warn does not terminate")
+    expect(g.step(370, ok({"level": 4}), ws3), [("term", 12)], "critical for term_after does")
     g = Governor(a)
     expect(g.step(0, ok({"swap": 1.0}), ws), [], "swap baseline")
     expect(g.step(10, ok({"swap": 3.5}), ws), [("pause", 11)], "swap rising past +2 GB pauses")
@@ -392,6 +445,7 @@ def self_test():
     expect(g.step(0, ok({"level": 2}), ws), [], "warn alone does not pause when pause_at=critical")
     for exe, want in [("/Applications/Claude.app/Contents/MacOS/Claude", True),
                       ("/Users/x/Library/Application Support/Claude/claude-code/2.1/claude.app/Contents/MacOS/claude", True),
+                      ("claude", True), ("caffeinate", True),
                       ("/usr/local/bin/python3", False), ("/Users/x/Claude/Projects/essay/analysis/run.py", False)]:
         n[0] += 1
         if bool(PROTECT.search(exe)) != want:
@@ -428,8 +482,10 @@ def main():
     w.add_argument("--no-caffeinate", action="store_true", help="skip the caffeinate -i held while watching")
     s = sub.add_parser("summary", help="read a watch log")
     s.add_argument("log")
+    r = sub.add_parser("resume", help="SIGCONT what a killed watcher's log left paused")
+    r.add_argument("log")
     a = p.parse_args()
-    {"budget": cmd_budget, "watch": cmd_watch, "summary": cmd_summary}[a.cmd_name](a)
+    {"budget": cmd_budget, "watch": cmd_watch, "summary": cmd_summary, "resume": cmd_resume}[a.cmd_name](a)
 
 
 if __name__ == "__main__":
