@@ -204,25 +204,11 @@ def read_library(local_paths):
     return local, plugin_paths, offered
 
 
-def main():
-    a = parse_args()
-
-    local_paths = sorted(glob.glob(os.path.join(a.skills, '*', 'SKILL.md')))
-    if not local_paths:
-        sys.exit(f'no skills found in {a.skills}: pass --skills <folder with <name>/SKILL.md>')
-    os.makedirs(a.out, exist_ok=True)
-    today = dt.date.today()
-    since = today - dt.timedelta(days=a.days)
-    STATE = os.path.join(a.out, 'state.json')
-    state, state_note = load_state(STATE, today.isoformat())
-
-    local, plugin_paths, offered = read_library(local_paths)
-    plugin_skills = set(plugin_paths)
-
-    # upstream: folders added or changed since the last run (a folder's git sha changes whenever any file in it changes)
+def check_upstream(specs, state, local, plugin_skills):
+    """Upstream: folders added or changed since the last run (a folder's git sha changes whenever any file in it changes)."""
     upstream_notes, upstream_seen, unreadable = [], [], 0
     seen = state.get('upstream') if isinstance(state.get('upstream'), dict) else {}
-    for spec in a.upstream:
+    for spec in specs:
         repo, _, sub = spec.partition(':')
         sub = sub.strip('/') or 'skills'
         try:
@@ -248,12 +234,36 @@ def main():
         for name in sorted(set(before or {}) - set(now)):
             upstream_notes.append(f'- {spec}: `{name}` was removed upstream')
         seen[spec] = now
-    state['upstream'] = seen
+    return upstream_notes, upstream_seen, unreadable, seen
 
-    # marketplaces: plugin skills on offer locally that were not there last run
+
+def new_offers(state, offered):
+    """Marketplaces: plugin skills on offer locally that were not there last run."""
     before_offer = state.get('offered') if isinstance(state.get('offered'), list) else None
     new_offer = [] if before_offer is None else sorted(k for k in offered if k not in before_offer)
     offer_desc = {k: fields(offered[k][1])[0] for k in offered}
+    return before_offer, new_offer, offer_desc
+
+
+def main():
+    a = parse_args()
+
+    local_paths = sorted(glob.glob(os.path.join(a.skills, '*', 'SKILL.md')))
+    if not local_paths:
+        sys.exit(f'no skills found in {a.skills}: pass --skills <folder with <name>/SKILL.md>')
+    os.makedirs(a.out, exist_ok=True)
+    today = dt.date.today()
+    since = today - dt.timedelta(days=a.days)
+    STATE = os.path.join(a.out, 'state.json')
+    state, state_note = load_state(STATE, today.isoformat())
+
+    local, plugin_paths, offered = read_library(local_paths)
+    plugin_skills = set(plugin_paths)
+
+    upstream_notes, upstream_seen, unreadable, seen = check_upstream(a.upstream, state, local, plugin_skills)
+    state['upstream'] = seen
+
+    before_offer, new_offer, offer_desc = new_offers(state, offered)
     state['offered'] = sorted(offered)
 
     # gaps: recent feedback that no skill's description covers (harness text is noise, not feedback)
