@@ -226,7 +226,8 @@ def cmd_watch(a):
         raise SystemExit(128 + sig)
 
     for sig in exits:
-        signal.signal(sig, bye)
+        if signal.getsignal(sig) != signal.SIG_IGN:      # keep nohup's ignore on SIGHUP
+            signal.signal(sig, bye)
     emit({"t": now_iso(), "event": "start", "pid": a.pid, "match": a.match, "args": vars(a)})
     t0 = time.time()
     try:
@@ -292,6 +293,9 @@ def cmd_resume(a):
     procs = processes()
     pids = [p for g in left.values() for p in g if p in procs]
     signal_group(pids, signal.SIGCONT, untouchable(procs))
+    with open(a.log, "a") as log:                       # so a second run does not signal these pids again
+        for pid in left:
+            log.write(json.dumps({"t": now_iso(), "event": "resume", "pid": pid, "why": "resume LOG"}) + "\n")
     print("resumed %d process(es): %s" % (len(pids), " ".join(map(str, pids)) or "none"))
 
 
