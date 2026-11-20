@@ -304,7 +304,7 @@ def find_fills(unmatched, upstream_seen, offered, offer_desc, local, plugin_skil
     candidates = [(u['name'], u['name'], u['desc'], u['have']) for u in upstream_seen] + \
                  [(k, n, offer_desc[k], 'installed' if n in local or n in plugin_skills else 'offered')
                   for k, (n, _) in sorted(offered.items())]
-    for label, name, desc, have in candidates:
+    for label, _, desc, have in candidates:
         shared = sorted(set(recurring) & set(words(desc)))
         if len(shared) >= 2 and have != 'installed':
             fills.append((label, shared))
