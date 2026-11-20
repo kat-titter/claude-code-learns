@@ -10,10 +10,11 @@
 [![hooks never block](https://img.shields.io/badge/hooks-never_block-6a9bcc?style=flat-square)](AGENTS.md#invariants)
 [![MIT license](https://img.shields.io/badge/license-MIT-5e5d59?style=flat-square)](LICENSE)
 
-Claude Code starts every session fresh, so a correction you made on Monday can be needed again on Friday. This repo
-gives it a simple learning loop. When you correct it, it writes the lesson down as one short line in the right file, and
-the next session reads that file when the task calls for it. Once a week a tidy-up pass keeps the files small. It is
-built only from parts Claude Code already has: skills, hooks, memory and scheduled tasks.
+Claude Code is a brilliant colleague with no long-term memory. Every session starts fresh, so the correction you made
+on Monday can be needed again on Friday. This repo gives it a small learning loop. When you correct it, it writes the
+lesson down as one short line in the right file, and the next session reads that file when a task calls for it. Once a
+week a tidy-up pass keeps the files small, a bit like sleep sorting a day. Everything is built from parts Claude Code
+already has (skills, hooks, memory and scheduled tasks), so what it adds is text files, a few scripts and five small hooks.
 
 **Install:** [one command](#install) &emsp; **Undo:** [one command](#undo) &emsp;
 **Explainer page:** [kat-titter.github.io/claude-code-learns](https://kat-titter.github.io/claude-code-learns/) &emsp;
@@ -99,9 +100,10 @@ same in every figure here and on the explainer page. A text version of this map 
 
 1. **Notice.** Hooks spot feedback ("no", "from now on", "too much text") and add a one-line reminder to route it.
 2. **Generalize.** Claude asks what family of problems the correction belongs to, and writes for the whole family.
-3. **Route.** How anyone should do the work goes to a general skill; your taste to your style skill; a fact about one
-   project to that project's memory.
-4. **Write the gist.** One line: what to do, an example, the date. A second case folds into the same line.
+3. **Route.** Each lesson climbs as high as its reason holds. How anyone should do the work goes to a general skill.
+   Your taste goes to your style skill. A fact about one project goes to that project's memory.
+4. **Write the gist.** One line with what to do, an example, the reason and the date. The reason is what lets the
+   rule bend later. A second case folds into the same line.
 5. **Check it loads.** A lesson that never loads might as well not exist, so the setup tests that skills load when
    they should, both in tests and in real sessions.
 6. **Tidy weekly.** A scheduled pass reads the notebook, the miss report and the library's health, and proposes at
@@ -118,10 +120,10 @@ The detail lives in [`skills/capture-lesson/SKILL.md`](skills/capture-lesson/SKI
   <img alt="Memory and cognition. Memory, short-term: the session's context, lessons-inbox.md and skill-usage.log; long-term: skills, project memory and CLAUDE.md; short-term is sorted into long-term weekly. Cognition about you (relational): your style skill, feedback-nudge.py, the routing question, memory notes about you. Cognition about itself (meta): trigger-misses.py, skills-watch.py, audit-skills.py, and the question of which family a mistake belongs to." src="assets/mind-light.svg" width="740">
 </picture>
 
-The session is short-term memory and the inbox is its notebook; skills and project memory are long-term, and the
-weekly pass moves what recurs from one to the other. Two kinds of thinking sit on top: a model of you (your taste
-lives in your style skill, apart from rules for everyone) and a model of itself (scripts that check whether its own
-lessons load and land). That self-check is a loop, the subject of the next section.
+A session is short-term memory, and the inbox is its scratch pad. Skills and project memory are long-term, and the
+weekly pass moves whatever keeps coming back from one to the other. Two kinds of thinking sit on top. One is a model
+of you, with your taste kept in your style skill, apart from the rules everyone shares. The other is a model of
+itself: scripts that check whether its own lessons load and land. That self-check is a loop, which is the next section.
 
 <details>
 <summary><b>How it borrows from human memory</b></summary>
@@ -148,10 +150,11 @@ index, and this setup sends project facts there. Taste and craft go to skills, w
 
 ## Loops and graphs
 
-A **loop** makes one piece of work correct without you: it runs a check a program can fail, repairs, and stops on a
-rule. A **graph** decides which pieces exist, in what order, and where you sign off. Without a loop you read every
-output; without a graph you approve every step. Most agent setups also skip the step that writes each failure down as
-a rule for next time, and that step is what this repo is.
+Picture a kitchen. A **loop** is one cook tasting the soup, fixing the salt and tasting again, until a thermometer
+says it's done (a check a program can fail, not a feeling) or the timer runs out (a round limit). A **graph** is the
+order of service: which dishes get made, in what order, and where the head chef signs off. Without loops you taste
+every dish yourself. Without a graph you approve every step. Most agent setups also skip writing down why the soup
+failed, so tomorrow's cook makes the same mistake. That last step is what this repo is.
 
 | every loop needs | the lesson loop (in the turn) | the weekly pass |
 |---|---|---|
@@ -160,13 +163,13 @@ a rule for next time, and that step is what this repo is.
 | memory of past attempts | the inbox, the skills folder in git | the report checks whether last week's drafted text landed |
 | someone told when it stalls | you, in the same turn | stalled items lead the report; two weeks open and they drop |
 
-The weekly pass sorts its proposals by what a mistake would cost to undo. A wording line in a skill kept in git is
-one revert (the **open** lane); a skill description changes when the skill loads, so it needs its trigger test first
-(**evidence**); hooks, `settings.json`, `CLAUDE.md`, installs and deletions wait for you (**closed**). You say yes
-once per lane, not once per item, and with one line in the weekly prompt the open lane applies itself. With a second
-line, an evidence-lane skill change applies itself when
-[`refactor-gate.py`](skills/capture-lesson/scripts/refactor-gate.py) exits 0 (the audit flag it was for cleared,
-nothing newly flagged, its trigger test no worse), and stays a proposal when it fails.
+The weekly pass sorts its proposals by how hard a mistake would be to undo. A wording change in a skill kept in git is
+one revert away, so it goes in the **open** lane. A new skill description changes *when* the skill loads, so it must
+pass its trigger test first, in the **evidence** lane. Hooks, `settings.json`, `CLAUDE.md`, installs and deletions are
+hard to take back, so they wait for you in the **closed** lane. You say yes once per lane, not once per item. One line
+in the weekly prompt lets the open lane apply itself. A second line lets an evidence-lane change apply itself when
+[`refactor-gate.py`](skills/capture-lesson/scripts/refactor-gate.py) exits 0, meaning the audit flag it targeted
+cleared, nothing new got flagged and its trigger test did no worse. When the gate fails, the change stays a proposal.
 
 For workflows you write yourself, the example skill [`workflow-design`](skills/workflow-design/SKILL.md) holds the
 same rules, and its [`check-repair.js`](skills/workflow-design/references/check-repair.js) template is a working graph:
@@ -225,6 +228,33 @@ What keeps it that way:
 
 </details>
 
+## When rules disagree
+
+Any library of lessons contradicts itself sooner or later. A note says the server runs on port 8774 while the config
+says 8778. Your style skill bans tiny charts in tables, and a general skill teaches them. A rule written for last
+month's case fits this month's badly. So every lesson here is a **guideline with its reason**, never a law, and the
+example skill [`judgement-calls`](skills/judgement-calls/SKILL.md) says what to do when two of them collide.
+
+**Judgement is knowing why the rule exists.** A good cook follows the recipe and still tastes as they go. When
+following a line would defeat the reason it was written for, Claude follows the reason and tells you in one line, so
+you can undo it. Rules you call firm, and hooks, stay firm.
+
+**Which source wins**, first match decides:
+1. What is true right now (the file, the run, the measurement) beats what a note remembers.
+2. Your latest words beat your older ones.
+3. The narrower note beats the broader one: this project, then your taste, then everyone.
+4. The newer date beats the older one.
+
+**Unsure? Look at what you chose last time**: the take you kept, the version you picked, the correction you made.
+Claude asks only when the call is yours and nothing you chose before settles it. Then it fixes the losing line, so the
+same fight doesn't happen twice.
+
+**Every lesson sits on one rung of a ladder**: this case, this project, you, everyone. It climbs as high as its reason
+holds and no higher. "Legends go outside the plot so they never hide data" holds for anyone, so it's general. "No dots
+between words" is your taste, so it stays in your style skill. "Staging is on port 8080" is one project's fact. Too
+low, and the next project learns it again. Too high, and your taste becomes everyone's rule. The audit flags a general
+skill that still names you or talks about "my taste", which is a lesson that climbed too far.
+
 ## Install
 
 You need Claude Code and Python 3. From a terminal:
@@ -246,7 +276,7 @@ The dry run shows every change first. The install adds two skills (`capture-less
 backs up each file before changing it, and re-running is safe. Start a new session so everything loads. For the weekly
 pass, paste `skills/capture-lesson/weekly-watch.md` into a weekly scheduled task; for a daily nudge with the one thing
 to do next and the loose ends worth closing, paste `daily-nudge.md` from the same folder into a daily one. Add
-`--examples` for six example skills.
+`--examples` for seven example skills.
 
 ## Undo
 
@@ -276,6 +306,7 @@ skills/capture-lesson/    the skill that writes skills, its hooks, checks and th
 skills/prompt-practice/   turns a short or dictated request into a clear brief, with its hook
 skills/workflow-design/   loops inside a graph, with a check-repair workflow template
 skills/code-practice/    clean code and a tidy repo, with code_audit.py: page-design rules read as code
+skills/judgement-calls/  what to do when two lessons disagree: rules as guidelines, which source wins
 skills/html-*/, ...       example general skills, installed with --examples
 templates/, *.example*    starting points: style skill, CLAUDE.md, hooks, memory, inbox, X watch list
 coding-skills.md          an example library after a few months of use
