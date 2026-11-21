@@ -138,7 +138,12 @@ Human prose trips the signals too: Karpathy has a "not only ... but" and a "with
   block grouped into parts replace any preview of the argument, and drop paragraphs that restate a figure or a
   scorecard. Then tighten what is left, and keep every fact by leaving detail in folds. Case: an essay went from
   sixteen chapters to fourteen in five parts and its main read from 7,153 words to 3,875 with no citation lost
-  (2026-10-25: "want better organization and flow, reduce length word count by at least 30%").
+  (2026-10-25: "want better organization and flow, reduce length word count by at least 30%"). The structural cut is
+  often a whole section that another page already owns: a README lost its design theory and twelve footnotes once its
+  explainer page was found to carry both, which was 42% of its words for no loss (2026-11-21). Tightening sentences
+  instead tempts you to stitch clauses with colons and dashes, which reads shorter and lands harder: one interim draft
+  cut 16% of its words while its grade went 8.4 to 9.3 and its colons 54 to 72 per 100 sentences. Breaking those back
+  into short sentences is what moved the grade to 7.1.
 - **Balance breadth and depth.** Aim for a 5 to 12 minute main read with about 5 or 6 figures. Put methods, extra figures and caveats one click away. Budget all three layers and measure each: main read, with folds open, with supplements (an essay, 2026-11-19: "15 min without drop downs, up to 30 min with drop downs and up to 1 hr with all supplemental data and methods").
 - **Use the field's own words.** Practitioners' vocabulary over names you coined while building (a DJ says playlist and transition, not crate and seam); keep coined terms in code, or define one once in plain words. The field-vocabulary skill has a checker.
 - **Say each fact once,** where it does the most work. A title, a lede and a caption that repeat each other cost the reader three reads for one fact.
