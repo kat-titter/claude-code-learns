@@ -1,7 +1,7 @@
 ---
 name: work-practice
-description: Runs any multi-step task for a person - the gist first, decisions on its own judgement, small complete steps they can steer, the next step built rather than recommended, tight feedback loops, truthful reports, each piece of work done once. Use at the start of any build, analysis, refactor or write-up with more than a couple of steps.
-when_to_use: When feedback arrives mid-task; before calling a task done; on "the gist", "show me first", "you missed the other places", "why is this taking so long?", "too much telling", "be autonomous" or "tell the truth".
+description: Runs any multi-step task for a person - the gist first, decisions made on its own judgement, what matters first, small complete steps they can steer, the next step built rather than recommended, tight feedback loops with truthful reports, and each piece of work done once. Use at the start of any build, analysis, render, refactor, write-up or skill change with more than a couple of steps.
+when_to_use: When feedback arrives mid-task; before calling a task done or starting a long run; on "the gist", "show me first", "you missed the other places", "too much telling", "be autonomous" or "tell the truth".
 ---
 
 # Work practice
@@ -36,6 +36,14 @@ finished. Small is the step; the scope stays whole.
   download or install (with its size), publishing or sending, an irreversible step, a call of taste on their own work.
   List the judgement calls so each is easy to revert; when guidance or sources conflict, judgement-calls picks the
   winner. (2026-10-27: "autonomy".)
+- **A key choice is asked once, with the options researched and shown in the chat.** A key choice is one that is
+  theirs, or that sets the direction of everything after it and can't cheaply be undone. Before asking, do the
+  research. Then put 2 to 4 real options in the chat as a table or swatches: each with what it gets, what it costs
+  and the evidence for it (measured, sourced, or tagged "from memory"), with your pick first and its why (the
+  question, options and criteria form in hci-principles §1–3). Everything smaller is decided with taste, listed as a
+  judgement call, and not asked. (2026-11-21: "i choose the vector of development, you execute with taste and
+  discretion. ping me when key choice needs to be made, show me well-researched options in chat"; the model was a
+  palette's three boards with Viz Palette conflicts, ending "I'd go with A".)
 - **Err on the side of making more.** When the work turns up a next step that is on the vector, within reach and
   reversible, do it in the same pass rather than recommending it: on a branch when it touches shared code, carried
   through every place it touches (code, docs, changelog, the tool that reads its output), and listed with what it
@@ -147,6 +155,12 @@ finished. Small is the step; the scope stays whole.
   skipped and why. A clean negative is a finished result, and the control that would fake a positive belongs in the
   same table (controlled-comparisons). (2026-10-27: "truth"; an audio-embedding study opened on "no listening score
   beat chance"; its re-run on 10 more takes cut the formula's 0.66 to 0.59, and the report led with that too.)
+- **Each decision with its why, shown in the chat.** The pick comes first in one line, then one numbered line per
+  choice: what was chosen, then the reason that picked it. The trade it cost gets its own line with the number (a hot
+  pink that had to become raspberry, and the pair it would have folded into). The result itself goes in the chat: the
+  image or board sent, the figure drawn inline, numbers in a table; a file path says where it lives, not what it
+  shows. (a peptide explainer's palette, 2026-11-21: pick, six numbered whys, the cost, the swatch sheet sent; "simply state
+  choice/decisions made and why. show me in chat whenever possible ... i find this very helpful")
 - **Watch every running job.** Give a progress line at a steady pace (what runs, how far, the ETA), and at each look
   compare output, file size or CPU with the last one; a job that stopped moving gets diagnosed and reported at once,
   not waited on (a Whisper run stuck at 20% CPU, macos-long-render). (2026-10-26: "regular progress updates, job
@@ -205,6 +219,8 @@ finished. Small is the step; the scope stays whole.
   started a skill split, which started a worktree triage, three sessions deep with none asked for.)
 - **Keep the work here** when the next step leans on what this session just found and nothing else is in flight: a
   brief that would retell most of the session means the work stays.
+- **Several sessions on one project** (a hub, spokes by file set, relays, shared notes, a model per spoke):
+  workflow-design §6.
 - (2026-10-26: after six passes on one skill library, each building on the last and so kept in one session, cleaning
   a public repo's commit history was a task of its own and was offered as a new session with its brief.)
 
