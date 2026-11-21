@@ -10,262 +10,62 @@
 [![hooks never block](https://img.shields.io/badge/hooks-never_block-6a9bcc?style=flat-square)](AGENTS.md#invariants)
 [![MIT license](https://img.shields.io/badge/license-MIT-5e5d59?style=flat-square)](LICENSE)
 
-Claude Code is a brilliant colleague with no long-term memory. Every session starts fresh, so the correction you made
-on Monday can be needed again on Friday. This repo gives it a small learning loop. When you correct it, it writes the
-lesson down as one short line in the right file, and the next session reads that file when a task calls for it. Once a
-week a tidy-up pass keeps the files small, a bit like sleep sorting a day. Everything is built from parts Claude Code
-already has (skills, hooks, memory and scheduled tasks), so what it adds is text files, a few scripts and five small hooks.
+Claude Code is a brilliant colleague with no long-term memory. Correct it on Monday and you can be correcting the same
+thing on Friday.
+
+This repo closes that gap. When you push back, Claude writes the lesson down as one short line in the right file.
+Later sessions read that file when a task calls for it. Once a week a tidy-up pass merges what repeats and drops what
+nothing needed, a bit like sleep sorting a day.
+
+None of it is new machinery. It runs on parts Claude Code already has: skills, hooks, memory and scheduled tasks. So
+what you install is some text files, a few scripts, and five small hooks that only add a line of context or write a
+log.
 
 **Install:** [one command](#install) &emsp; **Undo:** [one command](#undo) &emsp;
-**Explainer page:** [kat-titter.github.io/claude-code-learns](https://kat-titter.github.io/claude-code-learns/) &emsp;
+**Why it works:** [the explainer page](https://kat-titter.github.io/claude-code-learns/) &emsp;
 **For agents:** [`AGENTS.md`](AGENTS.md)
 
 ## What it looks like
 
-**A correction becomes a habit.**
+A correction becomes a habit:
 
 > **You:** no, the legend covers the data. legends go outside the plot.
 >
 > **Claude:** Moved the legend below the chart. *Skill updated: figure-design, legend outside the plot.*
 
-Two weeks later, in a new session, you ask for a different chart. The legend is outside the plot, and nobody had to say
-so. The lesson went in as one line: what to do, an example, the date.
+Two weeks later, in a new session, you ask for a different chart. The legend is outside the plot and nobody had to say
+so. One line went in, carrying four things: what to do, an example, the reason, the date. That reason is what lets the
+line bend later.
 
-**Taste goes to your own file, not everyone's.**
+Not every lesson belongs in the same place, so each one is routed:
 
-> **You:** please no dots between words in the footer, I find them fussy.
+| you say | where it goes | why |
+|---|---|---|
+| "legends go outside the plot" | a general skill | good practice for anyone |
+| "no dots between words, I find them fussy" | your own `yourname-style` | your taste, not everyone's rule |
+| "staging is on port 8080, not 3000" | that project's memory | true for one project |
 
-That's a preference, not a rule of good design, so it goes to your personal style skill (`yourname-style`). Your general
-skills stay usable by anyone, and your taste lives in one place.
+Pushback you make in passing is caught too. Say "why is this taking so long?" halfway through a busy task, and Claude,
+busy, may answer nothing. After the reply, though, a hook files the line in `lessons-inbox.md`. There it sits. Say
+something like it again next week and the weekly pass proposes a lesson for it.
 
-**A project fact goes to that project's memory.**
+Skills also go unused when they fit. In one person's real sessions, a skill that plainly matched the request loaded on
+its own about 1 time in 5. So a hook reads each request for rare words that match a skill's description, and names the
+likely one in a single line. Ask about *references* whose *numbering* has *drifted*, and it names
+[`citations`](skills/citations/SKILL.md) before work starts.
 
-> **You:** the staging server is on port 8080, not 3000.
+<details>
+<summary><b>Three words, in plain terms</b></summary>
 
-That's true for one project only, so it becomes a memory note for that project and never clutters a skill.
-
-**It catches what slipped by.**
-
-You mention "why is this taking so long?" halfway through a busy task, and Claude, busy, says nothing about it. After
-the reply, a hook jots the line into a notebook (`lessons-inbox.md`). On its own it stays there. If it comes up again
-next week, the weekly pass suggests a lesson for it.
-
-**It points at the right skill.**
-
-> **You:** two of the references in this report look made up, and the numbering has drifted
-
-Skills often go unused even when they fit: in one person's real sessions, a skill that clearly matched the request
-loaded on its own only about 1 time in 5. So a hook notices that the request shares rare words (*references, numbering,
-drifted*) with one skill's description, here the example skill [`citations`](skills/citations/SKILL.md), and adds
-a single line naming it. Claude loads it before starting, so every source is checked and every marker matched to its
-entry.
-
-**Monday morning, a short report.**
-
-The weekly pass leaves a page like this, and changes nothing until you say yes. It also reads new posts on X (links
-you pasted into Claude Code that week, and accounts listed in `~/.claude/practice-accounts.txt`) and proposes a
-practice only when a measurement on your own sessions shows you don't follow it yet:
-
-```
-Stalled      1 of last week's 4 proposals landed; the other 3 get one more week, then drop
-Upstream     1 new skill (pdf-forms): overlaps nothing you have
-Practice     a post you pasted: "gate on the exit code"; 0 of 103 workflows do, so proposed
-Gaps         2 notes in the inbox that no skill covers, e.g. "the numbers don't match the sources"
-Misses       github-practice loaded for 3 of 9 requests that matched it: add "pages, publish" to its description?
-Health       one skill is 540 lines: split by task
-Proposed     at most five changes, grouped by what a mistake would cost to undo
-```
-
-## Five words you'll need
-
-| word | in plain terms |
+| word | what it means here |
 |---|---|
-| **Claude Code** | an AI assistant that works in your terminal or desktop app, reading and editing files with you |
-| **skill** | a short how-to file. Each session sees only its one-paragraph description, like a label on a shelf; the full text is read only when a task matches |
-| **hook** | a tiny script Claude Code runs at a set moment, such as when you send a message or after each reply. Here hooks only add a line of context or write a log; they never block you |
-| **`.md` (Markdown)** | a plain-text file with light formatting (`#` for a heading, `-` for a list). Every skill, memory note and `CLAUDE.md` is one, so the memory itself is files you can open, read and edit |
-| **memory and `CLAUDE.md`** | notes Claude Code keeps about you and each project (a short index is read every session), and a short file of standing instructions read at the start of every session |
+| **skill** | a short how-to file. Each session sees only its one-paragraph description, like a label on a shelf; the full text is read when a task matches |
+| **hook** | a tiny script Claude Code runs at a set moment, such as when you send a message. These ones add a line of context or write a log, and they cannot block you |
+| **memory and `CLAUDE.md`** | notes Claude Code keeps per project, read through a one-line index, and a short file of standing instructions read at the start of every session |
 
-## How it works
-
-<picture>
-  <source media="(max-width: 600px) and (prefers-color-scheme: dark)" srcset="assets/how-it-works-phone-dark.svg">
-  <source media="(max-width: 600px)" srcset="assets/how-it-works-phone-light.svg">
-  <source media="(prefers-color-scheme: dark)" srcset="assets/how-it-works-dark.svg">
-  <img alt="How it works. Every turn: your correction reaches a hook, which hands Claude a one-line reminder and the likely skill; Claude writes a one-line lesson into your library and reads skills from it on a match; hooks log a quoted line and each skill use. Every week: scripts read the logs, new upstream skills and X posts, and whether last week's text landed; a weekly agent drafts at most five proposals by undo cost; the open lane, and the evidence lane on a passing check, can apply themselves; the rest come back to you, one yes per lane." src="assets/how-it-works-light.svg" width="740">
-</picture>
-
-You appear twice: once with a correction, once with a yes. Every arrow names what it carries; the colours are the
-same in every figure here and on the explainer page. A text version of this map is in [`AGENTS.md`](AGENTS.md#map).
-
-1. **Notice.** Hooks spot feedback ("no", "from now on", "too much text") and add a one-line reminder to route it.
-2. **Generalize.** Claude asks what family of problems the correction belongs to, and writes for the whole family.
-3. **Route.** Each lesson climbs as high as its reason holds. How anyone should do the work goes to a general skill.
-   Your taste goes to your style skill. A fact about one project goes to that project's memory.
-4. **Write the gist.** One line with what to do, an example, the reason and the date. The reason is what lets the
-   rule bend later. A second case folds into the same line.
-5. **Check it loads.** A lesson that never loads might as well not exist, so the setup tests that skills load when
-   they should, both in tests and in real sessions.
-6. **Tidy weekly.** A scheduled pass reads the notebook, the miss report and the library's health, and proposes at
-   most five changes.
-
-The detail lives in [`skills/capture-lesson/SKILL.md`](skills/capture-lesson/SKILL.md).
-
-## Memory and cognition
-
-<picture>
-  <source media="(max-width: 600px) and (prefers-color-scheme: dark)" srcset="assets/mind-phone-dark.svg">
-  <source media="(max-width: 600px)" srcset="assets/mind-phone-light.svg">
-  <source media="(prefers-color-scheme: dark)" srcset="assets/mind-dark.svg">
-  <img alt="Memory and cognition. Memory, short-term: the session's context, lessons-inbox.md and skill-usage.log; long-term: skills, project memory and CLAUDE.md; short-term is sorted into long-term weekly. Cognition about you (relational): your style skill, feedback-nudge.py, the routing question, memory notes about you. Cognition about itself (meta): trigger-misses.py, skills-watch.py, audit-skills.py, and the question of which family a mistake belongs to." src="assets/mind-light.svg" width="740">
-</picture>
-
-A session is short-term memory, and the inbox is its scratch pad. Skills and project memory are long-term, and the
-weekly pass moves whatever keeps coming back from one to the other. Two kinds of thinking sit on top. One is a model
-of you, with your taste kept in your style skill, apart from the rules everyone shares. The other is a model of
-itself: scripts that check whether its own lessons load and land. That self-check is a loop, which is the next section.
-
-<details>
-<summary><b>How it borrows from human memory</b></summary>
-
-The design copies a few well-tested ideas about how people learn. The plain idea comes first, then the scientific term
-in brackets for anyone who wants to look it up. It's an analogy, not a claim that the software works like a brain.
-
-| how people learn | what this setup does |
-|---|---|
-| We learn fast in a quick notebook and slowly in a tidy library; the slow store builds general knowledge from many cases (complementary learning systems[^1][^2]) | the inbox catches moments cheaply; skills hold the general lesson, written for the whole family of cases |
-| Surprise teaches: learning follows the gap between what we expected and what happened (prediction error[^3]) | a correction is that gap, so the feedback hook fires on corrections and surprise, not on every message |
-| Sleep replays the day and sorts what to keep (replay and consolidation[^4][^5]) | the weekly pass re-reads the notebook while you're away and proposes what to keep |
-| Something new that fits what you already know is learned in one go (schemas[^6]) | a new case folds into the section that already owns it, instead of starting a new file |
-| We find a memory through the same cues it was stored with (encoding specificity[^7]) | skill descriptions use the words people actually say when they need them; the router matches those words |
-| Testing yourself beats rereading (testing effect[^8]) | trigger tests and the miss report check that each skill loads when it should, instead of rereading it |
-| Spread-out repeats stick better than one cram (spacing[^9]) | a note that comes back in a later session is promoted; one that never returns stays in the notebook |
-| Forgetting is useful: it drops stale detail and keeps the system lean (adaptive forgetting[^10][^11]) | the weekly pass merges, compresses and archives |
-| We hold only about four things in mind at once (working memory[^12]) | the always-loaded layer stays a few lines; everything else waits on disk until a task needs it |
-
-Claude Code's own memory is the project shelf of this design. Its auto memory keeps one fact per note with a one-line
-index, and this setup sends project facts there. Taste and craft go to skills, which every project can use.
+Everything above is Markdown, so the memory is files you can open, read and edit.
 
 </details>
-
-## Loops and graphs
-
-Picture a kitchen. A **loop** is one cook tasting the soup, fixing the salt and tasting again, until a thermometer
-says it's done (a check a program can fail, not a feeling) or the timer runs out (a round limit). A **graph** is the
-order of service: which dishes get made, in what order, and where the head chef signs off. Without loops you taste
-every dish yourself. Without a graph you approve every step. Most agent setups also skip writing down why the soup
-failed, so tomorrow's cook makes the same mistake. That last step is what this repo is.
-
-| every loop needs | the lesson loop (in the turn) | the weekly pass |
-|---|---|---|
-| a check a program can fail | the YAML parses; trigger tests load it on real prompts | the audit and the watcher are scripts |
-| a round limit and a budget | one line per lesson | weekly, at most five proposals |
-| memory of past attempts | the inbox, the skills folder in git | the report checks whether last week's drafted text landed |
-| someone told when it stalls | you, in the same turn | stalled items lead the report; two weeks open and they drop |
-
-The weekly pass sorts its proposals by how hard a mistake would be to undo. A wording change in a skill kept in git is
-one revert away, so it goes in the **open** lane. A new skill description changes *when* the skill loads, so it must
-pass its trigger test first, in the **evidence** lane. Hooks, `settings.json`, `CLAUDE.md`, installs and deletions are
-hard to take back, so they wait for you in the **closed** lane. You say yes once per lane, not once per item. One line
-in the weekly prompt lets the open lane apply itself. A second line lets an evidence-lane change apply itself when
-[`refactor-gate.py`](skills/capture-lesson/scripts/refactor-gate.py) exits 0, meaning the audit flag it targeted
-cleared, nothing new got flagged and its trigger test did no worse. When the gate fails, the change stays a proposal.
-
-For workflows you write yourself, the example skill [`workflow-design`](skills/workflow-design/SKILL.md) holds the
-same rules, and its [`check-repair.js`](skills/workflow-design/references/check-repair.js) template is a working graph:
-units fan out, each is checked by exit code and repaired alone up to a round limit, and every repair that passes
-comes back as a candidate rule. (After Hoodie's
-[Loops & Graphs](https://x.com/HoodieFade_/status/2117959235690524883), 2026-11-04.)
-
-<picture>
-  <source media="(max-width: 600px) and (prefers-color-scheme: dark)" srcset="assets/check-repair-phone-dark.svg">
-  <source media="(max-width: 600px)" srcset="assets/check-repair-phone-light.svg">
-  <source media="(prefers-color-scheme: dark)" srcset="assets/check-repair-dark.svg">
-  <img alt="check-repair.js. Each unit, in parallel: an agent builds it and reports the files changed; a check reads the exit code; exit 0 after a fix becomes a candidate rule for the next split; a non-zero exit sends the code and the last 40 lines to an agent that repairs that unit only, up to three rounds; a unit still failing comes to you with what was tried." src="assets/check-repair-light.svg" width="740">
-</picture>
-
-<details>
-<summary><b>What keeps it light on tokens</b></summary>
-
-Every word Claude reads costs attention and money (a "token" is about three quarters of a word), so the loop is built
-to read little:
-
-| | when it is read | size |
-|---|---|---|
-| skill descriptions (3 on a fresh install) | every session | about 370 tokens in all |
-| the routing section of `CLAUDE.md` | every session | about 130 tokens |
-| feedback reminder | only on a message that reads like feedback (about 1 in 7) | about 100 tokens |
-| skill-router line | only when a request strongly matches a skill (about 1 in 16) | about 30 tokens |
-| skill-pick line | when nothing matched and the session has loaded no skill yet (about 1 in 3), quiet once one loads | about 65 tokens |
-| prompt reminder | on a message that starts in lowercase or has no closing punctuation: most messages if you dictate (84% for one person who does) | about 55 tokens |
-| skill bodies | only when a task matches, once per session | 0 until then |
-| inbox, usage log, weekly reports | never in a session: scripts read them and hand over a short summary | 0 |
-
-What keeps it that way:
-- **Scripts read, the model judges.** The audit, the watch and the miss report scan every file in well under a second
-  and pass Claude a short list of what changed. Claude opens only the files the list names.
-- **Quiet by default.** Each hook was measured on about 230 real prompts before shipping, and most prompts add nothing.
-- **One line per lesson.** A second case folds into the line that's already there, so skills grow slowly.
-- **Incremental.** The weekly pass remembers what it saw and reports only what changed.
-- **Layers.** Claude Code lists each skill's name and description every session (cut at 1,536 characters each, and
-  the least-used drop first when the list passes 1% of the context window). A skill's full text loads only when used.
-
-</details>
-
-<details>
-<summary><b>Built on current practice, and what it adds</b></summary>
-
-| practice (source) | what Claude Code gives you | what this setup adds |
-|---|---|---|
-| Rules that must hold every time go in hooks; skills and `CLAUDE.md` are guidance ([Claude Code best practices](https://code.claude.com/docs/en/best-practices)) | hooks, skills, `CLAUDE.md` | hooks that only remind and log, never block; the lesson itself stays guidance Claude can weigh |
-| Context is a finite budget: load the smallest set of high-signal tokens ([Effective context engineering](https://www.anthropic.com/engineering/effective-context-engineering-for-ai-agents)) | a skill listing and on-demand bodies | hooks that stay silent on most prompts, with fire rates measured on real prompts |
-| Progressive disclosure: descriptions always, bodies on demand ([Agent Skills](https://code.claude.com/docs/en/skills)) | the skill listing | one line per lesson, an audit that flags long or overlapping skills, `references/` for long tails |
-| Keep memory outside the context window ([memory docs](https://code.claude.com/docs/en/memory)) | auto memory and `CLAUDE.md` | a routing rule that gives every lesson one home (skill, style skill or project memory), and an inbox that is never loaded |
-| Write descriptions as triggers, and test them ([skill best practices](https://platform.claude.com/docs/en/agents-and-tools/agent-skills/best-practices)) | skill-creator's evals | old vs new description at three runs each, a miss report from real sessions, and a router hook that names the likely skill |
-| Hooks are fast, quoted and fail-safe, with timeouts ([hooks docs](https://code.claude.com/docs/en/hooks)) | `timeout`, `async` | every hook exits cleanly in about 30 ms; loggers run in the background |
-| Outside content is data, not instructions ([Equipping agents with skills](https://www.anthropic.com/engineering/equipping-agents-for-the-real-world-with-agent-skills)) | permission prompts | the weekly pass reads upstream skills and the inbox as quotes to judge, and waits for your yes |
-| Cheap rollback ([Effective harnesses for long-running agents](https://www.anthropic.com/engineering/effective-harnesses-for-long-running-agents)) | checkpoints | backups before every change, `--uninstall`, and the skills folder kept in git |
-
-</details>
-
-## When rules disagree
-
-Any library of lessons contradicts itself sooner or later. A note says the server runs on port 8774 while the config
-says 8778. Your style skill bans tiny charts in tables, and a general skill teaches them. A rule written for last
-month's case fits this month's badly. So every lesson here is a **guideline with its reason**, never a law, and the
-example skill [`judgement-calls`](skills/judgement-calls/SKILL.md) says what to do when two of them collide.
-
-**Judgement is knowing why the rule exists.** A good cook follows the recipe and still tastes as they go. When
-following a line would defeat the reason it was written for, Claude follows the reason and tells you in one line, so
-you can undo it. Rules you call firm, and hooks, stay firm.
-
-**Which source wins**, first match decides:
-1. What is true right now (the file, the run, the measurement) beats what a note remembers.
-2. Your latest words beat your older ones.
-3. The narrower note beats the broader one: this project, then your taste, then everyone.
-4. The newer date beats the older one.
-
-**Unsure? Look at what you chose last time**: the take you kept, the version you picked, the correction you made.
-Claude asks only when the call is yours and nothing you chose before settles it. Then it fixes the losing line, so the
-same fight doesn't happen twice.
-
-**Every lesson sits on one rung of a ladder**: this case, this project, you, everyone. It climbs as high as its reason
-holds and no higher. "Legends go outside the plot so they never hide data" holds for anyone, so it's general. "No dots
-between words" is your taste, so it stays in your style skill. "Staging is on port 8080" is one project's fact. Too
-low, and the next project learns it again. Too high, and your taste becomes everyone's rule. The audit flags a general
-skill that still names you or talks about "my taste", which is a lesson that climbed too far.
-
-## What's in the box
-
-Two skills run the loop: [`capture-lesson`](skills/capture-lesson/SKILL.md) writes lessons down, and [`prompt-practice`](skills/prompt-practice/SKILL.md) turns a mumbled request
-into a clear brief. The other 28 are examples, each one a month or so of real corrections boiled down to guidelines
-with their reasons. Take the ones you like.
-
-- **How work runs:** [`work-practice`](skills/work-practice/SKILL.md), [`judgement-calls`](skills/judgement-calls/SKILL.md), [`sanity`](skills/sanity/SKILL.md), [`metacognition`](skills/metacognition/SKILL.md), [`token-budget`](skills/token-budget/SKILL.md), [`workflow-design`](skills/workflow-design/SKILL.md)
-- **Code:** [`grug-brain`](skills/grug-brain/SKILL.md), [`deep-modules`](skills/deep-modules/SKILL.md), [`code-practice`](skills/code-practice/SKILL.md), [`debug-practice`](skills/debug-practice/SKILL.md), [`github-practice`](skills/github-practice/SKILL.md), [`systems-practice`](skills/systems-practice/SKILL.md), [`macos-long-render`](skills/macos-long-render/SKILL.md)
-- **Pages and figures:** [`tufte-principles`](skills/tufte-principles/SKILL.md), [`hci-principles`](skills/hci-principles/SKILL.md), [`interactive-figures`](skills/interactive-figures/SKILL.md), [`page-legibility-check`](skills/page-legibility-check/SKILL.md), [`verify-animated-page`](skills/verify-animated-page/SKILL.md), [`html-docs`](skills/html-docs/SKILL.md), [`html-slide-deck`](skills/html-slide-deck/SKILL.md)
-- **Writing and science:** [`storytelling`](skills/storytelling/SKILL.md), [`prose-voice`](skills/prose-voice/SKILL.md), [`humanize-science-writing`](skills/humanize-science-writing/SKILL.md), [`field-vocabulary`](skills/field-vocabulary/SKILL.md), [`citations`](skills/citations/SKILL.md), [`controlled-comparisons`](skills/controlled-comparisons/SKILL.md), [`viral-tweet`](skills/viral-tweet/SKILL.md)
-- **Audio:** [`beat-align-audio`](skills/beat-align-audio/SKILL.md), for when two songs must overlap without the kicks flamming.
 
 ## Install
 
@@ -283,18 +83,115 @@ git clone https://github.com/kat-titter/claude-code-learns && cd claude-code-lea
 ./install.sh --name yourname
 ```
 
-The dry run shows every change first. The install adds two skills (`capture-lesson`, `prompt-practice`), a
-`yourname-style` skill for your taste, a routing section in `CLAUDE.md`, and five small hooks in `settings.json`. It
-backs up each file before changing it, and re-running is safe. Start a new session so everything loads. For the weekly
-pass, paste `skills/capture-lesson/weekly-watch.md` into a weekly scheduled task; for a daily nudge with the one thing
-to do next and the loose ends worth closing, paste `daily-nudge.md` from the same folder into a daily one. Add
-`--examples` for all 28 example skills.
+The dry run prints every change first and writes nothing. The real run adds two skills (`capture-lesson` and
+`prompt-practice`), a `yourname-style` skill for your taste, a routing section in `CLAUDE.md`, and five hooks in
+`settings.json`. It backs up each file before touching it, and re-running is safe. Then start a new session so
+everything loads. Add `--examples` if you want all 34 example skills too.
 
-To see your whole library on one page, where hovering a file shows it rendered and a search finds any text:
+Two scheduled tasks finish the loop, and both are optional. Paste `skills/capture-lesson/weekly-watch.md` into a
+weekly task for the tidy-up pass. Paste `daily-nudge.md`, from the same folder, into a daily one for a nudge about
+what to do next.
 
 ```bash
 python3 ~/.claude/skills/capture-lesson/scripts/skills-browser.py --open
 ```
+
+That draws your whole library as one page: hover a file to read it rendered, search to find any text.
+
+## How it works
+
+<picture>
+  <source media="(max-width: 600px) and (prefers-color-scheme: dark)" srcset="assets/how-it-works-phone-dark.svg">
+  <source media="(max-width: 600px)" srcset="assets/how-it-works-phone-light.svg">
+  <source media="(prefers-color-scheme: dark)" srcset="assets/how-it-works-dark.svg">
+  <img alt="How it works. Every turn: your correction reaches a hook, which hands Claude a one-line reminder and the likely skill; Claude writes a one-line lesson into your library and reads skills from it on a match; hooks log a quoted line and each skill use. Every week: scripts read the logs, new upstream skills and X posts, and whether last week's text landed; a weekly agent drafts at most five proposals by undo cost; the open lane, and the evidence lane on a passing check, can apply themselves; the rest come back to you, one yes per lane." src="assets/how-it-works-light.svg" width="740">
+</picture>
+
+You appear twice: once with a correction, once with a yes. Every arrow names what it carries, and the colours hold
+across every figure here and on the explainer page. [`AGENTS.md`](AGENTS.md#map) has the same map as text.
+
+1. **Notice.** Hooks spot feedback ("no", "from now on", "too much text") and add one line to route it.
+2. **Generalize.** Claude asks which family of problems the correction belongs to, and writes for the whole family.
+3. **Route.** Each lesson climbs as high as its reason holds, and no higher — the three rows above.
+4. **Write the gist.** One line: what to do, an example, the reason, the date. A second case folds into that same line.
+5. **Check it loads.** A lesson nothing ever loads may as well not exist. So the setup tests loading twice over, in
+   trigger tests and in your real sessions.
+6. **Tidy weekly.** A scheduled pass reads the notebook, the miss report and the library's health.
+
+Step by step in detail: [`skills/capture-lesson/SKILL.md`](skills/capture-lesson/SKILL.md). Why the design is
+shaped this way, from how people learn to what it costs in tokens:
+[the explainer page](https://kat-titter.github.io/claude-code-learns/).
+
+## The weekly pass
+
+Monday morning, it leaves a short report and changes nothing until you say yes. The report reads new posts on X too:
+links you pasted into Claude Code that week, plus any accounts you list in `~/.claude/practice-accounts.txt`. It
+proposes a practice from them only when a measurement on your own sessions shows you don't follow it yet.
+
+```
+Stalled      1 of last week's 4 proposals landed; the other 3 get one more week, then drop
+Upstream     1 new skill (pdf-forms): overlaps nothing you have
+Practice     a post you pasted: "gate on the exit code"; 0 of 103 workflows do, so proposed
+Gaps         2 notes in the inbox that no skill covers, e.g. "the numbers don't match the sources"
+Misses       github-practice loaded for 3 of 9 requests that matched it: add "pages, publish" to its description?
+Health       one skill is 540 lines: split by task
+Proposed     at most five changes, grouped by what a mistake would cost to undo
+```
+
+That last line is the whole design of the thing. Proposals are sorted by how hard a mistake would be to undo, and you
+say yes once per lane rather than once per item.
+
+| lane | what it holds | what it takes to land |
+|---|---|---|
+| **open** | wording inside a skill, kept in git | one revert away, so one line in the weekly prompt lets it apply itself |
+| **evidence** | a skill's description, which changes *when* it loads | [`refactor-gate.py`](skills/capture-lesson/scripts/refactor-gate.py) exits 0: the flag it targeted cleared, nothing new got flagged, the trigger test did no worse |
+| **closed** | hooks, `settings.json`, `CLAUDE.md`, installs, deletions | your yes, every time |
+
+A gate that fails leaves the change sitting as a proposal, which is the point.
+
+Write your own agent loops and the same four rules apply. Each node gets a check a program can fail. Every cycle gets
+a round limit. A failure goes back one unit at a time. And a person stands only where a mistake cannot be undone. The
+example skill [`workflow-design`](skills/workflow-design/SKILL.md) holds them, with
+[`check-repair.js`](skills/workflow-design/references/check-repair.js) as a working template. (After Hoodie's
+[Loops & Graphs](https://x.com/HoodieFade_/status/2117959235690524883), 2026-11-04; the
+[explainer page](https://kat-titter.github.io/claude-code-learns/) draws it.)
+
+## What's in the box
+
+Two skills run the loop: [`capture-lesson`](skills/capture-lesson/SKILL.md) writes lessons down, and
+[`prompt-practice`](skills/prompt-practice/SKILL.md) turns a mumbled request into a clear brief. The other 34 are
+examples — each one a month or so of real corrections boiled down to guidelines with their reasons. Take the ones you
+like. [`coding-skills.md`](coding-skills.md) describes all 36 in a line each.
+
+| group | skills |
+|---|---|
+| **how work runs** | [work-practice](skills/work-practice/SKILL.md), [judgement-calls](skills/judgement-calls/SKILL.md), [sanity](skills/sanity/SKILL.md), [metacognition](skills/metacognition/SKILL.md), [token-budget](skills/token-budget/SKILL.md), [workflow-design](skills/workflow-design/SKILL.md) |
+| **code** | [grug-brain](skills/grug-brain/SKILL.md), [deep-modules](skills/deep-modules/SKILL.md), [code-practice](skills/code-practice/SKILL.md), [debug-practice](skills/debug-practice/SKILL.md), [github-practice](skills/github-practice/SKILL.md), [systems-practice](skills/systems-practice/SKILL.md), [macos-long-render](skills/macos-long-render/SKILL.md) |
+| **pages and figures** | [design-practice](skills/design-practice/SKILL.md), [app-design](skills/app-design/SKILL.md), [figure-design](skills/figure-design/SKILL.md), [science-figures](skills/science-figures/SKILL.md), [tufte-principles](skills/tufte-principles/SKILL.md), [hci-principles](skills/hci-principles/SKILL.md), [interactive-figures](skills/interactive-figures/SKILL.md), [page-legibility-check](skills/page-legibility-check/SKILL.md), [verify-animated-page](skills/verify-animated-page/SKILL.md), [html-docs](skills/html-docs/SKILL.md), [html-slide-deck](skills/html-slide-deck/SKILL.md), [pitch-deck-story](skills/pitch-deck-story/SKILL.md) |
+| **writing and science** | [storytelling](skills/storytelling/SKILL.md), [prose-voice](skills/prose-voice/SKILL.md), [humanize-science-writing](skills/humanize-science-writing/SKILL.md), [field-vocabulary](skills/field-vocabulary/SKILL.md), [citations](skills/citations/SKILL.md), [controlled-comparisons](skills/controlled-comparisons/SKILL.md), [moa-explainer](skills/moa-explainer/SKILL.md), [viral-tweet](skills/viral-tweet/SKILL.md) |
+| **audio** | [beat-align-audio](skills/beat-align-audio/SKILL.md), for when two songs must overlap without the kicks flamming |
+
+## When rules disagree
+
+Any library of lessons contradicts itself sooner or later. A note says the server runs on port 8774 while the config
+says 8778. A rule written for last month's case fits this month's badly.
+
+So every lesson here is a **guideline with its reason**, the way a good cook follows the recipe and still tastes as
+they go. Where following a line would defeat the reason it was written for, Claude follows the reason and says so in
+one line, so you can undo it. Rules you call firm, and hooks, stay firm.
+
+**Which source wins**, first match decides:
+1. What is true right now (the file, the run, the measurement) beats what a note remembers.
+2. Your latest words beat your older ones.
+3. The narrower note beats the broader one: this project, then your taste, then everyone.
+4. The newer date beats the older one.
+
+Still unsure? Then what you chose last time decides: the take you kept, the version you picked, the correction you
+made. Claude asks only when the call is yours and nothing earlier settles it. Then it rewrites the losing line, so the
+same fight doesn't happen twice. ([`judgement-calls`](skills/judgement-calls/SKILL.md) has the whole of it.)
+
+Getting a lesson's rung wrong costs you either way. Too low, and the next project learns it again. Too high, and your
+taste becomes everyone's rule. So the audit flags a general skill that still names you or talks about "my taste".
 
 ## Undo
 
@@ -302,17 +199,17 @@ python3 ~/.claude/skills/capture-lesson/scripts/skills-browser.py --open
 ./install.sh --uninstall
 ```
 
-Removes the hooks, the two skills and the `CLAUDE.md` section, after a backup. Your style skill, notebook and notes stay.
-To silence one hook, delete its line under `"hooks"` in `~/.claude/settings.json`.
+Removes the hooks, the two skills and the `CLAUDE.md` section, after a backup. Your style skill, notebook and notes
+stay. To silence one hook on its own, delete its line under `"hooks"` in `~/.claude/settings.json`.
 
 ## What it writes, and where
 
 Everything stays on your machine, in `~/.claude`:
+
 - `lessons-inbox.md`: short quotes of messages that sounded like feedback. Anything you paste can end up quoted there,
   so prune it freely.
 - `skill-usage.log`: one line per skill use (time, skill, session id).
-- `skills-watch/`: the weekly reports.
-- `nudges/`: the daily nudges, and the date each loose end was first seen.
+- `skills-watch/`: the weekly reports. &emsp; `nudges/`: the daily nudges, and the date each loose end was first seen.
 - `.skill-index.json`: the router's word list, rebuilt when a skill changes.
 - `skills-browser/index.html`: your library as one page, redrawn each time you run `skills-browser.py`.
 - Your skills and memory notes, which you can read and edit like any other file.
@@ -324,34 +221,35 @@ install.sh                set up, or undo, in one command
 skills/capture-lesson/    the skill that writes skills, its hooks, checks, prompts and library browser
 skills/prompt-practice/   turns a short or dictated request into a clear brief, with its hook
 skills/workflow-design/   loops inside a graph, with a check-repair workflow template
-skills/code-practice/    clean code and a tidy repo, with code_audit.py: page-design rules read as code
-skills/judgement-calls/  what to do when two lessons disagree: rules as guidelines, which source wins
-skills/html-*/, ...       example general skills, installed with --examples
+skills/code-practice/     clean code and a tidy repo, with code_audit.py: page-design rules read as code
+skills/judgement-calls/   what to do when two lessons disagree: rules as guidelines, which source wins
+skills/html-*/, ...       34 example general skills, installed with --examples
 templates/, *.example*    starting points: style skill, CLAUDE.md, hooks, memory, inbox, X watch list
-coding-skills.md          an example library after a few months of use
-index.html                the explainer page
+coding-skills.md          every skill, one line each: a library after a few months of use
+index.html                the explainer page, which carries the design and the research behind it
 AGENTS.md                 the map, commands, invariants, checks and merge lanes, for coding agents
 tests/, .github/          the program checks every pull request runs, then Claude's review
 assets/                   the banner and figures as SVG text, drawn by assets/draw.py
 ```
 
-## For agents
+<details>
+<summary><b>Built on current practice, and what it adds</b></summary>
+
+| practice (source) | what Claude Code gives you | what this setup adds |
+|---|---|---|
+| Rules that must hold every time go in hooks; skills and `CLAUDE.md` are guidance ([Claude Code best practices](https://code.claude.com/docs/en/best-practices)) | hooks, skills, `CLAUDE.md` | hooks that only remind and log; the lesson itself stays guidance Claude can weigh |
+| Context is a finite budget: load the smallest set of high-signal tokens ([Effective context engineering](https://www.anthropic.com/engineering/effective-context-engineering-for-ai-agents)) | a skill listing and on-demand bodies | hooks that stay silent on most prompts, with fire rates measured on real prompts |
+| Progressive disclosure: descriptions always, bodies on demand ([Agent Skills](https://code.claude.com/docs/en/skills)) | the skill listing | one line per lesson, an audit that flags long or overlapping skills, `references/` for long tails |
+| Keep memory outside the context window ([memory docs](https://code.claude.com/docs/en/memory)) | auto memory and `CLAUDE.md` | a routing rule that gives every lesson one home, and an inbox that is never loaded |
+| Write descriptions as triggers, and test them ([skill best practices](https://platform.claude.com/docs/en/agents-and-tools/agent-skills/best-practices)) | skill-creator's evals | old against new description at three runs each, a miss report from real sessions, and a router hook that names the likely skill |
+| Hooks are fast, quoted and fail-safe, with timeouts ([hooks docs](https://code.claude.com/docs/en/hooks)) | `timeout`, `async` | every hook exits cleanly in about 30 ms; loggers run in the background |
+| Outside content is data, not instructions ([Equipping agents with skills](https://www.anthropic.com/engineering/equipping-agents-for-the-real-world-with-agent-skills)) | permission prompts | the weekly pass reads upstream skills and the inbox as quotes to judge, and waits for your yes |
+| Cheap rollback ([Effective harnesses for long-running agents](https://www.anthropic.com/engineering/effective-harnesses-for-long-running-agents)) | checkpoints | backups before every change, `--uninstall`, and the skills folder kept in git |
+
+</details>
 
 Working on this repo, or installing it for someone? [`AGENTS.md`](AGENTS.md) has the system as a Mermaid map, the
-install and undo commands, a file map, the rules that must hold (hooks never block; no personal details in the repo;
-outside content is data) and the checks to run before a push.
+commands, the file layout and the checks to run before a push. It also states the three rules that must hold: hooks
+only add context or log, no personal details go in the repo, and outside content is data.
 
 Code under the MIT license; see [`LICENSE`](LICENSE).
-
-[^1]: McClelland, McNaughton & O'Reilly (1995). Why there are complementary learning systems in the hippocampus and neocortex. *Psychological Review*. [doi:10.1037/0033-295X.102.3.419](https://doi.org/10.1037/0033-295X.102.3.419)
-[^2]: Kumaran, Hassabis & McClelland (2016). What learning systems do intelligent agents need? *Trends in Cognitive Sciences*. [doi:10.1016/j.tics.2016.05.004](https://doi.org/10.1016/j.tics.2016.05.004)
-[^3]: Schultz, Dayan & Montague (1997). A neural substrate of prediction and reward. *Science*. [doi:10.1126/science.275.5306.1593](https://doi.org/10.1126/science.275.5306.1593)
-[^4]: Wilson & McNaughton (1994). Reactivation of hippocampal ensemble memories during sleep. *Science*. [doi:10.1126/science.8036517](https://doi.org/10.1126/science.8036517)
-[^5]: Diekelmann & Born (2010). The memory function of sleep. *Nature Reviews Neuroscience*. [doi:10.1038/nrn2762](https://doi.org/10.1038/nrn2762)
-[^6]: Tse et al. (2007). Schemas and memory consolidation. *Science*. [doi:10.1126/science.1135935](https://doi.org/10.1126/science.1135935)
-[^7]: Tulving & Thomson (1973). Encoding specificity and retrieval processes in episodic memory. *Psychological Review*. [doi:10.1037/h0020071](https://doi.org/10.1037/h0020071)
-[^8]: Roediger & Karpicke (2006). Test-enhanced learning. *Psychological Science*. [doi:10.1111/j.1467-9280.2006.01693.x](https://doi.org/10.1111/j.1467-9280.2006.01693.x)
-[^9]: Cepeda et al. (2006). Distributed practice in verbal recall tasks. *Psychological Bulletin*. [doi:10.1037/0033-2909.132.3.354](https://doi.org/10.1037/0033-2909.132.3.354)
-[^10]: Richards & Frankland (2017). The persistence and transience of memory. *Neuron*. [doi:10.1016/j.neuron.2017.04.037](https://doi.org/10.1016/j.neuron.2017.04.037)
-[^11]: Tononi & Cirelli (2014). Sleep and the price of plasticity. *Neuron*. [doi:10.1016/j.neuron.2013.12.025](https://doi.org/10.1016/j.neuron.2013.12.025)
-[^12]: Cowan (2001). The magical number 4 in short-term memory. *Behavioral and Brain Sciences*. [doi:10.1017/S0140525X01003922](https://doi.org/10.1017/S0140525X01003922)
