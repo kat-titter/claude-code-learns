@@ -124,7 +124,10 @@ present.forEach((s, i) => {
 phase('Post')
 const raw = { repo: REPO, pr: PR, findings: candidates, votes, missing_reviewers: missing,
   summaries: Object.fromEntries(present.map(s => [s.key, found[SCHOOLS.indexOf(s)].verdict])),
-  counts: { findings: candidates.length, votes: Object.values(votes).reduce((n, v) => n + v.length, 0) } }
+  // review3.py fingerprint() recounts these after the copy: a dropped row, flipped vote or moved line fails tally
+  counts: { findings: candidates.length, votes: Object.values(votes).reduce((n, v) => n + v.length, 0),
+    agree: Object.values(votes).reduce((n, v) => n + v.filter(x => x.agree).length, 0),
+    line_sum: candidates.reduce((n, c) => n + c.line, 0) } }
 const posted = await agent(`Do exactly this and nothing else.
 1. Write the JSON below to ${RUN}/raw.json, byte for byte, with the Write tool.
 2. Run: python3 ${SCRIPT} tally "${RUN}"
@@ -132,7 +135,7 @@ const posted = await agent(`Do exactly this and nothing else.
 Return each exit code (post_exit -1 if skipped), the review URL the post printed (empty if none), and the last lines
 both commands printed.
 
-${JSON.stringify(raw)}`, { label: 'post', phase: 'Post', schema: POSTED, model: 'haiku', effort: 'low' })
+${JSON.stringify(raw)}`, { label: 'post', phase: 'Post', schema: POSTED, model: 'sonnet', effort: 'low' })
 
 if (!posted || posted.tally_exit !== 0 || posted.post_exit !== 0) {
   log(`post step failed: ${posted ? posted.output : 'agent died'}`)

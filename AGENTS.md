@@ -78,9 +78,9 @@ skills/capture-lesson/        how a lesson is generalized, routed, written
 skills/prompt-practice/       a terse request becomes a brief; has a hook
 skills/workflow-design/       loops inside a graph; check-repair.js template
 skills/code-practice/         clean code and repo layout; code_audit.py reads
-                              page-design rules as code; review3.py,
-                              review-3.js and review3-hook.py run review
-                              by three
+                              page-design rules as code; review3.py (and
+                              its test), review-3.js and review3-hook.py run
+                              review by three
 skills/*/                     34 example skills, installed with --examples:
                               how work runs, code, pages and apps, figures,
                               measuring, writing and science, audio

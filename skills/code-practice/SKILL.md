@@ -97,7 +97,7 @@ answer: the PR's facts, the 2-of-3 tally, the one GitHub review, the commit stat
   modules, leakage, design it twice) and maintainability (the table above, starting from the audit delta). They
   disagree on purpose, on function length most of all. Each finds alone, at most 8 findings, then votes blind on the
   other two schools' findings without knowing who raised them.
-- **Consensus is counted in code** (`review3.py selftest` pins it): 2 of 3 agreeing is a finding to act on; 2 of 3
+- **Consensus is counted in code** (`review3_test.py` pins it): 2 of 3 agreeing is a finding to act on; 2 of 3
   calling it important blocks; 1 of 3 is a taste call, listed and never blocking. Rows on the same file:line merge,
   and so do consensus rows within 3 lines (one run cited one bug at `:82` and `:84`); a taste call stays its own row.
   A finding outside the diff, such as a doc the PR left stale, goes in the review body, not inline.
