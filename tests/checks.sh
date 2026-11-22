@@ -16,14 +16,16 @@ our_hooks() { python3 -c 'import json,sys; h=json.load(open(sys.argv[1])).get("h
 
 one() {
   case "$1" in
-  python)   # every script parses (Python compiles, shell passes bash -n); code_audit.py flags a seeded repo on
-            # four rules and passes a clean one; and the router's skill pick fires only where no skill has loaded:
-            # tool definitions and a quoted mention do not count as a load; review by three's tally, twin and status
-            # rules and its hook's command parser pass their self-tests
+  python)   # every script parses (Python compiles, shell passes bash -n); the drift reporter passes its own
+            # fixture (it needs no installed library); code_audit.py flags a seeded repo on four rules and passes a
+            # clean one; the router's skill pick fires only where no skill has loaded (tool definitions and a quoted
+            # mention do not count as a load); and review by three's tally, twin and status rules and its hook's
+            # command parser pass their self-tests
     python3 -m py_compile skills/*/scripts/*.py
     python3 skills/code-practice/scripts/review3_test.py >/dev/null
     python3 skills/code-practice/scripts/review3-hook.py --test >/dev/null
     for f in skills/*/scripts/*.sh; do bash -n "$f"; done
+    python3 tests/drift.py --test
     A=skills/code-practice/scripts/code_audit.py
     r=$(mktemp -d); git init -q "$r"
     printf '# seeded\nSee [the guide](docs/missing.md).\n' > "$r/README.md"

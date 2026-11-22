@@ -85,6 +85,33 @@ def repo_facts(repo):
     }
 
 
+def drift_facts(repos):
+    """How far a published copy has drifted from the installed one, for any checkout that ships tests/drift.py.
+
+    The repo carries the comparison; this only reads its totals. Linked worktrees are skipped, so a repo with
+    six of them is reported once.
+    """
+    out = []
+    for r in repos:
+        if r["worktree"]:
+            continue
+        path = Path(r["repo"].replace("~", str(HOME), 1))
+        if not (path / "tests" / "drift.py").is_file():
+            continue
+        raw = run([sys.executable, str(path / "tests" / "drift.py"), "--json"], cwd=path, timeout=60)
+        try:
+            d = json.loads(raw) if raw else None
+        except json.JSONDecodeError:
+            d = None
+        if not d or not (d["here_only"] or d["yours_only"] or d["only_yours"]):
+            continue
+        worst = max(d["files"], key=lambda x: x["yours"] + x["here"], default=None)
+        out.append({"repo": r["repo"], "here_only": d["here_only"], "yours_only": d["yours_only"],
+                    "files": len(d["files"]), "unpublished_files": len(d["only_yours"]),
+                    "worst": worst["file"] if worst else ""})
+    return out
+
+
 def open_prs():
     out = run(["gh", "search", "prs", "--author", "@me", "--state", "open", "--limit", "30",
                "--json", "repository,number,title,url,createdAt,isDraft"], timeout=30)
@@ -203,6 +230,8 @@ def keyed(facts):
             keys[f"cango:{r['repo']}"] = r
     for p in facts["prs"] or []:
         keys[f"pr:{p['url']}"] = p
+    for d in facts.get("drift", []):
+        keys[f"drift:{d['repo']}"] = d
     for m in facts["memory"]:
         keys[f"mem:{m['file']}"] = m
     for s in facts["harness"].get("sessions_waiting", []):
@@ -227,7 +256,8 @@ def stamp(facts, state_path=STATE, today=None):
 def gather(roots, depth, use_gh):
     repos = [f for f in (repo_facts(r) for r in find_repos(roots, depth)) if f]
     return {"date": date.today().isoformat(), "repos": repos, "prs": open_prs() if use_gh else None,
-            "memory": memory_open(), "progress": progress_files(roots), "harness": harness_open()}
+            "memory": memory_open(), "progress": progress_files(roots), "harness": harness_open(),
+            "drift": drift_facts(repos)}
 
 
 def seen(item, kind):
@@ -263,6 +293,14 @@ def render(f):
                  f"{seen(p, 'pr')}) {p['url']}")
     if f["prs"] == []:
         o.append("None open.")
+    if f.get("drift"):
+        o += ["", "## Published copies out of step", ""]
+        for d in f["drift"]:
+            o.append(f"- {d['repo']}: {d['yours_only']} lines of yours unpublished"
+                     + (f" and {d['unpublished_files']} files" if d["unpublished_files"] else "")
+                     + f", {d['here_only']} published lines not installed"
+                     + (f" ({d['files']} files, worst {d['worst']})" if d["files"] else "")
+                     + seen(d, "drift"))
     h = f["harness"]
     if h.get("sessions_waiting"):
         o += ["", f"## Sessions waiting on you (from {h['tidy_log']}, {h['tidy_age_days']} d old)", ""]
