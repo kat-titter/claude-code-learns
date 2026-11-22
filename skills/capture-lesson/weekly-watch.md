@@ -30,13 +30,6 @@ likes, bookmarks, views, feeds), `python3 ~/.claude/skills/capture-lesson/script
 ~/.claude/skills-watch/trends-<date>.md: the posts on topic, ranked by save rate (bookmarks per view), one per
 author, and each feed's on-topic share. How you save the posts is up to you; this repo ships the scorer, not a scraper.
 
-A second lane follows your own week. `python3 ~/.claude/skills/capture-lesson/scripts/week-context.py` reads the
-files your git repos changed in the last 7 days, names the stack they use (SVG, canvas, dark mode, GitHub Pages...)
-and writes `~/.claude/skills-watch/week-context.json` with two X searches for it. Save those searches as feeds too
-and pass them to `feed-trends.py`: it reads the context file, opens a lane for posts about that stack, and gives it
-its own 15 places (`--top-week`), so a post about the thing you are actually building ranks even when the
-agent-practice gate would have dropped it.
-
 python3 ~/.claude/skills/capture-lesson/scripts/practice-watch.py
 It writes ~/.claude/skills-watch/practices-<date>.md: up to three new posts in full (X links the person pasted into
 Claude Code this week first, then the watch list in ~/.claude/practice-accounts.txt), and one line for each other new
