@@ -78,6 +78,12 @@ Every push copies history to places you cannot clean later, so what is private s
 - **Commit as the host's no-reply identity, set once per machine** (`git config --global user.name <user>`,
   `user.email <id>+<user>@users.noreply.github.com`), with no repo-level override in `.git/config`, which would win.
   A Mac with no global identity commits as `user@<hostname>` (`.local`, `.lan`).
+- **A proof that something is absent names it by reference.** The grep that shows a scrub worked contains every
+  word it searched for, so that command pasted into a pull request body, an issue, a commit message or a release
+  note publishes the very list it proves is gone. Keep the words in a file the repo ignores, search with `grep -f`,
+  and paste the command and its count while the pattern stays in the file. Check the prose you write about a repo with
+  the same gate you run over its files. (2026-11-21: four pull request bodies in one evening carried a private
+  project list, each inside the command proving that list absent; the files were clean every time.)
 - **Secrets, tokens, personal emails, home paths and private URLs live outside the repo**: read them from the
   environment or an ignored config file. A secret that reached a pushed commit gets rotated first; rotation may be
   all a credential needs (GitHub docs, "Removing sensitive data").
