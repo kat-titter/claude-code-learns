@@ -90,6 +90,8 @@ coding-skills.md              every skill, one line each
 tests/checks.sh               the eight checks CI runs on every pull request
 tests/privacy.py              emails, home paths and private words stay out
 tests/formatting.py           no column layout wraps on the rendered page
+tests/drift.py                what your installed library and this repo's
+                              published copy no longer share, in code
 tests/check-repair.test.mjs   runs the template against stub agents
 .github/workflows/            checks.yml, claude-review.yml
 ```
@@ -118,6 +120,11 @@ sh tests/checks.sh
 
 # after a figure edit: exits 1 if a figure's text falls under WCAG AA contrast
 python3 assets/draw.py
+
+# before publishing a skill: the code your library and this repo no longer
+# share, each way round. Prose drifts on purpose; code is the part that must
+# not. Local only, so CI never runs it (--strict exits 1 on any drift)
+python3 tests/drift.py
 ```
 
 The privacy check looks for names only where it is given them: one per line in
