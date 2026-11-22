@@ -139,8 +139,10 @@ Human prose trips the signals too: Karpathy has a "not only ... but" and a "with
   scorecard. Then tighten what is left, and keep every fact by leaving detail in folds. Case: an essay went from
   sixteen chapters to fourteen in five parts and its main read from 7,153 words to 3,875 with no citation lost
   (2026-10-25: "want better organization and flow, reduce length word count by at least 30%"). The structural cut is
-  often a whole section that another page already owns: a README lost its design theory and twelve footnotes once its
-  explainer page was found to carry both, which was 42% of its words for no loss (2026-11-21). Tightening sentences
+  often a whole section that another page already owns: a README lost its design theory and twelve footnotes to its
+  explainer page, 18% of its words. Check that claim file by file before cutting, not after: a review found the
+  explainer carried 5 of the 12 references, so five rationales lost their grounding until they were restored, and the
+  "42%" first written here was a number from no measurement at all (2026-11-21). Tightening sentences
   instead tempts you to stitch clauses with colons and dashes, which reads shorter and lands harder: one interim draft
   cut 16% of its words while its grade went 8.4 to 9.3 and its colons 54 to 72 per 100 sentences. Breaking those back
   into short sentences is what moved the grade to 7.1.

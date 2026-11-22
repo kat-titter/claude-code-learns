@@ -65,7 +65,7 @@ one-line mechanism strip repeating the caption's bold line is the first thing to
 | # | shows | drawn as |
 |---|---|---|
 | 0 | masthead | the molecule plus the cell-level mechanism, above the fold (see above); draw the structure on a smaller canvas rather than scaling the big one down, or its labels shrink below the floor |
-| 1 | the mechanism | the target in its place, the ligand at its site, and the step that stops: `references/moa-figures.md` |
+| 1 | the mechanism | the target in its place, the ligand at its site, and the step that stops: science-figures' `references/moa-figures.md` |
 | 2 | the process | drawn in its own natural form, not a box chain - a cell cycle as a cycle, a transport step as two conformations - with the consequence drawn to scale (nuclei with area proportional to DNA content) |
 | 3 | what the assay sees | the measurement, one point per object, half violin behind each group, median bar with its value, ratio to control on the right axis, and over the pair the test, its p and the effect size (a house-style skill, if there is one, sets the strip-plot form) |
 
@@ -120,7 +120,7 @@ every build rather than at the end.
 
 science-figures (`references/moa-figures.md`, molecules and mechanisms), figure-design (axes, keys, spacing),
 the person's style skill (palette, strip plots, one accent with one meaning), html-docs (the page as a document), storytelling (the arc), humanize-science-writing, citations,
-page-legibility-check, cell-figure-style (if the page carries a micrograph panel).
+page-legibility-check. A house style for micrograph panels, if the library has one, sets the channel layout.
 
 ## Provenance
 

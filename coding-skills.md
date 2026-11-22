@@ -1,8 +1,8 @@
 # An example library
 
 One line per skill, to show the shape a library takes after a few months: one skill per question, a personal style
-layer beside the general ones, and a checker bundled wherever a claim can be measured. All 36 ship in this repo;
-`install.sh --examples` copies them. The style layer is the exception, since it holds one person's taste.
+layer beside the general ones, and a checker bundled wherever a claim can be measured. All 36 ship in this repo: `install.sh` installs
+the two that run the loop, and `--examples` copies the other 34. The style layer is the exception, since it holds one person's taste.
 
 ## Library upkeep
 

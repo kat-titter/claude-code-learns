@@ -4,7 +4,7 @@ Part of design-practice: read when a page explains a process, a loop or a method
 
 - **Method pages: the plain story first, the full method one click away.** Each section opens with two or three plain
   sentences and its main figure; equations, code and side studies sit in one fold per section ("the full method") with
-  a visible arrow. The a DJ tool's process page went from 17,900 px to 5,700 px closed ("keep simple, less math (option to
+  a visible arrow. A DJ tool's process page went from 17,900 px to 5,700 px closed ("keep simple, less math (option to
   expand full math)", 2026-10-20). On a page whose blocks a script re-injects between marker pairs, fold whole blocks
   (opening and closing marker together), or the next build swallows the fold.
 - **The hero shows the idea the summary states, and no geometry appears twice.** The top figure must read before any

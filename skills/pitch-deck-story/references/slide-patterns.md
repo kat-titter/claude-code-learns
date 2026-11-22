@@ -155,7 +155,7 @@ path, the methods behind each key number, the free alternative.
   plainly.
 - **Figure**: a check table; a 2×2 only when both axes are real, measurable things.
 - **Miss**: self-serving axes; logos without what they do; leaving out the free alternative.
-- **Example**: a pitch deck, 08, "Each tool sees one lab. / a pitch deck sees every lab.": CellProfiler, Harmony,
+- **Example**: the worked pitch, 08, "Each tool sees one lab. / [we] see every lab.": CellProfiler, Harmony,
   pycytominer, Genedata Screener, JUMP and Recursion against measure cells, normalise plates, reference data, every lab
   over time.
 

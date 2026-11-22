@@ -25,7 +25,7 @@ Choose the five to seven points the room must leave with; after a full session m
 Kevin Hale). Each beat is one slide, or a set of at most three (YC's seed template), said once.
 
 1. **What it is**, one declarative sentence a listener can repeat (Sequoia's "company purpose"; Michael Seibel: make it
-   sound dumber than you think it should). a pitch deck: "A shared map of every lab's control cells."
+   sound dumber than you think it should). The worked pitch said: "A shared map of every lab's control cells."
 2. **Why now**: the change in the world that makes it possible and urgent, with winners and losers (Andy Raskin's
    strategic narrative; Sequoia). Successful decks put purpose, why now and why you early and say them briefly; failed
    ones opened on the product and drew four times the reading time there (DocSend data, TechCrunch 2019).

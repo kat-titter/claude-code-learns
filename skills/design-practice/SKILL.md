@@ -109,9 +109,9 @@ a person with a style profile, read it too (`<name>-style`).
 - **Art pieces** (a pair that mirrors, like A and B covers or a diptych; museum wall labels; a piece drawn to scale
   beside a person): read [references/art-pieces.md](references/art-pieces.md).
 
-- **A link shows where it goes.** Next to a name, link with the address itself (short, stable, the home that fits) instead of repeating the name as "open X"; on paper the address still works. Example: "2 v[er]itas  example.github.io/still-life ↗", not "v[er]itas  open veritas ↗" (2026-10-26: "de-duplicated, link, show url. make sure using good fit url").
+- **A link shows where it goes.** Next to a name, link with the address itself (short, stable, the home that fits) instead of repeating the name as "open X"; on paper the address still works. Example: "2 Still Life  example.github.io/still-life ↗", not "Still Life  open the site ↗" (2026-10-26: "de-duplicated, link, show url. make sure using good fit url").
 - **One doc, two media.** When a page also has to exist as a PDF or handout, give the page a print layout (`@media print`, `@page` size and running footers, live parts printing as stills, hover notes as a word list) instead of keeping a second document; two copies drift. Example: an art doc prints as the 8-sheet submission, and the old Submission file only forwards to it (2026-10-26: "submission and web should be one doc").
-- **Connect related elements with lines.** A short leader from a callout or thumbnail to the mark it describes, and numbered points on a timeline with a line dropping to each card, beat matching by colour alone. Use them where the two things sit close; a leader that would cross a whole figure adds clutter. Start each leader on the mark itself, wherever it is now (on a turning or moving figure, redraw it every frame), and draw icons large enough to read at a glance (an art piece's ring, 2026-10-26: "connect yellow icon to line", "icons should be larger, easy to see"). Example: a pitch deck, 09's timeline dots carry 1 to 4 and drop to their cards; 05b's batch in the drop zone has a dashed leader to its dot on the map (2026-10-26: "points should be labelled with number", "use lines to connect related elements").
+- **Connect related elements with lines.** A short leader from a callout or thumbnail to the mark it describes, and numbered points on a timeline with a line dropping to each card, beat matching by colour alone. Use them where the two things sit close; a leader that would cross a whole figure adds clutter. Start each leader on the mark itself, wherever it is now (on a turning or moving figure, redraw it every frame), and draw icons large enough to read at a glance (an art piece's ring, 2026-10-26: "connect yellow icon to line", "icons should be larger, easy to see"). Example: a pitch deck's slide 09, whose timeline dots carry 1 to 4 and drop to their cards; 05b's batch in the drop zone has a dashed leader to its dot on the map (2026-10-26: "points should be labelled with number", "use lines to connect related elements").
 
 ## Text
 
@@ -181,7 +181,7 @@ a person with a style profile, read it too (`<name>-style`).
   specific what moves").
 - **One phrase lit per headline.** Set the headline in the page's ink and light the phrase that carries the claim in the
   accent ("Does my control *look like yours*?", "Six questions, six tools. *Use all of them.*"); the eye lands on the
-  claim before reading the line. (The a drug-mechanism deck's habit, taken into a pitch deck on 25 Oct 2026.)
+  claim before reading the line. (A drug-mechanism deck's habit, taken into a pitch deck on 25 Oct 2026.)
 - **A borrowed finding names its author on the slide.** When a chart shows someone else's result, the source stands
   under the figure in plain words, on stage and not only in the reader's layer: their own words, then who and when
   ("not directly comparable between imaging sites", EU-OPENSCREEN, four sites, 2025). A reader asked "who is the
@@ -213,8 +213,8 @@ a person with a style profile, read it too (`<name>-style`).
 - **Generated prose reads its own numbers.** A sentence a page builds from data handles its edge values: two decks at one tempo
   read "both at 123 bpm", never "123 to 123 bpm, a 0.0% jump"; a count of zero reads "none" (a DJ tool's about page, 2026-11-03,
   the worked transition on set C).
-- **A split names each share on its own segment** (a bar: "artist 60% $9,400 | an art piece 40% $6,266"), rather than as a ratio
-  followed by a list of numbers (2026-10-26: "numbers not linked to artist/an art piece clearly").
+- **A split names each share on its own segment** (a bar: "artist 60% $9,400 | [the piece] 40% $6,266"), rather than as a ratio
+  followed by a list of numbers (2026-10-26: "numbers not linked to artist/[the piece] clearly").
 
 ## Icons and thumbnails
 
@@ -305,16 +305,16 @@ Direction, best value, units and comparisons on a card: read [references/numbers
 - **An effect that imitates a material obeys its physics and optics.** Water is clear, so it shows as refraction and
   glints with no colour of its own, and its runs are few, each from a drop pooled at a glyph's lowest foot; a
   solid-colour run reads as slime or paint (a cover's lettering, 2026-11-04: "not physics enough", then "too much
-  like slime"; `the type generator` drips()).
+  like slime"; the drip routine in its type generator).
 
 ## Checkers
 
 - `python3 ${CLAUDE_SKILL_DIR}/scripts/design_budget.py PAGE.html [--faces 3 --sizes 6 --colours 24 --classes 40 --shadows 0 --gradients 0]`
+  counts the system itself (faces, base type sizes, colours in both themes, CSS classes, shadows, gradients) and exits 1
+  over budget. Raise `--gradients` only for one shared shading recipe in biology drawings.
   The colour count is raw hexes in the CSS, so a page with a dark theme pays double: every role is written
   twice. Resolve the roles before calling it over budget (a peptide explainer, 2026-11-17: 29 hexes = 15 roles x 2
   themes, so `--colours 30` is the honest line), and say which number you ran.
-  counts the system itself (faces, base type sizes, colours in both themes, CSS classes, shadows, gradients) and exits 1
-  over budget. Raise `--gradients` only for one shared shading recipe in biology drawings.
   It counts class selectors **as written, not as used**, so a page that inherits a shared head is over
   budget for components it does not have. Rather than stripping by hand or waving the number away, prune
   at build time, dropping a rule only when every one of its selectors names a class the markup never
@@ -326,7 +326,7 @@ Direction, best value, units and comparisons on a card: read [references/numbers
   dropped, 1,703 elements identical): a comment counts as selector text, so "head.html" in one reads as
   the class `.html` and kills the rules under it, and a control built minutes earlier is worthless when
   another session is editing the shared head — build both in the same run.
-- Before publishing a long page, read [references/page-audit.md](references/page-audit.md): fourteen checks, each with its case (first screen, computed styles, colour by paint and meaning, states, touch targets, an ending, even labels, balanced styling).
+- Before publishing a long page, read [references/page-audit.md](references/page-audit.md): fifteen checks, each with its case (first screen, computed styles, colour by paint and meaning, states, touch targets, an ending, even labels, balanced styling).
 - `python3 ${CLAUDE_SKILL_DIR}/scripts/check_symbols.py PAGE.html --class CLASS [--chem] [--reserved "codes"] [--base]`
   lists duplicate symbols and collisions with chemistry's 118 symbols or codes used nearby; elements marked `sample`
   are skipped. Validated on the loop table (caught Ck, Cc, Pu) and the essay's example key (7 of 23 codes are chemical

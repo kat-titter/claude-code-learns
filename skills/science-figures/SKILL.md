@@ -177,7 +177,7 @@ comparison, its controls and its scale bars are controlled-comparisons; a whole 
 
 ## Related
 
-figure-design (axes, keys, spacing, flow diagrams), moa-explainer (the whole mechanism page, `references/moa-figures.md`),
+figure-design (axes, keys, spacing, flow diagrams), moa-explainer (the whole mechanism page, which reads this skill's `references/moa-figures.md`),
 controlled-comparisons (fair comparisons, named controls, true scale bars), design-practice (the page around the figure),
 page-legibility-check (measure overlaps, contrast and size), citations (every number's source), the person's style skill.
 

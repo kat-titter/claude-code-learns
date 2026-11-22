@@ -75,7 +75,7 @@ mechanism figure needs no dose, route, schedule, regimen, source or availability
 compound — none of it is mechanism, and a set of figures that reads as a how-to-use guide rather than pharmacology gets
 stopped before it is drawn (a peptide explainer MoA set, 2026-11-05: "maybe avoid discussion or insinuation of
 use/ingestion?"). Introduce each compound by its target family and its status; that is both the honest frame and the
-one that lets the work run. See prompt-practice §6 for briefs on the same material.
+one that lets the work run. prompt-practice covers how to write that brief.
 
 ## Provenance
 

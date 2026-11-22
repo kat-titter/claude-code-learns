@@ -14,7 +14,7 @@ Part of design-practice: read when laying out a pair of pieces, writing a wall l
   artist gives them), title in italics with the year, medium, dimensions height x width x depth in inches and cm,
   edition, credit line; foreign terms in italics; no accent colour in the tombstone (the heading above it may keep its one
   accent word, "a choice" in gold, 2026-10-26) (an art piece wall text, 2026-10-26: "wall text
-  need yellow on vanitas veritas? follow professional industry best standard practices - italics?").
+  need yellow on [the piece]? follow professional industry best standard practices - italics?").
 - **Show scale with a figure drawn to scale and dimension lines**, beside a person of stated height, rather than notes
   like "approx. to scale"; measure the drawing first (a sink drawn 32 in tall beside a 5 ft 7 in viewer had to grow to
   its real 39 1/2 in). Reference artworks carry title, artist and year at a size that reads.
