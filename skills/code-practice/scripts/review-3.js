@@ -127,7 +127,8 @@ const raw = { repo: REPO, pr: PR, findings: candidates, votes, missing_reviewers
   // review3.py fingerprint() recounts these after the copy: a dropped row, flipped vote or moved line fails tally
   counts: { findings: candidates.length, votes: Object.values(votes).reduce((n, v) => n + v.length, 0),
     agree: Object.values(votes).reduce((n, v) => n + v.filter(x => x.agree).length, 0),
-    line_sum: candidates.reduce((n, c) => n + c.line, 0) } }
+    line_sum: candidates.reduce((n, c) => n + c.line, 0),
+    important: [...candidates, ...Object.values(votes).flat()].filter(x => x.severity === 'important').length } }
 const posted = await agent(`Do exactly this and nothing else.
 1. Write the JSON below to ${RUN}/raw.json, byte for byte, with the Write tool.
 2. Run: python3 ${SCRIPT} tally "${RUN}"

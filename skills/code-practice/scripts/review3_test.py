@@ -3,11 +3,15 @@
 
   python3 review3_test.py     prints what passed, or each case that drifted; exit 1 on any drift
 """
+import contextlib
+import io
+import json
 import sys
+import tempfile
 from pathlib import Path
 
 sys.path.insert(0, str(Path(__file__).resolve().parent))
-from review3 import diff_lines, drop_files, final_status, judge, merge_twins  # noqa: E402
+from review3 import diff_lines, drop_files, final_status, fingerprint, judge, merge_twins, tally  # noqa: E402
 
 
 def selftest():
@@ -32,7 +36,7 @@ def selftest():
             bad.append(f"{finding['id']}: got {(r['kind'], r['severity'], r['blocking'])}, want {want}")
     if lines != {"a.py": {1, 2, 3}}:
         bad.append(f"diff_lines: {lines}")
-    bad += selftest_twins(f, v) + selftest_status() + selftest_drop()
+    bad += selftest_twins(f, v) + selftest_status() + selftest_drop() + selftest_tally()
     print("\n".join(bad) or f"selftest: {len(cases)} tally cases, twins, status and the diff parsers pass")
     sys.exit(1 if bad else 0)
 
@@ -63,6 +67,41 @@ def selftest_drop():
              "diff --git a/build.py b/build.py\n+++ b/build.py\n@@ -1 +1 @@\n+x = 1\n")
     kept = drop_files(patch, {"index.html": "build.py"})
     return [] if diff_lines(kept) == {"build.py": {1}} else [f"drop_files kept: {diff_lines(kept)}"]
+
+
+
+def selftest_tally():
+    """tally end to end on a run folder shaped as review-3.js writes it: the raw.json contract, the copy check, the
+    files the post reads. One blocker (2 of 3 important on a diff line), one taste call, and a torn copy refused."""
+    f = lambda i, s, line, sev: {"file": "a.py", "line": line, "severity": sev, "title": i, "why": "w", "fix": "x",
+                                 "id": i, "school": s}
+    v = lambda i, agree, sev="nit": {"id": i, "agree": agree, "severity": sev, "reason": "r"}
+    findings = [f("g1", "grug", 2, "important"), f("o1", "ousterhout", 3, "nit")]
+    votes = {"grug": [v("o1", False)], "ousterhout": [v("g1", True, "important")],
+             "maintainability": [v("g1", False), v("o1", False)]}
+    bad = []
+    with tempfile.TemporaryDirectory() as run:
+        write = lambda name, data: Path(run, name).write_text(data if isinstance(data, str) else json.dumps(data))
+        write("pr.json", {"headRefOid": "a" * 40})
+        write("diff.patch", "+++ b/a.py\n@@ -0,0 +1,3 @@\n+x = 1\n+y = 2\n+z = 3\n")
+        write("audit_new.txt", "")
+        write("raw.json", {"findings": findings, "votes": votes, "counts": fingerprint(findings, votes)})
+        with contextlib.redirect_stdout(io.StringIO()):
+            tally(run)
+        t, comments = json.loads(Path(run, "tally.json").read_text()), json.loads(Path(run, "comments.json").read_text())
+        got = (t["blocking"], t["consensus"], t["taste"], [c["line"] for c in comments])
+        if got != (1, 1, 1, [2]):
+            bad.append(f"tally end to end: got {got}, want (1, 1, 1, [2])")
+        if "Not ready: 1 blocking" not in Path(run, "review.md").read_text():
+            bad.append("tally end to end: review.md has no verdict line")
+        torn = [{k: x for k, x in findings[0].items() if k != "school"}, findings[1]]  # what run 3's copy did
+        write("raw.json", {"findings": torn, "votes": votes, "counts": fingerprint(torn, votes)})
+        try:
+            tally(run)
+            bad.append("tally accepted a raw.json that lost a key")
+        except SystemExit:
+            pass
+    return bad
 
 
 if __name__ == "__main__":

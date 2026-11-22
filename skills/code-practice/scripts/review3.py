@@ -202,7 +202,8 @@ def fingerprint(findings, votes):
     """What review-3.js counts before an agent copies raw.json, so a dropped row, flipped vote or moved line shows."""
     return {"findings": len(findings), "votes": sum(len(v) for v in votes.values()),
             "agree": sum(bool(v.get("agree")) for ballot in votes.values() for v in ballot),
-            "line_sum": sum(int(f.get("line") or 0) for f in findings)}
+            "line_sum": sum(int(f.get("line") or 0) for f in findings),
+            "important": sum(x.get("severity") == "important" for x in findings + [v for b in votes.values() for v in b])}
 
 
 def merge_twins(rows):
