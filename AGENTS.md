@@ -134,6 +134,8 @@ The privacy check looks for names only where it is given them: one per line in
 them it checks emails, home paths and your login name, and says that names went unchecked. A line starting with `#`
 is a note, so the list can explain itself; `privacy.py --test` proves a note never becomes a word to hunt for. Add a
 word only after `git grep` shows it has no honest use in the repo, or every run fails on innocent text.
+`python3 tests/privacy.py --text BODY.md` runs the same gate over prose that is not a tracked file, so a pull
+request body or a commit message is checked by the parser that owns the list rather than by a hand-rolled grep.
 
 `sh tests/checks.sh audit install` runs some of them; the mermaid check fetches mermaid-cli and a headless Chrome
 through `npx` the first time (about 200 MB). After editing a figure, redraw both its layouts and open each light, dark
