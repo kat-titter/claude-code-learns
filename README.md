@@ -31,7 +31,9 @@ A correction becomes a habit:
 
 > **You:** no, the legend covers the data. legends go outside the plot.
 >
-> **Claude:** Moved the legend below the chart. *Skill updated: figure-design, legend outside the plot.*
+> **Claude:** Moved the legend below the chart.
+>
+> *Skill updated: figure-design, legend outside the plot.*
 
 Two weeks later, in a new session, you ask for a different chart. The legend is outside the plot and nobody had to say
 so. One line went in, carrying four things: what to do, an example, the reason, the date. That reason is what lets the
@@ -42,8 +44,9 @@ Not every lesson belongs in the same place, so each one is routed:
 | you say | goes to | why |
 |---|---|---|
 | "legends go outside the plot" | a general skill | good practice for anyone |
-| "no dots between words, I find them fussy" | your own `yourname-style` | your taste, not everyone's rule |
+| "no emoji in commit messages, I find them noisy" | your `yourname-style` | your taste, not everyone's rule |
 | "staging is on port 8080, not 3000" | that project's memory | true for one project |
+| "always run the tests before saying it works" | `CLAUDE.md` | true in every session |
 
 Pushback you make in passing is caught too. Say "why is this taking so long?" halfway through a busy task, and Claude,
 busy, may answer nothing. After the reply, though, a hook files the line in `lessons-inbox.md`. There it sits. Say
@@ -117,7 +120,7 @@ across every figure here and on the explainer page. [`AGENTS.md`](AGENTS.md#map)
 
 1. **Notice.** Hooks spot feedback ("no", "from now on", "too much text") and add one line to route it.
 2. **Generalize.** Claude asks which family of problems the correction belongs to, and writes for the whole family.
-3. **Route.** Each lesson climbs as high as its reason holds, and no higher — the three rows above.
+3. **Route.** Each lesson climbs as high as its reason holds, and no higher — the four rows above.
 4. **Write the gist.** One line: what to do, an example, the reason, the date. A second case folds into that same line.
 5. **Check it loads.** A lesson nothing ever loads may as well not exist. So the setup tests loading twice over, in
    trigger tests and in your real sessions.
