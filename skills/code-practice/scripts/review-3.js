@@ -131,6 +131,8 @@ const raw = { repo: REPO, pr: PR, findings: candidates, votes, missing_reviewers
 const posted = await agent(`Do exactly this and nothing else.
 1. Write the JSON below to ${RUN}/raw.json, byte for byte, with the Write tool.
 2. Run: python3 ${SCRIPT} tally "${RUN}"
+   If it exits 1 saying raw.json "was not copied whole" or "lost keys", write the file again from the JSON below
+   and run step 2 once more. Never edit the JSON to make it pass.
 3. Only if step 2 exited 0, run: python3 ${SCRIPT} post "${RUN}"
 Return each exit code (post_exit -1 if skipped), the review URL the post printed (empty if none), and the last lines
 both commands printed.
@@ -140,6 +142,8 @@ ${JSON.stringify(raw)}`, { label: 'post', phase: 'Post', schema: POSTED, model: 
 if (!posted || posted.tally_exit !== 0 || posted.post_exit !== 0) {
   log(`post step failed: ${posted ? posted.output : 'agent died'}`)
 }
+// raw rides back to the session too: if the copy failed twice, it can write raw.json from this and rerun tally
+// without paying for Find and Vote again
 return { review_url: posted ? posted.review_url : '', tally_exit: posted ? posted.tally_exit : null,
   post_exit: posted ? posted.post_exit : null, output: posted ? posted.output : '', counts: raw.counts,
-  missing_reviewers: missing, next: `python3 ${SCRIPT} ready "${RUN}"` }
+  missing_reviewers: missing, next: `python3 ${SCRIPT} ready "${RUN}"`, raw }

@@ -164,11 +164,12 @@ def tally(run):
     findings, votes = raw["findings"], raw["votes"]
     counted = fingerprint(findings, votes)
     if raw.get("counts") != counted:
-        raise SystemExit(f"raw.json was not copied whole: says {raw.get('counts')}, holds {counted}")
+        raise SystemExit(f"raw.json was not copied whole: says {raw.get('counts')}, holds {counted}; write it again "
+                         "from the `raw` the workflow returned")
     torn = [i for i, f in enumerate(findings) if not FINDING_KEYS <= f.keys()]
     torn += [f"{s}:{v.get('id')}" for s, ballot in votes.items() for v in ballot if not VOTE_KEYS <= v.keys()]
     if torn:
-        raise SystemExit(f"raw.json lost keys in {torn}: rebuild it from the workflow's results, never by hand")
+        raise SystemExit(f"raw.json lost keys in {torn}: write it again from the `raw` the workflow returned")
     lines = diff_lines((Path(run) / "diff.patch").read_text())
     by_id = {}
     for school, ballot in votes.items():
