@@ -134,7 +134,9 @@ shaped this way, from how people learn to what it costs in tokens:
 
 Monday morning, it leaves a short report and changes nothing until you say yes. The report reads new posts on X too:
 links you pasted into Claude Code that week, plus any accounts you list in `~/.claude/practice-accounts.txt`. It
-proposes a practice from them only when a measurement on your own sessions shows you don't follow it yet.
+proposes a practice from them only when a measurement on your own sessions shows you don't follow it yet. If you also
+save posts from your own feeds as JSON, `feed-trends.py` ranks them by how often people bookmark them and groups
+them by theme, one post per author. The repo ships that scorer, not a scraper.
 
 ```
 Stalled    1 of last week's 4 proposals landed; 3 get one more week
