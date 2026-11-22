@@ -58,13 +58,17 @@ def typos(text, vocab):
     return [w for w in re.findall(r"(?<![\w./#@-])[a-z]{3,}(?![\w./#@-])", text) if not known(w, vocab)]
 
 
-def dictated(prompt, vocab):
+def dictated(prompt, vocab=known_words):
+    """vocab is the LOADER, not the set: the dictionary is 234k words, and reading it on every prompt to answer a
+    question the length and run-on tests usually settle is most of this hook's cost. It is called last, or never."""
     text = prompt.strip()
     words = len(text.split())
     if text.startswith('/') or not 3 <= words <= 300:
         return False
-    runon = words >= 40 and len(re.findall(r'[.?!](\s|$)', text)) <= 1
-    return runon or (vocab is not None and len(typos(text, vocab)) >= 2)
+    if words >= 40 and len(re.findall(r'[.?!](\s|$)', text)) <= 1:
+        return True
+    known = vocab()
+    return known is not None and len(typos(text, known)) >= 2
 
 
 def main():
@@ -73,7 +77,7 @@ def main():
     except Exception:
         return
     prompt = str(data.get('prompt', ''))
-    if not prompt or HARNESS.search(prompt) or not dictated(prompt, known_words()):
+    if not prompt or HARNESS.search(prompt) or not dictated(prompt):
         return
     print(json.dumps({'hookSpecificOutput': {'hookEventName': 'UserPromptSubmit', 'additionalContext': NOTE}}))
 

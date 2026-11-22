@@ -21,7 +21,8 @@ THERMAL = ["nominal", "moderate", "heavy", "trapping", "sleeping"]
 PROTECT = re.compile(r"(?i)(/Claude\.app/|/claude-code/|/\.claude-science/|(^|/)claude$|WindowServer|loginwindow|"
                      r"/Finder\.app/|/Dock\.app/|kernel_task|(^|/)launchd$|(^|/)caffeinate$)")
 SHELLS = {"zsh", "bash", "sh", "dash", "fish"}
-LOCK = os.path.expanduser("~/.claude/run/heavy.lock")   # every session's heavy job queues on this one file
+LOCK = os.environ.get("MEM_WATCH_LOCK") or os.path.expanduser("~/.claude/run/heavy.lock")
+# every session's heavy job queues on this one file; MEM_WATCH_LOCK isolates a test or a second queue
 
 
 def sh(*cmd):
@@ -103,11 +104,15 @@ def untouchable(procs):
     return keep | {p for p in procs if started_by_protected(p)}
 
 
-def find_workers(procs, root, match, min_mb, no_touch):
+def find_workers(procs, root, match, min_mb, no_touch, with_root=False):
     """The job's workers: descendants of root (or all processes) matching --match, else holding over min_mb, and
     innermost, so a pool runner whose own command line names the script (xargs ... run.py) is not one big worker.
-    Each worker's group is itself plus its descendants (an ffmpeg it spawned), signalled together."""
-    pool = [root] + descendants(procs, root) if root else list(procs)
+    Each worker's group is itself plus its descendants (an ffmpeg it spawned), signalled together.
+    The root itself is a worker only with with_root, which `run` sets because it started the process it watches;
+    under `watch --pid` the root is the job's own driver and is never signalled, as --pid's help says."""
+    pool = descendants(procs, root) if root else list(procs)
+    if root and with_root:
+        pool = [root] + pool
     rx = re.compile(match) if match else None
     cand = {p for p in pool if p not in no_touch and
             (rx.search(procs[p]["cmd"]) if rx else procs[p]["mb"] >= min_mb)}
@@ -220,7 +225,10 @@ def now_iso():
     return time.strftime("%Y-%m-%dT%H:%M:%S")
 
 
-def cmd_watch(a):
+def cmd_watch(a, alive=None):
+    """alive, which `run` passes as its child's poll(), says whether the process this watcher started is still up.
+    `watch --pid` passes none: it watches a job it did not start, whose root is that job's own driver, so the root
+    is never a worker there. `a` stays a plain argparse namespace that serialises into the log."""
     if not a.pid and not a.match:
         sys.exit("watch needs --pid JOB (its descendants are the workers) or --match REGEX")
     procs = processes()
@@ -241,15 +249,14 @@ def cmd_watch(a):
     for sig in exits:
         if signal.getsignal(sig) != signal.SIG_IGN:      # keep nohup's ignore on SIGHUP
             signal.signal(sig, bye)
-    emit({"t": now_iso(), "event": "start", "pid": a.pid, "match": a.match,
-          "args": {k: v for k, v in vars(a).items() if k != "child"}})
+    emit({"t": now_iso(), "event": "start", "pid": a.pid, "match": a.match, "args": vars(a)})
     t0 = time.time()
     try:
         while True:
             procs = processes()
             if a.pid and a.pid not in procs:
                 break
-            if a.pid and a.child and a.child.poll() is not None:     # run's own child exited (a zombie stays in ps)
+            if a.pid and alive is not None and alive() is not None:   # run's own child exited (a zombie stays in ps)
                 break
             no_touch = untouchable(procs)
             for pid in [p for p in stopped if p not in procs]:    # a paused worker died: free what it left stopped
@@ -258,7 +265,7 @@ def cmd_watch(a):
             fp = footprints()            # footprint counts swapped and compressed pages; RSS fell to 47 MB at 10 GB
             for pid, v in procs.items():
                 v["mb"] = max(v["mb"], int(fp.get(pid, 0)))
-            workers = find_workers(procs, a.pid, a.match, a.min_rss_mb, no_touch)
+            workers = find_workers(procs, a.pid, a.match, a.min_rss_mb, no_touch, with_root=alive is not None)
             seen = {w["pid"] for w in workers}
             for pid in stopped:          # a paused worker stays governed while it lives, even swapped under --min-rss-mb
                 if pid not in seen:
@@ -326,14 +333,20 @@ def cmd_run(a):
         sys.exit("run needs -- CMD")
     os.makedirs(os.path.dirname(LOCK), exist_ok=True)
     lock = open(LOCK, "a+")
-    try:
-        fcntl.flock(lock, fcntl.LOCK_EX | fcntl.LOCK_NB)
-    except BlockingIOError:
-        lock.seek(0)
-        print("run: waiting for the heavy-job lock, held by: %s" % (lock.read().strip()[-200:] or "?"), file=sys.stderr)
-        fcntl.flock(lock, fcntl.LOCK_EX)
-    lock.seek(0); lock.truncate(); lock.write("%d %s %s\n" % (os.getpid(), now_iso(), " ".join(cmd)[:160])); lock.flush()
     waited = 0
+    while True:                      # --gate-wait bounds the queue too: a held lock is the commonest way to wait
+        try:
+            fcntl.flock(lock, fcntl.LOCK_EX | fcntl.LOCK_NB)
+            break
+        except BlockingIOError:
+            lock.seek(0)
+            held = lock.read().strip()[-200:] or "?"
+            if a.gate_wait and waited >= a.gate_wait:
+                sys.exit("run: gave up after %ds waiting for the heavy-job lock, held by: %s" % (waited, held))
+            if not waited:
+                print("run: waiting for the heavy-job lock, held by: %s" % held, file=sys.stderr)
+            time.sleep(5); waited += 5
+    lock.seek(0); lock.truncate(); lock.write("%d %s %s\n" % (os.getpid(), now_iso(), " ".join(cmd)[:160])); lock.flush()
     while True:
         m = machine()
         short = [w for w, bad in (("free %d%% < %d%%" % (m["free"], a.gate_free), m["free"] < a.gate_free),
@@ -345,9 +358,9 @@ def cmd_run(a):
         print("run: gate waiting: %s" % ", ".join(short), file=sys.stderr)
         time.sleep(30); waited += 30
     child = subprocess.Popen(cmd)
-    a.pid, a.child = child.pid, child
+    a.pid = child.pid
     try:
-        cmd_watch(a)
+        cmd_watch(a, alive=child.poll)
     finally:
         rc = child.wait()
         lock.close()
@@ -565,7 +578,6 @@ def main():
     r = sub.add_parser("resume", help="SIGCONT what a killed watcher's log left paused")
     r.add_argument("log")
     a = p.parse_args()
-    a.child = getattr(a, "child", None)
     {"budget": cmd_budget, "watch": cmd_watch, "run": cmd_run, "summary": cmd_summary,
      "resume": cmd_resume}[a.cmd_name](a)
 

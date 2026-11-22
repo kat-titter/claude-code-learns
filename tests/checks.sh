@@ -82,7 +82,8 @@ one() {
     python3 "$S/skills-browser.py" --repo skills --out "$h/browser.html"
     grep -q '"path": "capture-lesson/SKILL.md"' "$h/browser.html" || { say "skills-browser drew no capture-lesson"; return 1; }
     env -u CLAUDE_CONFIG_DIR HOME="$h" python3 "$S/practice-watch.py" --help >/dev/null
-    env -u CLAUDE_CONFIG_DIR HOME="$h" python3 "$S/feed-trends.py" --help >/dev/null ;;
+    env -u CLAUDE_CONFIG_DIR HOME="$h" python3 "$S/feed-trends.py" --help >/dev/null
+    python3 skills/html-docs/scripts/pdf-print-check.py --help >/dev/null ;;   # readable without PyMuPDF installed
   check-repair)   # the Workflow template and the review-3 workflow, run against stub agents
     node --version
     node tests/check-repair.test.mjs

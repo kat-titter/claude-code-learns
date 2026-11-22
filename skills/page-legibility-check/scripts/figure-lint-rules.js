@@ -108,7 +108,7 @@
   function shapesOf(svg) {
     return [...svg.querySelectorAll('rect,circle,ellipse,path,line,polygon,polyline,use,image')].filter(e => {
       if (e.closest(SKIP_PAINT)) return false;
-      // a highlighter band drawn under a label (data-band) is that label's backing, like a halo, not a mark on it
+      // a highlighter band drawn under a label (data-band) is the backing for that label, a halo, not a mark on it
       if (e.hasAttribute('data-band')) return false;
       const st = getComputedStyle(e);
       const fill = st.fill, stroke = st.stroke;

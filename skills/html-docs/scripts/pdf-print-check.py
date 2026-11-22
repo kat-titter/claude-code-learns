@@ -21,13 +21,15 @@ markers printed off the page; after the print rules in html-docs section 2, 8 of
 page) and 0 clipped.
 """
 import argparse, sys
+if sys.argv[1:2] in (['-h'], ['--help']):          # readable without the dependency installed
+    print(__doc__); sys.exit(0)
 try:
     import fitz, numpy as np
     from PIL import Image, ImageDraw
 except ImportError:
     sys.exit('needs PyMuPDF and Pillow: python3 -m venv ~/.cache/pdfenv && ~/.cache/pdfenv/bin/pip install pymupdf pillow')
 
-ap = argparse.ArgumentParser()
+ap = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
 ap.add_argument('pdf'); ap.add_argument('--sheet'); ap.add_argument('--gap', type=float, default=0.25)
 ap.add_argument('--margin-mm', type=float, default=16, help='top and bottom margin, skipped when measuring fill')
 ap.add_argument('--lr-mm', type=float, default=14, help='left and right margin, the edge text must stay inside')

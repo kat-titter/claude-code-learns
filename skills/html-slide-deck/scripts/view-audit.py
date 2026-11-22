@@ -93,18 +93,28 @@ if not TEMPLATED:
     copy.write_text(s.replace('</body>', inject, 1) if '</body>' in s else s + inject)
     for name, i, _ in VIEWS:
         res[name] = dump(copy.as_uri() + f'?solo={i}')
-    VIEWS = []
-for name, i, step in VIEWS:
-    t0 = s.find(f'<template id="t{i}">')
-    if t0 < 0:
-        print(f'view {name}: no <template id="t{i}"> in the deck', file=sys.stderr); sys.exit(2)
-    t1 = s.find('</template>', t0) + len('</template>')
-    page = ('<!doctype html><meta charset="utf-8"><style>body{margin:0;background:#14171a}</style>' + s[t0:t1]
-            + f'<div id="st" class="in" style="width:1280px;height:720px"></div><script>const r=document.getElementById("st").attachShadow({{mode:"open"}});'
-            f'r.appendChild(document.getElementById("t{i}").content.cloneNode(true));const h=document.createElement("style");h.textContent=".pdf{{display:none!important}}.pdfv{{visibility:hidden!important}}*{{animation-duration:0s!important;animation-delay:0s!important;transition:none!important}}";r.appendChild(h);'
-            f'const f=r.querySelector("[class*=step-]");if(f)f.className=f.className.replace(/step-\\d/,"step-{step}");setTimeout(()=>{{{JS}}},1500);</script>')
-    p = out / f'{name}.html'; p.write_text(page)
-    res[name] = dump(p.as_uri())
+    # ?solo=N, 1-based, is this skill's convention. A deck that names its render parameter something else ignores
+    # the query and returns the same view every time, which would otherwise read as a clean audit of N identical
+    # slides, so identical results are a failure here rather than a result.
+    same = {}
+    for name, v in res.items():
+        same.setdefault(json.dumps(v, sort_keys=True), []).append(name)
+    twins = [' and '.join(n) for n in same.values() if len(n) > 1]
+    if len(res) > 1 and twins:
+        sys.exit(f'views came back identical ({"; ".join(twins)}): this deck does not answer ?solo=N, 1-based. '
+                 'Give its render mode that parameter, or mount its slides as <template id="tN">.')
+else:
+    for name, i, step in VIEWS:
+        t0 = s.find(f'<template id="t{i}">')
+        if t0 < 0:
+            print(f'view {name}: no <template id="t{i}"> in the deck', file=sys.stderr); sys.exit(2)
+        t1 = s.find('</template>', t0) + len('</template>')
+        page = ('<!doctype html><meta charset="utf-8"><style>body{margin:0;background:#14171a}</style>' + s[t0:t1]
+                + f'<div id="st" class="in" style="width:1280px;height:720px"></div><script>const r=document.getElementById("st").attachShadow({{mode:"open"}});'
+                f'r.appendChild(document.getElementById("t{i}").content.cloneNode(true));const h=document.createElement("style");h.textContent=".pdf{{display:none!important}}.pdfv{{visibility:hidden!important}}*{{animation-duration:0s!important;animation-delay:0s!important;transition:none!important}}";r.appendChild(h);'
+                f'const f=r.querySelector("[class*=step-]");if(f)f.className=f.className.replace(/step-\\d/,"step-{step}");setTimeout(()=>{{{JS}}},1500);</script>')
+        p = out / f'{name}.html'; p.write_text(page)
+        res[name] = dump(p.as_uri())
 (out / 'audit.json').write_text(json.dumps(res, indent=1))
 def near_miss(ts):
     xs = sorted({t['x'] for t in ts if not t['h2'] and t['anchor'] == 'start' and t['y'] > 190})
