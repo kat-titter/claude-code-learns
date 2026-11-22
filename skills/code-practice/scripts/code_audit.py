@@ -179,15 +179,18 @@ def check_once(units, min_lines):
     return hits
 
 
-def git_ignores(repo, path, tracked):
-    """True if a .gitignore tracked in the repo ignores path, as a file or as a folder: a README may name what a script
-    writes into an ignored folder (data/, build/), which need not exist yet, and a pattern like `build/` matches only a
-    directory, hence the folder form. Rules outside the commit (.git/info/exclude, a global excludes file) do not
-    count, so every clone gets the same answer. False when git cannot answer (exit 128, e.g. a path behind a symlink),
-    so the path still counts as missing."""
-    for p in (path, path + "/"):
-        r = subprocess.run(["git", "-C", repo, "check-ignore", "-v", "--", p], capture_output=True, text=True)
-        source, _, rest = r.stdout.partition(":")  # .gitignore:3:build/<TAB>build/out.html
+def in_ignored_folder(repo, path, tracked, is_folder=False):
+    """True if a .gitignore tracked in the repo ignores path as a folder, or a folder above it: a README may name what a
+    script writes into an ignored folder (data/, build/), which need not exist yet. The path itself is asked about as
+    a folder only when the README wrote it with a trailing slash (is_folder), so a file rule (`*.png`) never excuses a
+    stale image in a folder that is gone; a negated (!) rule never excuses either. Rules
+    outside the commit (.git/info/exclude, a global excludes file) do not count; git reports one rule per path, so a
+    local rule on a parent folder can still hide a tracked one and make the answer False on that machine. False when
+    git cannot answer (exit 128, e.g. a path behind a symlink), so the path still counts as missing."""
+    folders = [path + "/"] * is_folder + [path.rsplit("/", k)[0] + "/" for k in range(1, path.count("/") + 1)]
+    for folder in folders:
+        r = subprocess.run(["git", "-C", repo, "check-ignore", "-v", "--", folder], capture_output=True, text=True)
+        source, _, rest = r.stdout.partition(":")  # .gitignore:3:build/<TAB>build/
         _line, _, pattern = rest.partition(":")
         if r.returncode == 0 and source in tracked and not pattern.startswith("!"):
             return True
@@ -214,8 +217,7 @@ def check_front(repo, files):
             # `results/e16` may name a family of files (e16-*.json), so a prefix match counts
             in_git = ref in tracked or any(f.startswith(ref) or f.endswith("/" + ref) for f in files)
             # a backticked path may name what a script writes into a folder git ignores; a link must resolve
-            excused = bool(ticked) and git_ignores(repo, ref, tracked)
-            if ref and not in_git and not excused:
+            if ref and not in_git and not (ticked and in_ignored_folder(repo, ref, tracked, ticked.endswith("/"))):
                 hits.append((readme, n, f"names {ref}, which is not in the repo"))
     top_code = [f for f in files if "/" not in f and os.path.splitext(f)[1] in CODE_EXT]
     hits += [(readme, 1, f"top-level {f} not mentioned") for f in top_code if f not in text]
