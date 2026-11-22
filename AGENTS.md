@@ -72,7 +72,8 @@ install.sh                    set up or undo; merges hooks after a backup
 skills/capture-lesson/        how a lesson is generalized, routed, written
   SKILL.md                    one line, an example, the date
   scripts/                    the five hooks, the weekly and daily scripts,
-                              the audit, the library page; lessonlib shared
+                              the audit, the library page, the X scorer and
+                              the week-context lane; lessonlib shared
   weekly-watch.md             the weekly agent's prompt: steps, lanes, scope
   daily-nudge.md              the daily agent's prompt: one pick, 8 loose ends
 skills/prompt-practice/       a terse request becomes a brief; has a hook
