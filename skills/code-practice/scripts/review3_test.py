@@ -5,6 +5,7 @@ the review-3 status post and prep set (through a fake `gh` on PATH) and the CI r
   python3 review3_test.py     prints what passed, or each case that drifted; exit 1 on any drift
 """
 import contextlib
+import importlib.util
 import io
 import json
 import os
@@ -29,7 +30,8 @@ stdin = sys.stdin.read() if "--input" in sys.argv else ""
 with open(os.path.join(home, "calls.jsonl"), "a") as log:
     log.write(json.dumps({"args": sys.argv[1:], "stdin": stdin}) + "\\n")
 canned = json.load(open(os.path.join(home, "canned.json")))
-print(json.dumps(next((reply for key, reply in canned.items() if key in args), {})))
+reply = next((reply for key, reply in canned.items() if key in args), {})
+print(reply if isinstance(reply, str) else json.dumps(reply))
 """
 
 
@@ -57,6 +59,7 @@ def selftest():
         bad.append(f"diff_lines: {lines}")
     bad += selftest_twins(f, v) + selftest_status() + selftest_drop() + selftest_tally()
     bad += selftest_post() + selftest_prep_restore() + selftest_check_blocks() + selftest_next_steps()
+    bad += selftest_hook()
     print("\n".join(bad) or f"selftest: {len(cases)} tally cases, twins, status, the diff parsers and the gate pass")
     sys.exit(1 if bad else 0)
 
@@ -257,6 +260,28 @@ def selftest_check_blocks():
         if got != want:
             out.append(f"check_blocks: got {got}, want {want}")
     return out
+
+
+def selftest_hook():
+    """review3-hook.py's nudge() end to end through the fake gh: after a push, GitHub's records decide. A refused push
+    leaves the branch at the reviewed head (quiet); a PR GitHub has not moved yet to its branch's new commit gets a
+    nudge naming that commit; a head with no review-3 status gets one naming the head."""
+    spec = importlib.util.spec_from_file_location("review3_hook", Path(__file__).with_name("review3-hook.py"))
+    hook = importlib.util.module_from_spec(spec)
+    spec.loader.exec_module(hook)
+    status = [{"__typename": "StatusContext", "context": "review-3", "state": "SUCCESS"}]
+    view = lambda rollup: {"number": 7, "url": "https://github.com/o/r/pull/7", "isDraft": False, "state": "OPEN",
+                           "headRefOid": SHA, "headRefName": "feat", "statusCheckRollup": rollup}
+    cases = [(view(status), SHA, None), (view(status), "b" * 40, "bbbbbbb"), (view([]), SHA, SHA[:7])]
+    bad = []
+    with tempfile.TemporaryDirectory() as where:
+        for pr_view, branch, want in cases:
+            with fake_gh({"pr view": pr_view, "config get user": "o", "git/ref/heads/feat": branch}):
+                line = hook.nudge({"tool_input": {"command": "git push -q origin feat"}, "cwd": where})
+            got = line and line.split(" head ")[1][:7]
+            if got != want:
+                bad.append(f"hook: branch at {branch[:7]}, PR head {SHA[:7]}: nudged about {got}, want {want}")
+    return bad
 
 
 if __name__ == "__main__":
