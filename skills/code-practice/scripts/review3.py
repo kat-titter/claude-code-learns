@@ -16,7 +16,7 @@ Rules: 2 of 3 schools agreeing is a consensus finding (act on it); 2 of 3 callin
 goes in the review body instead of inline. The verdict is also the `review-3` commit status on the head: pending from
 prep, success at 0 blocking after post, failure otherwise. Make it a required check and GitHub's merge button waits.
 Where the base branch cannot require it (no protection, or a private repo on the free plan), prep turns the PR into
-a draft and post marks it ready again only at 0 blocking, so the draft flag holds the merge instead.
+a draft and post marks it ready again only at 0 blocking on the head it reviewed, so the draft flag holds the merge.
 review3-hook.py, beside this file, tells a session to start a review when a PR gets a new head; review3_test.py
 pins the rules above on fixed cases (exit 1 if they drift).
 """
@@ -82,10 +82,7 @@ def prep(repo, pr, repo_dir):
         print(f"{run}\nnext: {ready_command(run)}")
         return
     set_status(repo, sha, "pending", "three reviewers are reading this head", info["url"])
-    # drafted records the change prep made, so post undoes only that: an author's own draft stays a draft
-    drafted = not info["isDraft"] and not check_required(repo, info["baseRefName"])
-    if drafted:  # nothing else stops a merge here: the draft flag holds it until post finds 0 blocking
-        sh("gh", "pr", "ready", str(pr), "--repo", repo, "--undo")
+    hold_by_draft(repo, pr, info)
     sh("git", "-C", repo_dir, "fetch", "-q", "origin", f"pull/{pr}/head", info["baseRefName"])
     base_sha = sh("git", "-C", repo_dir, "merge-base", sha, f"origin/{info['baseRefName']}").strip()
     run.mkdir(parents=True, exist_ok=True)
@@ -96,21 +93,42 @@ def prep(repo, pr, repo_dir):
     save(run, "diff.patch", drop_files(sh("gh", "pr", "diff", str(pr), "--repo", repo), built))
     save(run, "audit_new.txt", "\n".join(new) + "\n" if new else "")
     info.update(repo=repo, repo_dir=str(Path(repo_dir).resolve()), base_sha=base_sha, run=str(run),
-                files=[f["path"] for f in info["files"]], author=info["author"]["login"], drafted=drafted)
+                files=[f["path"] for f in info["files"]], author=info["author"]["login"])
     save(run, "pr.json", info)
     print(f"{run}\n{next_steps(run, repo, pr)}")
 
 
+def draft_mark(repo, pr):
+    """The record that prep made this PR a draft and post owes it `gh pr ready`: one file per PR, not per head, so a
+    rerun of prep, a crash after the draft and the next round's prep all still know the draft is prep's."""
+    return RUNS / f"{repo.replace('/', '-')}-{pr}.drafted"
+
+
+def hold_by_draft(repo, pr, info):
+    """Where the base branch cannot require review-3, nothing else stops a merge: make the PR a draft while it is
+    reviewed. The mark is written before the draft. An author's own draft is left alone, so post never readies it."""
+    mark = draft_mark(repo, pr)
+    if not mark.exists():
+        required, why = (True, "") if info["isDraft"] else check_required(repo, info["baseRefName"])
+        if required:
+            return
+        print(f"drafting #{pr} while it is reviewed: {why}", file=sys.stderr)
+    RUNS.mkdir(parents=True, exist_ok=True)
+    mark.write_text(f"{info['headRefOid']}\n")
+    sh("gh", "pr", "ready", str(pr), "--repo", repo, "--undo")  # a no-op on a draft prep made before
+
+
 def check_required(repo, branch):
-    """Whether the branch's protection requires the review-3 check. Only an answer naming it counts: a 404 (no
-    protection), a 403 (a private repo on the free plan) or any other failure gives the stricter gate, a draft that
-    post lifts at 0 blocking."""
+    """(required, why not): whether the branch's protection requires the review-3 check. Only an answer naming it
+    counts; a 404 (no protection), a 403 (a private repo on the free plan) or any other failure gives the stricter
+    gate, a draft that post lifts at 0 blocking."""
     p = subprocess.run(["gh", "api", f"repos/{repo}/branches/{branch}/protection/required_status_checks"],
                        capture_output=True, text=True)
     if p.returncode:
-        return False
+        return False, f"{branch} cannot require {STATUS} here ({(p.stderr.strip() or f'gh exit {p.returncode}')[:200]})"
     rules = json.loads(p.stdout)
-    return STATUS in rules.get("contexts", []) + [c.get("context") for c in rules.get("checks", [])]
+    required = STATUS in rules.get("contexts", []) + [c.get("context") for c in rules.get("checks", [])]
+    return required, "" if required else f"{branch} does not require {STATUS}"
 
 
 def ready_command(run):
@@ -393,11 +411,22 @@ def final_status(t):
 
 
 def publish_verdict(pr, t, url):
-    """The verdict on GitHub: the review-3 status on the head and, on a PR prep drafted, the draft flag it earns:
-    ready at 0 blocking, a draft otherwise (a no-op on a draft, and a fix if someone readied it mid-review)."""
+    """The verdict on GitHub: the review-3 status on the head and, on a PR prep drafted, the draft flag it earns.
+    Ready only at 0 blocking on the head the review read; a draft otherwise, since a push during the review is a head
+    nobody reviewed (a no-op on a draft, and a fix if someone readied it mid-review)."""
     set_status(pr["repo"], t["head_sha"], *final_status(t), url)
-    if pr.get("drafted"):
-        sh("gh", "pr", "ready", str(pr["number"]), "--repo", pr["repo"], *(["--undo"] if t["blocking"] else []))
+    mark, n, repo = draft_mark(pr["repo"], pr["number"]), str(pr["number"]), pr["repo"]
+    if not mark.exists():
+        return
+    head = gh_json("pr", "view", n, "--repo", repo, "--json", "headRefOid")["headRefOid"]
+    if t["blocking"] or head != t["head_sha"]:
+        sh("gh", "pr", "ready", n, "--repo", repo, "--undo")
+        why = f"{t['blocking']} blocking" if t["blocking"] else f"the head moved to {head[:7]} during the review"
+        print(f"kept #{n} a draft: {why}; after the fixes, `gh pr ready {n}` starts the next review", file=sys.stderr)
+    else:
+        sh("gh", "pr", "ready", n, "--repo", repo)
+        mark.unlink()
+        print(f"marked #{n} ready: 0 blocking at {head[:7]}", file=sys.stderr)
 
 
 def set_status(repo, sha, state, description, url):
@@ -436,7 +465,7 @@ def check_blocks(t, now, default):
     blocks, warns = [], []
     if now["state"] != "OPEN":
         blocks.append(f"PR is {now['state']}")
-    if now.get("isDraft"):  # prep drafts a PR where review-3 cannot be required; post readies it at 0 blocking
+    if now["isDraft"]:  # prep drafts a PR where review-3 cannot be required; post readies it at 0 blocking
         blocks.append(f"still a draft: fix the blockers, then `gh pr ready {now['number']}` starts the next review"
                       if any(r["blocking"] for r in t["rows"]) else
                       f"still a draft: `gh pr ready {now['number']}`, then run ready again")

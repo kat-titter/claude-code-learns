@@ -114,9 +114,9 @@ answer: the PR's facts, the 2-of-3 tally, the one GitHub review, the commit stat
   blocking or failure otherwise, linked to the review. Require `review-3` on the default branch (strict off, admins
   not enforced) and the merge button waits for a review of the current head, while an owner can still override on
   purpose. Where the branch cannot require it (no protection, or a private repo on the free plan, which GitHub Pro
-  would lift), prep makes the PR a draft and post readies it only at 0 blocking; after the fixes, `gh pr ready` starts
-  the next round. The lesson behind it: a PR was merged from the web page while its second review ran, and that
-  review found 5 blockers; a gate only protects a merge that waits for it.
+  would lift), prep makes the PR a draft and post readies it only at 0 blocking on the reviewed head; after the
+  fixes, `gh pr ready` starts the next round. The lesson behind it: a PR was merged from the web page while its second
+  review ran, and that review found 5 blockers; a gate only protects a merge that waits for it.
 - **It starts itself**: `scripts/review3-hook.py` is a PostToolUse hook on Bash. After `gh pr create`, `gh pr ready`
   or a push, when the PR is open, not a draft, in a repo the gh user owns, and its head has no `review-3` status yet,
   it adds one line telling the session to review it. It reads GitHub's records, never local git or the push output

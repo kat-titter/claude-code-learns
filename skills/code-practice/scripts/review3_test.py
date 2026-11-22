@@ -211,23 +211,26 @@ def ready_calls(calls):
 
 
 def selftest_post_draft():
-    """On a PR prep drafted, post marks it ready at 0 blocking and keeps it a draft while a finding blocks; on a PR
-    prep left alone (the check is required there), post never touches the draft flag."""
-    bad = []
-    cases = [(True, 1, [["7", "--repo", "o/r", "--undo"]]), (True, 0, [["7", "--repo", "o/r"]]),
-             (False, 1, []), (False, 0, [])]
-    for drafted, blocking, want in cases:
-        reviews = {"pulls/7/reviews": {"html_url": REVIEW_URL, "id": 1}}
-        with tempfile.TemporaryDirectory() as run, fake_gh(reviews) as calls:
+    """On a PR prep drafted (its mark exists), post marks it ready only at 0 blocking on the head the review read, and
+    then drops the mark; with blockers, or a head pushed during the review, it stays a draft and keeps the mark. On a
+    PR prep left alone (the check is required, or the author made the draft), post never touches the draft flag."""
+    bad, undo, ready = [], [["7", "--repo", "o/r", "--undo"]], [["7", "--repo", "o/r"]]
+    cases = [(True, 1, SHA, undo, True), (True, 0, SHA, ready, False), (True, 0, "b" * 40, undo, True),
+             (False, 1, SHA, [], False), (False, 0, SHA, [], False)]  # (marked, blocking, live head) -> calls, mark
+    for marked, blocking, head, want, kept in cases:
+        canned = {"pulls/7/reviews": {"html_url": REVIEW_URL, "id": 1}, "pr view": {"headRefOid": head}}
+        with tempfile.TemporaryDirectory() as run, fake_gh(canned) as calls, runs_in(run):
             tallied_run(run)
-            write(run, "pr.json", dict(json.loads(Path(run, "pr.json").read_text()), drafted=drafted))
+            if marked:
+                review3.draft_mark("o/r", 7).write_text(SHA)
             if not blocking:
-                t = json.loads(Path(run, "tally.json").read_text())
+                t = review3.load(run, "tally.json")
                 write(run, "tally.json", dict(t, blocking=0, rows=[dict(r, blocking=False) for r in t["rows"]]))
             quiet(post, run)
-            if ready_calls(calls()) != want:
-                bad.append(f"post (drafted={drafted}, {blocking} blocking) ran gh pr ready {ready_calls(calls())}, "
-                           f"want {want}")
+            got = ready_calls(calls()), review3.draft_mark("o/r", 7).exists()
+        if got != (want, kept):
+            bad.append(f"post (marked {marked}, {blocking} blocking, head {head[:7]}): gh pr ready {got[0]}, mark "
+                       f"{got[1]}; want {want}, mark {kept}")
     return bad
 
 
@@ -259,52 +262,59 @@ def runs_in(folder):
 def selftest_prep():
     """A fresh prep marks the head pending and asks the base branch's protection whether review-3 is required. Only a
     list naming it counts: then the draft flag is never touched. A 404 (no protection), a 403 (a private repo on the
-    free plan), any other failure or a list without it drafts the PR and records drafted in pr.json. A PR its author
-    already made a draft is left alone and recorded undrafted, so post never readies the author's work."""
+    free plan), any other failure or a list without it writes the PR's mark and drafts it. An author's own draft is
+    left alone and unmarked, so post never readies it. Once marked, prep keeps the draft as its own: on a rerun or
+    after a crash (still a draft) and in the next round (readied by `gh pr ready` to start it)."""
     protected = {"contexts": ["review-3"], "checks": [{"context": "review-3", "app_id": None}]}
     free_plan = "Upgrade to GitHub Pro or make this repository public to enable this feature. (HTTP 403)"
-    cases = [  # (the protection API's answer, the PR already a draft) -> prep drafts it
-        ({"fail": "Not Found (HTTP 404)"}, False, True), ({"fail": free_plan}, False, True),
-        ({"fail": "Bad Gateway (HTTP 502)"}, False, True),
-        ({"contexts": ["python"], "checks": [{"context": "python", "app_id": 15368}]}, False, True),
-        (protected, False, False), ({"fail": "Not Found (HTTP 404)"}, True, False)]
+    gone = {"fail": "Not Found (HTTP 404)"}
+    cases = [  # (the protection API's answer, the PR already a draft, marked before) -> prep drafts it and marks it
+        (gone, False, False, True), ({"fail": free_plan}, False, False, True),
+        ({"fail": "Bad Gateway (HTTP 502)"}, False, False, True),
+        ({"contexts": ["python"], "checks": [{"context": "python", "app_id": 15368}]}, False, False, True),
+        (protected, False, False, False), (gone, True, False, False), (gone, True, True, True),
+        (gone, False, True, True)]
     bad = []
     with tempfile.TemporaryDirectory() as where:
         clone, head = pr_clone(where)
         pr_view = {"number": 7, "title": "t", "body": "", "url": "https://github.com/o/r/pull/7", "headRefOid": head,
                    "baseRefName": "main", "files": [{"path": "a.py"}], "author": {"login": "o"}, "isDraft": False}
         patch = "diff --git a/a.py b/a.py\n+++ b/a.py\n@@ -1,2 +1,2 @@\n-\"\"\"Say 1.\"\"\"\n+\"\"\"Say 2.\"\"\"\n"
-        for i, (answer, draft, want) in enumerate(cases):
+        for i, (answer, draft, marked, want) in enumerate(cases):
             canned = {"pr view": dict(pr_view, isDraft=draft), "required_status_checks": answer, "pr diff": patch}
             with fake_gh(canned) as calls, runs_in(Path(where, f"runs{i}")):
+                if marked:
+                    Path(where, f"runs{i}").mkdir()
+                    review3.draft_mark("o/r", 7).write_text(head)
                 quiet(prep, "o/r", 7, str(clone))
-                got = review3.load(Path(where, f"runs{i}", f"o-r-7-{head[:7]}"), "pr.json")["drafted"]
+                got = review3.draft_mark("o/r", 7).exists()
                 drafts = ready_calls(calls())
                 pending = statuses(calls())[:1] == [("pending", "review-3", head, pr_view["url"])]
             want_drafts = [["7", "--repo", "o/r", "--undo"]] if want else []
             if (got, drafts, pending) != (want, want_drafts, True):
-                bad.append(f"prep with protection {answer}, a draft already {draft}: drafted {got}, gh pr ready "
-                           f"{drafts}, pending {pending}; want drafted {want}")
+                bad.append(f"prep with protection {answer}, a draft already {draft}, marked {marked}: mark {got}, "
+                           f"gh pr ready {drafts}, pending {pending}; want mark {want}")
     return bad
 
 
 def selftest_prep_restore():
     """prep on a head already posted puts that review's verdict back whole (a pending status from a rerun of prep
-    would hold the merge forever): the status and, on a PR it drafted, the draft flag, which heals a post cut off
-    before its `gh pr ready`. It touches nothing else: no fetch, no snapshot, no new review."""
+    would hold the merge forever): the status and, on a PR it drafted (marked), the draft flag, which heals a post cut
+    off before its `gh pr ready`. It touches nothing else: no fetch, no snapshot, no new review."""
     pr_view = {"headRefOid": SHA, "url": "https://github.com/o/r/pull/7", "baseRefName": "main"}
     with tempfile.TemporaryDirectory() as runs, fake_gh({"pr view": pr_view}) as calls, runs_in(runs):
         run = Path(runs, f"o-r-7-{SHA[:7]}")
         run.mkdir()
         write(run, "posted.json", {"url": REVIEW_URL, "id": 1, "head_sha": SHA})
-        write(run, "pr.json", {"repo": "o/r", "number": 7, "headRefOid": SHA, "drafted": True})
+        write(run, "pr.json", {"repo": "o/r", "number": 7, "headRefOid": SHA})
+        review3.draft_mark("o/r", 7).write_text(SHA)
         write(run, "tally.json", {"head_sha": SHA, "blocking": 0, "consensus": 2, "taste": 1})
         try:
             out = quiet(prep, "o/r", 7, str(Path(runs, "no-clone")))  # a fetch here would fail: there is no clone
         except SystemExit as e:
             out = f"prep went on to review the head again: {e}"
-        got = statuses(calls()), ready_calls(calls())
-    want = [("success", "review-3", SHA, REVIEW_URL)], [["7", "--repo", "o/r"]]
+        got = statuses(calls()), ready_calls(calls()), review3.draft_mark("o/r", 7).exists()
+    want = [("success", "review-3", SHA, REVIEW_URL)], [["7", "--repo", "o/r"]], False
     told = str(run) in out and " ready " in out and "Workflow" not in out  # the head was reviewed: ready, no rerun
     return [] if got == want and told else [f"prep restore set {got}, printed {out!r}; want {want} and ready only"]
 
