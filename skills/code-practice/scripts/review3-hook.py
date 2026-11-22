@@ -18,10 +18,11 @@ from pathlib import Path
 
 REVIEW3 = Path(__file__).resolve().with_name("review3.py")
 PR_URL = re.compile(r"https://github\.com/[\w.-]+/[\w.-]+/pull/\d+")
-CREATE = re.compile(r"(?:^|[;&|(]\s*)gh\s+pr\s+create\b")
-READY = re.compile(r"(?:^|[;&|(]\s*)gh\s+pr\s+ready\b([^;&|)]*)")
-PUSH = re.compile(r"(?:^|[;&|(]\s*)git((?:\s+-C\s+\S+)?)\s+push\b([^;&|)]*)")
-CD = re.compile(r"(?:^|[;&|]\s*)cd\s+(\S+)\s*&&")
+# a command starts a line or follows ; & | or (, so a push on the last line of a multi-line command counts
+CREATE = re.compile(r"(?:^|[;&|(]\s*)gh\s+pr\s+create\b", re.M)
+READY = re.compile(r"(?:^|[;&|(]\s*)gh\s+pr\s+ready\b([^;&|)\n]*)", re.M)
+PUSH = re.compile(r"(?:^|[;&|(]\s*)git((?:\s+-C\s+\S+)?)\s+push\b([^;&|)\n]*)", re.M)
+CD = re.compile(r"(?:^|[;&|]\s*)cd\s+(\S+)\s*&&", re.M)
 NO_NEW_HEAD = re.compile(r"Everything up-to-date|\[rejected\]|^error:|^fatal:", re.M)
 
 
@@ -88,6 +89,7 @@ def selftest():
         ("git push", "Everything up-to-date", None),
         ("git push origin feat", " ! [rejected]        feat -> feat (fetch first)", None),
         ("git status && echo 'gh pr view'", "", None),
+        ("git commit -q -F - <<'EOF'\nmsg\nEOF\ngit push -q origin feat; git rev-parse HEAD", "", ("feat", None)),
     ]
     bad = [f"target({c!r}): got {target(c, o)}, want {w}" for c, o, w in cases if target(c, o) != w]
     print("\n".join(bad) or f"selftest: {len(cases)} commands parse as expected")
