@@ -147,6 +147,18 @@ took effect, new or updated skills upstream (default `anthropics/skills`) and in
 skill covers, trigger misses, the audit's flags, and the footprint. The task drafts at most five proposals. Installing,
 editing and committing wait for the person's yes.
 
+**Practice from X, as a measurement rather than a feed.** Save your own posts as JSON, and `scripts/feed-trends.py`
+gates them to the topic, ranks by save rate (bookmarks over views), keeps one post per author and caps the list at
+40. A model then labels each post `theme | covering skill`, and code counts distinct authors per theme, so ten
+people posting the same list make one theme with one post to read. Each feed's on-topic share is the drift gauge: a
+share that falls week on week means the ranking moved, not the field. Read three posts in full and test one
+practice a week; supply is not the limit, landing changes is. (2026-11-21: of 506 posts, 10 of 25 practice posts
+were skill-pack lists and only 4% of one feed was on topic, so a search carries the intake and the feed shares
+measure the drift.) A second lane follows your own week: `scripts/week-context.py` reads the files your repos
+changed in the last 7 days, names the stack and writes two searches for it, which `feed-trends.py --context` ranks
+in their own places. (2026-11-21: a topic search alone held 8 posts on that week's front-end stack out of 506, so
+the lane needs its own search, not just its own gate.)
+
 ## 8. Keep it cheap as it grows
 
 - **Scripts read, the model judges.** The audit, the watch and the miss report scan every file and hand over a short

@@ -29,6 +29,10 @@ Optional, first: if you save posts from your own X feeds or searches as JSON (a 
 likes, bookmarks, views, feeds), `python3 ~/.claude/skills/capture-lesson/scripts/feed-trends.py FEED.json` writes
 ~/.claude/skills-watch/trends-<date>.md: the posts on topic, ranked by save rate (bookmarks per view), one per
 author, and each feed's on-topic share. How you save the posts is up to you; this repo ships the scorer, not a scraper.
+A second lane follows your own week: `python3 ~/.claude/skills/capture-lesson/scripts/week-context.py` reads the
+files your repos changed in the last 7 days, names the stack behind them and writes two searches for it; passing its
+JSON to `feed-trends.py --context` ranks those posts in their own places, so a week spent on one thing surfaces
+posts about that thing rather than only the week's loudest.
 
 python3 ~/.claude/skills/capture-lesson/scripts/practice-watch.py
 It writes ~/.claude/skills-watch/practices-<date>.md: up to three new posts in full (X links the person pasted into
