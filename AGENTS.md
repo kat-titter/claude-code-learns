@@ -93,7 +93,7 @@ tests/checks.sh               the eight checks CI runs on every pull request
 tests/privacy.py              emails, home paths and private words stay out
 tests/formatting.py           no column layout wraps on the rendered page
 tests/check-repair.test.mjs   runs the template against stub agents
-.github/workflows/            checks.yml, claude-review.yml
+.github/workflows/            checks.yml
 ```
 
 ## Invariants
@@ -145,11 +145,10 @@ last and only where a mistake is hard to undo.
    push leaves the new head with no status, so the merge button waits for a fresh review; the owner can still override
    on purpose. The code-practice hook starts it after `gh pr create`, `gh pr ready` or a push; without the hook, a
    fresh session, not the one that wrote the change, runs it by hand. `/code-review high --comment <PR#>` is a second
-   opinion, and `/code-review ultra` the deep cloud review, which only a person starts and which is billed.
-   `claude-review.yml` would add a hosted review once the repo has a `CLAUDE_CODE_OAUTH_TOKEN` secret; it has none, so
-   it has never run. The reviewer gets the diff, not the author's summary. A finding counts only once the author has
-   checked it: reproduced it, or read the line and agreed. A confirmed finding is fixed and pinned with a check; a
-   refuted one gets a reply that says why.
+   opinion, and `/code-review ultra` the deep cloud review, which only a person starts and which is billed. Reviews
+   run locally, so the repo needs no token secret. The reviewer gets the diff, not the author's summary. A finding
+   counts only once the author has checked it: reproduced it, or read the line and agreed. A confirmed finding is
+   fixed and pinned with a check; a refuted one gets a reply that says why.
 3. **A person, by lane.** The lane is set by what the change touches, never by a score.
 
 | lane | touches | merges when |
