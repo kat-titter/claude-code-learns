@@ -1,13 +1,16 @@
 #!/usr/bin/env python3
 """What the person built this week, read from the files their git repos changed in the last N days.
 
-Usage: week-context.py [--days 7] [--roots ~] [--out ~/.claude/skills-watch/week-context.json]
+Usage: week-context.py [--days 7] [--roots ~] [--out <config>/skills-watch/week-context.json]
 Finds every git repo under the roots with a commit in the window, scans only the files those commits touched, and
 records which front-end and tooling features they use (FEATURES: a code pattern and the words people post with).
 feed-trends.py --context reads the JSON to open a second lane, posts about the stack in use this week; the two X
 searches it prints carry that stack into the next collection.
 """
 import argparse, datetime as dt, json, os, re, subprocess, sys
+
+sys.path.insert(0, os.path.dirname(os.path.abspath(__file__)))
+from lessonlib import CONFIG   # the install root, so --out and feed-trends.py --context name one file
 
 # name: (pattern in the changed code, words a post about it would use; specific, since a bare 'canvas' matched the
 # company and a bare 'interactive' matched anything, 2026-11-21)
@@ -85,7 +88,7 @@ def main():
     ap = argparse.ArgumentParser(description=__doc__, formatter_class=argparse.RawDescriptionHelpFormatter)
     ap.add_argument('--days', type=int, default=7)
     ap.add_argument('--roots', nargs='+', default=['~'])
-    ap.add_argument('--out', default=os.path.expanduser('~/.claude/skills-watch/week-context.json'))
+    ap.add_argument('--out', default=os.path.join(CONFIG, 'skills-watch', 'week-context.json'))
     a = ap.parse_args()
     by = {}
     for repo in repos(a.roots):
