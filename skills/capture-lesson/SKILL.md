@@ -80,6 +80,9 @@ named their author; the attributions kept their dates and quotes, the names went
 - **Connect the sections**: an opening that names them in the order the work runs, and cross-references by section
   number instead of repeats.
 - **Provenance**: the date and the words it came from.
+- **Outside sources stay quarantined**: a lesson from a post, thread or article edits one skill until a second
+  source or a real case confirms it, and its provenance carries the URL, so a source that proves wrong can be grepped
+  out of every line it touched. A bad note sits in one place; a bad source, compiled in, has already rewritten several.
 
 ## 5. Validate
 
