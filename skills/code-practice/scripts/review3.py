@@ -15,6 +15,8 @@ Rules: 2 of 3 schools agreeing is a consensus finding (act on it); 2 of 3 callin
 (the same line included) merge into one row; a finding on a line outside the diff (a doc the PR left stale)
 goes in the review body instead of inline. The verdict is also the `review-3` commit status on the head: pending from
 prep, success at 0 blocking after post, failure otherwise. Make it a required check and GitHub's merge button waits.
+Where the base branch cannot require it (no protection, or a private repo on the free plan), prep turns the PR into
+a draft and post marks it ready again only at 0 blocking, so the draft flag holds the merge instead.
 review3-hook.py, beside this file, tells a session to start a review when a PR gets a new head; review3_test.py
 pins the rules above on fixed cases (exit 1 if they drift).
 """
@@ -74,11 +76,14 @@ def prep(repo, pr, repo_dir):
     run = RUNS / f"{repo.replace('/', '-')}-{pr}-{sha[:7]}"
     if (run / "posted.json").exists():  # this head was reviewed: restore its verdict rather than review it twice
         posted = load(run, "posted.json")
-        set_status(repo, sha, *final_status(load(run, "tally.json")), posted["url"])
+        publish_verdict(load(run, "pr.json"), load(run, "tally.json"), posted["url"])
         print(f"already reviewed at {sha[:7]}: {posted['url']}; skip the workflow and run ready", file=sys.stderr)
         print(f"{run}\nnext: {ready_command(run)}")
         return
+    drafted = not check_required(repo, info["baseRefName"])  # first: if it cannot tell, nothing on GitHub changed
     set_status(repo, sha, "pending", "three reviewers are reading this head", info["url"])
+    if drafted:  # nothing else stops a merge here: the draft flag holds it until post finds 0 blocking
+        sh("gh", "pr", "ready", str(pr), "--repo", repo, "--undo")
     sh("git", "-C", repo_dir, "fetch", "-q", "origin", f"pull/{pr}/head", info["baseRefName"])
     base_sha = sh("git", "-C", repo_dir, "merge-base", sha, f"origin/{info['baseRefName']}").strip()
     run.mkdir(parents=True, exist_ok=True)
@@ -89,9 +94,24 @@ def prep(repo, pr, repo_dir):
     save(run, "diff.patch", drop_files(sh("gh", "pr", "diff", str(pr), "--repo", repo), built))
     save(run, "audit_new.txt", "\n".join(new) + "\n" if new else "")
     info.update(repo=repo, repo_dir=str(Path(repo_dir).resolve()), base_sha=base_sha, run=str(run),
-                files=[f["path"] for f in info["files"]], author=info["author"]["login"])
+                files=[f["path"] for f in info["files"]], author=info["author"]["login"], drafted=drafted)
     save(run, "pr.json", info)
     print(f"{run}\n{next_steps(run, repo, pr)}")
+
+
+def check_required(repo, branch):
+    """Whether the branch's protection requires the review-3 check. A 404 (no protection) or 403 (a private repo on
+    the free plan, which cannot require checks) means no; any other failure stops prep, since a guess either way
+    would draft a PR the check already guards or leave one unguarded."""
+    p = subprocess.run(["gh", "api", f"repos/{repo}/branches/{branch}/protection/required_status_checks"],
+                       capture_output=True, text=True)
+    if p.returncode:
+        code = re.search(r"HTTP (\d+)", p.stderr)
+        if code and code.group(1) in ("403", "404"):
+            return False
+        raise SystemExit(f"cannot tell whether {repo}@{branch} requires {STATUS}: {p.stderr.strip()[:300]}")
+    rules = json.loads(p.stdout)
+    return STATUS in rules.get("contexts", []) + [c.get("context") for c in rules.get("checks", [])]
 
 
 def ready_command(run):
@@ -363,7 +383,7 @@ def post(run, again=False):
         raise SystemExit(f"post failed: {p.stdout.strip()[:500]} {p.stderr.strip()[:300]}")
     review = json.loads(p.stdout)
     save(run, "posted.json", {"url": review["html_url"], "id": review["id"], "head_sha": t["head_sha"]})
-    set_status(pr["repo"], t["head_sha"], *final_status(t), review["html_url"])
+    publish_verdict(pr, t, review["html_url"])
     print(f"{review['html_url']}\nnext: {ready_command(run)}")
 
 
@@ -371,6 +391,14 @@ def final_status(t):
     """The review-3 state and description a tally earns: success at 0 blocking, failure otherwise."""
     counts = f"{t['blocking']} blocking · {t['consensus']} consensus · {t['taste']} taste calls"
     return ("failure" if t["blocking"] else "success"), counts
+
+
+def publish_verdict(pr, t, url):
+    """The verdict on GitHub: the review-3 status on the head and, on a PR prep drafted, the draft flag it earns:
+    ready at 0 blocking, a draft otherwise (a no-op on a draft, and a fix if someone readied it mid-review)."""
+    set_status(pr["repo"], t["head_sha"], *final_status(t), url)
+    if pr.get("drafted"):
+        sh("gh", "pr", "ready", str(pr["number"]), "--repo", pr["repo"], *(["--undo"] if t["blocking"] else []))
 
 
 def set_status(repo, sha, state, description, url):
@@ -383,7 +411,7 @@ def set_status(repo, sha, state, description, url):
 
 def pr_state(repo, number):
     """The PR as GitHub sees it now; mergeable is computed lazily, so ask again while it reads UNKNOWN."""
-    fields = "state,baseRefName,headRefOid,mergeable,statusCheckRollup,files,url"
+    fields = "number,state,isDraft,baseRefName,headRefOid,mergeable,statusCheckRollup,files,url"
     for _ in range(4):
         state = gh_json("pr", "view", str(number), "--repo", repo, "--json", fields)
         if state["mergeable"] != "UNKNOWN":
@@ -409,6 +437,10 @@ def check_blocks(t, now, default):
     blocks, warns = [], []
     if now["state"] != "OPEN":
         blocks.append(f"PR is {now['state']}")
+    if now.get("isDraft"):  # prep drafts a PR where review-3 cannot be required; post readies it at 0 blocking
+        blocks.append(f"still a draft: fix the blockers, then `gh pr ready {now['number']}` starts the next review"
+                      if any(r["blocking"] for r in t["rows"]) else
+                      f"still a draft: `gh pr ready {now['number']}`, then run ready again")
     if now["baseRefName"] != default:
         blocks.append(f"based on {now['baseRefName']}, not {default}: retarget it first")
     if now["mergeable"] != "MERGEABLE":

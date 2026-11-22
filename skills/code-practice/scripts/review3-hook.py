@@ -77,14 +77,16 @@ def nudge(d):
     # four calls at most, 3 s each: 12 s inside the 15 s hook timeout
     run = lambda *cmd: subprocess.run(cmd, cwd=where, capture_output=True, text=True, timeout=3)
     view = run("gh", "pr", "view", *([selector] if selector else []), "--json",
-               "number,url,isDraft,state,headRefOid,headRefName,statusCheckRollup")
+               "number,url,isDraft,state,headRefOid,headRefName,headRepository,headRepositoryOwner,statusCheckRollup")
     if view.returncode:
         return None
     pr = json.loads(view.stdout)
     repo = "/".join(pr["url"].split("/")[3:5])
     owner = run("gh", "config", "get", "user", "-h", "github.com").stdout.strip()
-    ref = run("gh", "api", f"repos/{repo}/git/ref/heads/{pr['headRefName']}", "--jq", ".object.sha")
-    branch_sha = ref.stdout.strip() if ref.returncode == 0 else None
+    # the branch lives in the head repo: a fork's branch can share its name with a different one in the base repo
+    head_repo = pr.get("headRepository") and f"{pr['headRepositoryOwner']['login']}/{pr['headRepository']['name']}"
+    ref = head_repo and run("gh", "api", f"repos/{head_repo}/git/ref/heads/{pr['headRefName']}", "--jq", ".object.sha")
+    branch_sha = ref.stdout.strip() if ref and ref.returncode == 0 else None
     if not needs_review(pr, owner, branch_sha):
         return None
     head, top = branch_sha or pr["headRefOid"], run("git", "rev-parse", "--show-toplevel").stdout.strip() or where
