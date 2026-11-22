@@ -161,6 +161,11 @@ finished. Small is the step; the scope stays whole.
   image or board sent, the figure drawn inline, numbers in a table; a file path says where it lives, not what it
   shows. (a peptide explainer's palette, 2026-11-21: pick, six numbered whys, the cost, the swatch sheet sent; "simply state
   choice/decisions made and why. show me in chat whenever possible ... i find this very helpful")
+- **Each key decision and item carries its uncertainty.** Give an estimate a person can bet against (a probability,
+  a range, or 'likely/unsure' when no number is honest), the evidence it rests on, and what would move it. A pick at
+  60% reads differently from one at 95%: it tells the person where to look first and which step to keep reversible.
+  Label which part is measured, derived or guessed, and say "I don't know" rather than invent precision. (2026-11-22:
+  "always estimate and declare uncertainty for key decisions and items")
 - **Watch every running job.** Give a progress line at a steady pace (what runs, how far, the ETA), and at each look
   compare output, file size or CPU with the last one; a job that stopped moving gets diagnosed and reported at once,
   not waited on (a Whisper run stuck at 20% CPU, macos-long-render). (2026-10-26: "regular progress updates, job
