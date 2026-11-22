@@ -131,7 +131,7 @@ and the legend in its own `<g>` translated below it. Mermaid diagrams have no ax
   of thing gets its own mark and key row: a slide titled "three stations" drew the field hospital with the stations'
   cross (a drug-mechanism deck, 2026-10-27: "burn slide: actually shows 4 stations?"; Rampart became an H).
 - **One colour per class, checked as a set.** No other key entry wears a class's colour (a "new" ring or a "deaths" size
-  in the opioid red read as opioids), and the set passes the dataviz validator on the surface the marks sit on, all
+  in the opioid red read as opioids), and the set is checked for distinguishable pairs on the surface the marks sit on, all
   pairs for a map or scatter; past three classes, a label in the list or popover carries what colour alone can't
   (a public-health dashboard, 2026-10-27: "distinct, unique choices ... each drug class diff color").
 - **Swatches sit whole inside their box**, inset 1 to 2 px; a shape flush with the edge reads as cropped. A flat-based

@@ -97,7 +97,7 @@ Why one design over the designs it could have been (QOC) and the heuristics cano
   not helpful"). Tell a fact like a duration once at most, where the reader meets it (the 2 minutes of a loop: a dot
   that runs the ring in two real minutes, "2 min" written only at its centre).
 - **Show rather than tell, for interactions too**: no sentence explains a control, not even behind a "?"; the control invites
-  the action itself (a pointer cursor, a ▶ riding the hover line on a sound bar). a DJ tool, 2026-10-27: "press or drag to play
+  the action itself (a pointer cursor, a ▶ riding the hover line on a sound bar). (A DJ tool, 2026-10-27: "press or drag to play
   from there: unnecessary text, please remove. interaction should be obvious from design".
 - **A hover state promises a response.** Only an element that does something on click, tap or focus changes on
   hover; a card, row or block that is only read keeps one look (a compound explainer's property cards, 2026-11-20: "why is
