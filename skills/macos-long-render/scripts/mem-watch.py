@@ -2,6 +2,7 @@
 """Keep a long local job inside the Mac's memory: size the pool, watch it, pause the newest worker, read the log.
 
   mem-watch.py budget [--peak-gb G | -- CMD ...]    worker count from free memory and one unit's measured peak
+  mem-watch.py run [--job-gb G] -- CMD ...          one heavy job at a time machine-wide: lock, gate, run, govern
   mem-watch.py watch --pid JOB [--match RE] [...]   log every N s; SIGSTOP/SIGCONT/SIGTERM the job's newest workers
   mem-watch.py summary LOG                          memory, thermal or CPU: what the log says went wrong
   mem-watch.py resume LOG                           after a kill -9 of the watcher, SIGCONT what its log left paused
@@ -10,7 +11,7 @@
 Only the job's own descendants (or processes matching --match) are ever signalled, never the Claude app, CLI,
 helpers or MCP servers, never this watcher or its parents. Paused workers are resumed when the watcher exits. Stdlib only, macOS only.
 """
-import argparse, json, os, re, signal, subprocess, sys, time
+import argparse, fcntl, json, os, re, signal, subprocess, sys, time
 
 GB = 1 << 30
 LEVELS = {1: "normal", 2: "warn", 4: "critical"}
@@ -20,6 +21,8 @@ THERMAL = ["nominal", "moderate", "heavy", "trapping", "sleeping"]
 PROTECT = re.compile(r"(?i)(/Claude\.app/|/claude-code/|/\.claude-science/|(^|/)claude$|WindowServer|loginwindow|"
                      r"/Finder\.app/|/Dock\.app/|kernel_task|(^|/)launchd$|(^|/)caffeinate$)")
 SHELLS = {"zsh", "bash", "sh", "dash", "fish"}
+LOCK = os.environ.get("MEM_WATCH_LOCK") or os.path.expanduser("~/.claude/run/heavy.lock")
+# every session's heavy job queues on this one file; MEM_WATCH_LOCK isolates a test or a second queue
 
 
 def sh(*cmd):
@@ -101,11 +104,15 @@ def untouchable(procs):
     return keep | {p for p in procs if started_by_protected(p)}
 
 
-def find_workers(procs, root, match, min_mb, no_touch):
+def find_workers(procs, root, match, min_mb, no_touch, with_root=False):
     """The job's workers: descendants of root (or all processes) matching --match, else holding over min_mb, and
     innermost, so a pool runner whose own command line names the script (xargs ... run.py) is not one big worker.
-    Each worker's group is itself plus its descendants (an ffmpeg it spawned), signalled together."""
+    Each worker's group is itself plus its descendants (an ffmpeg it spawned), signalled together.
+    The root itself is a worker only with with_root, which `run` sets because it started the process it watches;
+    under `watch --pid` the root is the job's own driver and is never signalled, as --pid's help says."""
     pool = descendants(procs, root) if root else list(procs)
+    if root and with_root:
+        pool = [root] + pool
     rx = re.compile(match) if match else None
     cand = {p for p in pool if p not in no_touch and
             (rx.search(procs[p]["cmd"]) if rx else procs[p]["mb"] >= min_mb)}
@@ -138,6 +145,8 @@ class Governor:
             why.append("swap +%.1f GB and rising" % (m["swap"] - self.swap_base))
         if a.job_gb and job_gb > a.job_gb:
             why.append("job %.2f GB > %.2f" % (job_gb, a.job_gb))
+        if m.get("disk", 99) < a.min_disk:
+            why.append("disk %.1f GB < %.1f for swap" % (m["disk"], a.min_disk))
         return why
 
     def step(self, now, m, workers):
@@ -152,6 +161,12 @@ class Governor:
         running = [w for w in workers if w["pid"] not in self.paused]
         paused = [w for w in workers if w["pid"] in self.paused]
         why = self.reasons(m, job_gb, rising)
+        if why and m.get("disk", 99) < a.min_disk and workers:
+            # swap cannot grow on a full disk, and then macOS kills the whole session, Claude included: end the
+            # newest worker now, the last one too (2026-11-21: 7.4 GB free went to 0.2 GB in 4 min of swap growth)
+            w = min(running or paused, key=lambda w: (w["age"], -w["pid"]))
+            self.paused.discard(w["pid"])
+            return [("term", w, ", ".join(why))]
         if why:
             self.calm_since = None
             if len(running) > a.keep:
@@ -159,14 +174,17 @@ class Governor:
                 w = min(running, key=lambda w: (w["age"], -w["pid"]))
                 self.paused.add(w["pid"])
                 return [("pause", w, ", ".join(why))]
-            severe = m["level"] >= 4 or m["free"] < a.min_free or (a.job_gb and job_gb > a.job_gb)
-            if not (severe and paused):
+            over = bool(a.job_gb and job_gb > a.job_gb)
+            severe = m["level"] >= 4 or m["free"] < a.min_free or over
+            if not (severe and (paused or over)):
                 self.stuck_since = None                 # the SIGTERM clock runs only while severe with nothing to pause
                 return []
             if self.stuck_since is None:
                 self.stuck_since = now
             if now - self.stuck_since >= a.term_after:
-                w = min(paused, key=lambda w: (w["age"], -w["pid"]))
+                # a job over its cap is ended even as the last worker: a lone runaway (one Python at 10 GB,
+                # 2026-11-21) is what --keep would otherwise shelter
+                w = min(paused or running, key=lambda w: (w["age"], -w["pid"]))
                 self.paused.discard(w["pid"])
                 self.stuck_since = now
                 return [("term", w, ", ".join(why) + " for %ds with %d running" % (a.term_after, len(running)))]
@@ -207,7 +225,10 @@ def now_iso():
     return time.strftime("%Y-%m-%dT%H:%M:%S")
 
 
-def cmd_watch(a):
+def cmd_watch(a, alive=None):
+    """alive, which `run` passes as its child's poll(), says whether the process this watcher started is still up.
+    `watch --pid` passes none: it watches a job it did not start, whose root is that job's own driver, so the root
+    is never a worker there. `a` stays a plain argparse namespace that serialises into the log."""
     if not a.pid and not a.match:
         sys.exit("watch needs --pid JOB (its descendants are the workers) or --match REGEX")
     procs = processes()
@@ -235,11 +256,16 @@ def cmd_watch(a):
             procs = processes()
             if a.pid and a.pid not in procs:
                 break
+            if a.pid and alive is not None and alive() is not None:   # run's own child exited (a zombie stays in ps)
+                break
             no_touch = untouchable(procs)
             for pid in [p for p in stopped if p not in procs]:    # a paused worker died: free what it left stopped
                 signal_group(stopped.pop(pid), signal.SIGCONT, no_touch)
             m = machine()
-            workers = find_workers(procs, a.pid, a.match, a.min_rss_mb, no_touch)
+            fp = footprints()            # footprint counts swapped and compressed pages; RSS fell to 47 MB at 10 GB
+            for pid, v in procs.items():
+                v["mb"] = max(v["mb"], int(fp.get(pid, 0)))
+            workers = find_workers(procs, a.pid, a.match, a.min_rss_mb, no_touch, with_root=alive is not None)
             seen = {w["pid"] for w in workers}
             for pid in stopped:          # a paused worker stays governed while it lives, even swapped under --min-rss-mb
                 if pid not in seen:
@@ -297,6 +323,48 @@ def cmd_resume(a):
         for pid in left:
             log.write(json.dumps({"t": now_iso(), "event": "resume", "pid": pid, "why": "resume LOG"}) + "\n")
     print("resumed %d process(es): %s" % (len(pids), " ".join(map(str, pids)) or "none"))
+
+
+def cmd_run(a):
+    """One heavy job at a time across every session: wait for the machine-wide lock, wait until memory and disk have
+    room, then run CMD under the watch rules and exit with its code. Sessions queue here instead of piling up."""
+    cmd = a.cmd[1:] if a.cmd and a.cmd[0] == "--" else a.cmd
+    if not cmd:
+        sys.exit("run needs -- CMD")
+    os.makedirs(os.path.dirname(LOCK), exist_ok=True)
+    lock = open(LOCK, "a+")
+    waited = 0
+    while True:                      # --gate-wait bounds the queue too: a held lock is the commonest way to wait
+        try:
+            fcntl.flock(lock, fcntl.LOCK_EX | fcntl.LOCK_NB)
+            break
+        except BlockingIOError:
+            lock.seek(0)
+            held = lock.read().strip()[-200:] or "?"
+            if a.gate_wait and waited >= a.gate_wait:
+                sys.exit("run: gave up after %ds waiting for the heavy-job lock, held by: %s" % (waited, held))
+            if not waited:
+                print("run: waiting for the heavy-job lock, held by: %s" % held, file=sys.stderr)
+            time.sleep(5); waited += 5
+    lock.seek(0); lock.truncate(); lock.write("%d %s %s\n" % (os.getpid(), now_iso(), " ".join(cmd)[:160])); lock.flush()
+    while True:
+        m = machine()
+        short = [w for w, bad in (("free %d%% < %d%%" % (m["free"], a.gate_free), m["free"] < a.gate_free),
+                                  ("disk %.1f GB < %.1f" % (m["disk"], a.gate_disk), m["disk"] < a.gate_disk)) if bad]
+        if not short:
+            break
+        if a.gate_wait and waited >= a.gate_wait:
+            sys.exit("run: gave up after %ds: %s" % (waited, ", ".join(short)))
+        print("run: gate waiting: %s" % ", ".join(short), file=sys.stderr)
+        time.sleep(30); waited += 30
+    child = subprocess.Popen(cmd)
+    a.pid = child.pid
+    try:
+        cmd_watch(a, alive=child.poll)
+    finally:
+        rc = child.wait()
+        lock.close()
+    sys.exit(rc)
 
 
 def footprints():
@@ -409,7 +477,8 @@ def cmd_summary(a):
 
 
 def self_test():
-    a = argparse.Namespace(pause_at="warn", min_free=10, swap_gb=2.0, job_gb=0, keep=1, term_after=60, calm=30)
+    a = argparse.Namespace(pause_at="warn", min_free=10, swap_gb=2.0, job_gb=0, keep=1, term_after=60, calm=30,
+                           min_disk=4)
     g = Governor(a)
     ok = lambda m: dict({"level": 1, "free": 60, "swap": 1.0}, **m)
     ws = [{"pid": 10, "age": 300, "mb": 900}, {"pid": 11, "age": 200, "mb": 900}, {"pid": 12, "age": 100, "mb": 900}]
@@ -447,6 +516,14 @@ def self_test():
     expect(g.step(0, ok({"level": 2}), ws), [("pause", 11)], "job cap pauses the newest")
     g = Governor(argparse.Namespace(**dict(vars(a), pause_at="critical")))
     expect(g.step(0, ok({"level": 2}), ws), [], "warn alone does not pause when pause_at=critical")
+    one = [{"pid": 20, "age": 100, "mb": 10240}]
+    g = Governor(a)
+    expect(g.step(0, ok({"disk": 3.0}), one), [("term", 20)], "disk under the floor ends the last worker at once")
+    g = Governor(a)
+    expect(g.step(0, ok({"disk": 9.0}), one), [], "disk above the floor does nothing")
+    g = Governor(argparse.Namespace(**dict(vars(a), job_gb=4)))
+    expect(g.step(0, ok({}), one), [], "a lone worker over the cap starts the clock")
+    expect(g.step(60, ok({}), one), [("term", 20)], "and is ended after term_after, though it is the last")
     for exe, want in [("/Applications/Claude.app/Contents/MacOS/Claude", True),
                       ("/Users/x/Library/Application Support/Claude/claude-code/2.1/claude.app/Contents/MacOS/claude", True),
                       ("claude", True), ("caffeinate", True),
@@ -470,6 +547,7 @@ def main():
     b.add_argument("--margin", type=float, default=1.25, help="per-worker safety factor (default 1.25)")
     b.add_argument("cmd", nargs=argparse.REMAINDER, help="-- CMD: one small unit to measure")
     w = sub.add_parser("watch", help="log and govern a running job")
+    run = sub.add_parser("run", help="lock, gate, run CMD and govern it: one heavy job at a time machine-wide")
     w.add_argument("--pid", type=int, help="the job's root pid; its descendants are the workers")
     w.add_argument("--match", help="regex on worker command lines (narrows --pid, or alone selects workers)")
     w.add_argument("--min-rss-mb", type=int, default=100, help="without --match, a worker holds at least this")
@@ -478,18 +556,30 @@ def main():
     w.add_argument("--pause-at", choices=["warn", "critical"], default="warn")
     w.add_argument("--min-free", type=int, default=10, help="pause below this memory free %% (default 10)")
     w.add_argument("--swap-gb", type=float, default=2.0, help="pause when swap rises this far past the last calm point")
-    w.add_argument("--job-gb", type=float, default=0, help="cap on the job's total RSS (0 = off)")
+    w.add_argument("--job-gb", type=float, default=0, help="cap on the job's footprint (0 = off); past it for "
+                   "--term-after seconds, the newest worker is ended, the last one too")
+    w.add_argument("--min-disk-gb", dest="min_disk", type=float, default=4,
+                   help="disk free for swap below this ends the newest worker at once (default 4)")
     w.add_argument("--keep", type=int, default=1, help="workers never paused (default 1)")
     w.add_argument("--term-after", type=float, default=60, help="seconds of severe shortage before a SIGTERM")
     w.add_argument("--calm", type=float, default=30, help="seconds of calm before resuming one worker")
     w.add_argument("--duration", type=float, default=0, help="stop watching after this many seconds (0 = job end)")
     w.add_argument("--no-caffeinate", action="store_true", help="skip the caffeinate -i held while watching")
+    for act in w._actions:                         # run takes every watch option (but --pid and --match default off)
+        if act.dest not in ("help", "pid", "match"):
+            run._add_action(act)
+    run.add_argument("--match", help="regex on worker command lines inside the job")
+    run.add_argument("--gate-free", type=int, default=25, help="start only with this memory free %% (default 25)")
+    run.add_argument("--gate-disk", type=float, default=8, help="start only with this much disk free, GB (default 8)")
+    run.add_argument("--gate-wait", type=int, default=0, help="give up after this many seconds (0 = wait)")
+    run.add_argument("cmd", nargs=argparse.REMAINDER, help="-- CMD to run")
     s = sub.add_parser("summary", help="read a watch log")
     s.add_argument("log")
     r = sub.add_parser("resume", help="SIGCONT what a killed watcher's log left paused")
     r.add_argument("log")
     a = p.parse_args()
-    {"budget": cmd_budget, "watch": cmd_watch, "summary": cmd_summary, "resume": cmd_resume}[a.cmd_name](a)
+    {"budget": cmd_budget, "watch": cmd_watch, "run": cmd_run, "summary": cmd_summary,
+     "resume": cmd_resume}[a.cmd_name](a)
 
 
 if __name__ == "__main__":

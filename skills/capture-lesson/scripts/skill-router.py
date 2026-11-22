@@ -11,7 +11,7 @@ line asks Claude to choose from the skill list itself before the first tool call
 for 6 of 73 that did. The pick fires on about a third of prompts, catches 192 of the 260, and goes quiet once a skill
 loads. (A folder's own history named a right skill in its top three for 24 of 73, too few to suggest names from.)
 
-Test it: echo '{"prompt": "two of the references in the report look made up and the numbering drifted"}' | python3 skill-router.py
+Test it: echo '{"prompt": "the transition is rough, kicks flam when the two tracks overlap"}' | python3 skill-router.py
          echo '{"prompt": "make the readme better and check it all still holds up"}' | python3 skill-router.py
 """
 import json, os, re, sys

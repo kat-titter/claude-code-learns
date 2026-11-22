@@ -103,6 +103,17 @@ checks: interactive-figures' `audit_interactions.py` (targets, focus, clicks, no
 (contrast, overlaps, phone width), and a printed PDF read page by page (html-slide-deck's `print-pdf.sh`,
 `render-pages.py`). After publishing, `verify-live.sh` confirms the live bytes.
 
+The PDF gets its own measurement, since no screen check sees paper:
+
+```bash
+~/.cache/pdfenv/bin/python ${CLAUDE_SKILL_DIR}/scripts/pdf-print-check.py doc.pdf --sheet sheet.png
+```
+
+It reports each page's fill and empty tail, names what the next page opens with wherever a tail is over a quarter,
+lists text clipped past the printable edge (exit 1 if any), and draws every page on one contact sheet to look at.
+Measured on a peptide explainer, 2026-11-06: 13 of 45 pages more than a quarter blank and 6 clipped words before
+the print rules in section 2, 8 of 47 and none clipped after.
+
 Calibrated on 11 pages, 2026-10-26:
 
 - **Clean**: a 40 KB policy deck, the reference for density.

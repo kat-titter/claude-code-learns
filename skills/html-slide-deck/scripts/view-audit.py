@@ -1,11 +1,13 @@
 #!/usr/bin/env python3
-"""view-audit.py INDEX OUTDIR [--labels 01,02a,...] (a one-file deck whose slides are <template id="tN"> mounted in shadow
-roots, as this skill builds): every view mounted as the deck mounts it (stage layer), after its motion settles; lists
-each visible icon (an svg with a 24x24 viewBox) with its rendered size and the visible text beside it, and every visible
-text run's rendered font size. Writes OUTDIR/audit.json.
+"""view-audit.py INDEX OUTDIR [--labels 01,02a,...]: every view of a deck mounted as the deck mounts it (stage layer),
+after its motion settles; lists each visible icon (an svg with a 24x24 viewBox) with its rendered size and the visible
+text beside it, and every visible text run's rendered font size. Writes OUTDIR/audit.json.
 
-Views come from the deck's META list (slide k has as many views as its `steps` lists are long), named 01, 02a, 02b ...;
---labels renames them in order. Without META, one view per template. CHROME overrides the Chrome path."""
+Two deck shapes, told apart by the file itself:
+  <template id="tN"> slides mounted in shadow roots, as this skill builds. Views come from the deck's META list
+  (slide k has as many views as its `steps` lists are long), named 01, 02a, 02b ...
+  plain <section> slides with a ?solo=N render mode, audited one section at a time, named 01, 02, 03 ...
+--labels renames the views in order. Without META, one view per template. CHROME overrides the Chrome path."""
 import argparse, html, json, os, re, subprocess, sys
 from pathlib import Path
 if sys.argv[1:2] in (['-h'], ['--help']):
@@ -40,7 +42,15 @@ def views(deck):
     return found
 
 
-VIEWS = views(s)
+def sections(deck):
+    """One label per plain <section>: a deck with no templates is audited through its own ?solo=N render mode."""
+    return [(f'{i:02d}', i, 0) for i in range(1, len(re.findall(r'<section\b', deck)) + 1)]
+
+
+TEMPLATED = bool(re.search(r'<template id="t\d+">', s))
+VIEWS = views(s) if TEMPLATED else sections(s)
+if not VIEWS:
+    sys.exit(f'no <template id="tN"> slides and no <section> slides in {a.index}: nothing to audit')
 if a.labels:
     names = a.labels.split(',')
     if len(names) != len(VIEWS):
@@ -63,19 +73,48 @@ while ((n = walker.nextNode())) { const t = n.textContent.trim(); if (!t) contin
 document.body.setAttribute('data-out', JSON.stringify({icons, texts}));
 '''
 res = {}
-for name, i, step in VIEWS:
-    t0 = s.find(f'<template id="t{i}">')
-    if t0 < 0:
-        print(f'view {name}: no <template id="t{i}"> in the deck', file=sys.stderr); sys.exit(2)
-    t1 = s.find('</template>', t0) + len('</template>')
-    page = ('<!doctype html><meta charset="utf-8"><style>body{margin:0;background:#14171a}</style>' + s[t0:t1]
-            + f'<div id="st" class="in" style="width:1280px;height:720px"></div><script>const r=document.getElementById("st").attachShadow({{mode:"open"}});'
-            f'r.appendChild(document.getElementById("t{i}").content.cloneNode(true));const h=document.createElement("style");h.textContent=".pdf{{display:none!important}}.pdfv{{visibility:hidden!important}}*{{animation-duration:0s!important;animation-delay:0s!important;transition:none!important}}";r.appendChild(h);'
-            f'const f=r.querySelector("[class*=step-]");if(f)f.className=f.className.replace(/step-\\d/,"step-{step}");setTimeout(()=>{{{JS}}},1500);</script>')
-    p = out / f'{name}.html'; p.write_text(page)
-    dom = subprocess.run([CH, '--headless=new', '--disable-gpu', '--window-size=1280,720', '--virtual-time-budget=9000', '--dump-dom', p.as_uri()], capture_output=True, text=True).stdout
+
+
+def dump(url):
+    """The probe's JSON out of a headless Chrome render of one view."""
+    dom = subprocess.run([CH, '--headless=new', '--disable-gpu', '--window-size=1280,720', '--virtual-time-budget=9000',
+                          '--dump-dom', url], capture_output=True, text=True).stdout
     m = re.search(r'data-out="([^"]*)"', dom)
-    res[name] = json.loads(html.unescape(m.group(1))) if m else None
+    return json.loads(html.unescape(m.group(1))) if m else None
+
+
+if not TEMPLATED:
+    # the visible section, not the first one: a ?solo mode that only toggles a class leaves the others in the DOM
+    pick = '[...document.querySelectorAll("section")].find(e=>e.getBoundingClientRect().height>0)' \
+           '||document.querySelector("section")'
+    inject = f'<script>setTimeout(()=>{{const r={pick};{JS}}},1500)</script></body>'
+    copy = out / 'solo.html'
+    # a page with no closing body tag gets the probe appended instead
+    copy.write_text(s.replace('</body>', inject, 1) if '</body>' in s else s + inject)
+    for name, i, _ in VIEWS:
+        res[name] = dump(copy.as_uri() + f'?solo={i}')
+    # ?solo=N, 1-based, is this skill's convention. A deck that names its render parameter something else ignores
+    # the query and returns the same view every time, which would otherwise read as a clean audit of N identical
+    # slides, so identical results are a failure here rather than a result.
+    same = {}
+    for name, v in res.items():
+        same.setdefault(json.dumps(v, sort_keys=True), []).append(name)
+    twins = [' and '.join(n) for n in same.values() if len(n) > 1]
+    if len(res) > 1 and twins:
+        sys.exit(f'views came back identical ({"; ".join(twins)}): this deck does not answer ?solo=N, 1-based. '
+                 'Give its render mode that parameter, or mount its slides as <template id="tN">.')
+else:
+    for name, i, step in VIEWS:
+        t0 = s.find(f'<template id="t{i}">')
+        if t0 < 0:
+            print(f'view {name}: no <template id="t{i}"> in the deck', file=sys.stderr); sys.exit(2)
+        t1 = s.find('</template>', t0) + len('</template>')
+        page = ('<!doctype html><meta charset="utf-8"><style>body{margin:0;background:#14171a}</style>' + s[t0:t1]
+                + f'<div id="st" class="in" style="width:1280px;height:720px"></div><script>const r=document.getElementById("st").attachShadow({{mode:"open"}});'
+                f'r.appendChild(document.getElementById("t{i}").content.cloneNode(true));const h=document.createElement("style");h.textContent=".pdf{{display:none!important}}.pdfv{{visibility:hidden!important}}*{{animation-duration:0s!important;animation-delay:0s!important;transition:none!important}}";r.appendChild(h);'
+                f'const f=r.querySelector("[class*=step-]");if(f)f.className=f.className.replace(/step-\\d/,"step-{step}");setTimeout(()=>{{{JS}}},1500);</script>')
+        p = out / f'{name}.html'; p.write_text(page)
+        res[name] = dump(p.as_uri())
 (out / 'audit.json').write_text(json.dumps(res, indent=1))
 def near_miss(ts):
     xs = sorted({t['x'] for t in ts if not t['h2'] and t['anchor'] == 'start' and t['y'] > 190})

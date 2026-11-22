@@ -10,6 +10,9 @@ scripts it names that exist; lines phrased as prohibitions (rewrite as positive 
 personal-taste markers outside the personal skill (move them to the personal skill).
 Library: two descriptions that would fire on the same prompt, the same guideline in two skills, skills missing from the
 index, inbox size and harness-noise lines.
+Literalness (capture-lesson 2): per skill, the bullets, the share carrying a dated case, words per bullet, the share of
+bullet words inside quotes, and how many principles the skill opens with. Cases written as their own rules show as long,
+quote-heavy bullets and no principles; the weekly watch reads this table to see that creep back.
 Advisory: prints a report and exits 0; exits 1 only when there is nothing to audit. --strict also exits 1 when anything
 is flagged, so a program can gate on it; --only SKILL reports that skill alone, with the collisions and repeats it is in
 (the library is still read whole to find them).
@@ -25,6 +28,9 @@ PROHIBIT = re.compile(r"(?:^\s*(?:[-*]|\d+\.)?\s*|[.!?;:]\s+)(?:\*\*)?(?:don'?t|
 SCRIPT = re.compile(r"(?:\$\{CLAUDE_SKILL_DIR\}/|~/.claude/skills/([\w-]+)/|`)(scripts/[\w./-]+)")
 NAME = re.compile(r'^[a-z0-9]+(?:-[a-z0-9]+)*$')
 FRONT = re.compile(r'^---\n.*?\n---\n', re.S)
+MONTH = r'(?:Jan|Feb|Mar|Apr|May|Jun|Jul|Aug|Sep|Oct|Nov|Dec)[a-z]*'
+DATE = re.compile(rf'\b20\d\d-\d\d(?:-\d\d)?\b|\b\d{{1,2}} {MONTH} 20\d\d\b|\b{MONTH} \d{{1,2}},? 20\d\d\b')
+QUOTE = re.compile(r'"[^"\n]*"|“[^”\n]*”')
 COMMON = set('when with that this from have your they them what where which while into each only also than then more '
              'over under about after before same other like just make made used using does done keep show their there '
              'should would could every first'.split())
@@ -41,6 +47,32 @@ def text_of(v):
 def is_index_entry(name, index):
     """The skill is named in the index as a whole token or in backticks, not inside another word."""
     return bool(re.search(rf'`{re.escape(name)}`|(?<![\w-]){re.escape(name)}(?![\w-])', index))
+
+
+def bullets_of(body):
+    """The bullets before Provenance, each joined with its indented continuation lines."""
+    out, cur = [], None
+    for l in body.split('## Provenance')[0].splitlines():
+        if re.match(r'\s*[-*]\s+\S', l):
+            if cur is not None: out.append(cur)
+            cur = l.strip()[2:]
+        elif cur is not None and l.strip() and l[:1] in ' \t':
+            cur += ' ' + l.strip()
+        elif cur is not None:
+            out.append(cur); cur = None
+    if cur is not None: out.append(cur)
+    return out
+
+
+def literalness(body):
+    """(bullets, dated share, words per bullet, quoted-word share, principles) for one skill body."""
+    bs = bullets_of(body)
+    words = [len(b.split()) for b in bs]
+    quoted = sum(len(q.split()) for b in bs for q in QUOTE.findall(b))
+    m = re.search(r'^## Principles\b.*?(?=^## |\Z)', body, re.M | re.S)
+    princ = len(re.findall(r'^(?:\d+\.|[-*]) ', m.group(0), re.M)) if m else 0
+    n = len(bs) or 1
+    return len(bs), sum(bool(DATE.search(b)) for b in bs) / n, sum(words) / n, quoted / (sum(words) or 1), princ
 
 
 def main():
@@ -83,7 +115,7 @@ def main():
         print(f'no index at {a.index}: index check skipped')
     print()
 
-    bodies, triggers, flags = {}, {}, 0
+    bodies, triggers, lit, flags = {}, {}, {}, 0
     for p in skills:
         d = os.path.dirname(p); name = os.path.basename(d)
         text = open(p, encoding='utf-8', errors='replace').read()
@@ -126,7 +158,20 @@ def main():
             for n in notes: print(f'  - {n}')
             flags += len(notes)
         bodies[name] = prov
+        lit[name] = (len(lines),) + literalness(body)
         triggers[name] = {w for w in re.findall(r"[a-z]{4,}", (desc + ' ' + when).lower()) if w not in TRIGGER_WORDS}
+
+    # literalness: long, quote-heavy, dated bullets and no principles mean cases were filed as rules (capture-lesson 2)
+    big = sorted((v for v in lit.items() if v[1][1] >= 15 and shown(v[0])), key=lambda kv: -kv[1][3])
+    allb = sum(v[1] for v in lit.values())
+    print(f'\nliteralness: {allb} bullets in all, '
+          f'{sum(v[1] * v[2] for v in lit.values()) / (allb or 1):.0%} dated, '
+          f'{sum(v[1] * v[3] for v in lit.values()) / (allb or 1):.0f} words a bullet '
+          '(skills with 15+ bullets, wordiest first; a large skill opens with 5-9 principles)')
+    print(f'  {"skill":28} {"lines":>5} {"bullets":>7} {"dated":>6} {"words/b":>7} {"quoted":>6} {"principles":>10}')
+    for name, (nl, nb, dated, wpb, q, pr) in big:
+        flag = '  <- no principles' if nl > 200 and not pr else ''
+        print(f'  {name:28} {nl:5} {nb:7} {dated:6.0%} {wpb:7.0f} {q:6.0%} {pr or "-":>10}{flag}')
 
     # collisions: two descriptions that share most of their words fire on the same prompts (merge, or give each its own use)
     names = sorted(triggers)

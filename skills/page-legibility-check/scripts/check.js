@@ -12,25 +12,50 @@ function measure(){
   // its figures have to be legible too, so every fold opens before anything is measured.
   document.querySelectorAll('details').forEach(d=>d.open=true);
   const out={contrast:[],overlap:[],tiny:[],wide:[],hscroll:document.documentElement.scrollWidth>window.innerWidth+1,width:window.innerWidth,texts:0};
-  // rgb()/rgba(), and color(srgb r g b / a) with 0..1 channels, which Chrome returns for a colour set through color-mix() (a DJ-set tool 2026-11-03: every run threw on the first such text)
-  const parse=c=>{let m=(c||'').match(/rgba?\(([^)]+)\)/);if(m){const p=m[1].split(/[\s,\/]+/).filter(Boolean).map(Number);return{r:p[0],g:p[1],b:p[2],a:p.length>3?p[3]:1};}
-    m=(c||'').match(/color\(srgb\s+([^)]+)\)/);if(m){const p=m[1].split(/[\s\/]+/).filter(Boolean).map(Number);return{r:p[0]*255,g:p[1]*255,b:p[2]*255,a:p.length>3?p[3]:1};}return null;};
+  // Every computed colour becomes {r,g,b,a} in 0..255 sRGB. rgb()/rgba() is read directly. Any other form - oklch()
+  // and oklab() (what Chrome serialises for color-mix(in oklch) and oklch tokens), color(srgb ...) from color-mix(in
+  // srgb) (its channels can run past 0..1 when a mixed colour is outside sRGB), lab(), lch(), color(display-p3 ...) -
+  // is painted opaque on a 1x1 canvas and read back, so the browser does the conversion and gamut clipping it does
+  // when it draws. Alpha comes from the string. (A peptide explainer, 2026-11-20: every peptide name was oklch, listed
+  // under `unknown` and never tested, while the run said PASS; a DJ-set tool, 2026-11-03: color(srgb) threw on the
+  // first text.)
+  const cx=Object.assign(document.createElement('canvas'),{width:1,height:1}).getContext('2d',{willReadFrequently:true}),memo=new Map();
+  const parse=c=>{c=(c||'').trim();if(!c||c==='none'||/^url\(/.test(c))return null;if(memo.has(c))return memo.get(c);let v=null;
+    const m=c.match(/^rgba?\(([^)]+)\)$/);
+    if(m){const p=m[1].split(/[\s,\/]+/).filter(Boolean).map(s=>/%$/.test(s)?parseFloat(s)/100:Number(s));v={r:p[0],g:p[1],b:p[2],a:p.length>3?p[3]:1};}
+    else if(/^(color|oklch|oklab|lab|lch|hsla?|hwb)\(/.test(c)){
+      const am=c.match(/\/\s*([\d.eE+-]+%?|none)\s*\)$/),a=!am||am[1]==='none'?1:/%$/.test(am[1])?parseFloat(am[1])/100:Number(am[1]);
+      const opaque=am?c.slice(0,am.index).trimEnd()+')':c;
+      cx.clearRect(0,0,1,1);cx.fillStyle='#010203';cx.fillStyle=opaque;
+      if(cx.fillStyle!=='#010203'||/^rgba?\(1, 2, 3/.test(opaque)){cx.fillRect(0,0,1,1);const d=cx.getImageData(0,0,1,1).data;v={r:d[0],g:d[1],b:d[2],a};}}
+    memo.set(c,v);return v;};
+  const over=(f,b)=>f.a>=.999?f:{r:f.r*f.a+b.r*(1-f.a),g:f.g*f.a+b.g*(1-f.a),b:f.b*f.a+b.b*(1-f.a),a:1};   // source-over, as the browser composites
   const lum=({r,g,b})=>{const f=v=>{v/=255;return v<=0.03928?v/12.92:Math.pow((v+0.055)/1.055,2.4)};return .2126*f(r)+.7152*f(g)+.0722*f(b);};
   const ratio=(a,b)=>{const x=lum(a),y=lum(b);return(Math.max(x,y)+.05)/(Math.min(x,y)+.05);};
-  // nearest painted background: a solid colour, or the first solid stop of a gradient (highlighter marks are gradients)
-  const bgOf=el=>{for(let e=el;e&&e.nodeType===1;e=e.parentElement){if(e instanceof SVGElement&&!(e instanceof SVGSVGElement))continue;const cs=getComputedStyle(e),c=parse(cs.backgroundColor);if(c&&c.a>.5)return c;
-      if(/gradient/.test(cs.backgroundImage)){const g=(cs.backgroundImage.match(/rgba?\([^)]+\)/g)||[]).map(parse).find(x=>x&&x.a>.5);if(g)return g;}}
-    return parse(getComputedStyle(document.body).backgroundColor)||{r:255,g:255,b:255,a:1};};
+  const unmeasured=(el,c)=>{out.unknownCount=(out.unknownCount||0)+1;const s=name(el)+' '+c;out.unknown=out.unknown||[];if(!out.unknown.includes(s)&&out.unknown.length<8)out.unknown.push(s);};
+  // painted background: walk up through translucent layers to the first opaque one (or the first solid stop of a
+  // gradient: highlighter marks are gradients), then composite the translucent layers over it
+  const COLOR=/\b(?:rgba?|oklch|oklab|lab|lch|color|hsla?|hwb)\([^)]*\)/g,WHITE={r:255,g:255,b:255,a:1};
+  const bgOf=el=>{const layers=[];let base=null;
+    for(let e=el;e&&e.nodeType===1&&!base;e=e.parentElement){if(e instanceof SVGElement&&!(e instanceof SVGSVGElement))continue;const cs=getComputedStyle(e),c=parse(cs.backgroundColor);
+      if(c&&c.a>.001){if(c.a>=.999)base=c;else layers.push(c);}
+      if(!base&&/gradient/.test(cs.backgroundImage)){const g=(cs.backgroundImage.match(COLOR)||[]).map(parse).find(x=>x&&x.a>.5);if(g)base={...g,a:1};}}
+    return layers.reduceRight((b,f)=>over(f,b),base||WHITE);};
   const big=cs=>{const s=parseFloat(cs.fontSize),w=parseInt(cs.fontWeight)||400;return s>=24||(s>=18.66&&w>=700);};
   const name=el=>(el.id?'#'+el.id:el.tagName.toLowerCase()+(typeof el.className==='string'&&el.className?'.'+el.className.split(' ')[0]:''));
+  // ?probe=<css selector> lists the measured colours and ratio of every matching text run, passing or not, so one
+  // element's contrast is read off the run instead of converted by hand (and the fixture test checks the numbers)
+  const probeSel=new URLSearchParams(location.search).get('probe'),hex=c=>'#'+[c.r,c.g,c.b].map(v=>Math.round(v).toString(16).padStart(2,'0')).join('');
+  const probe=(el,txt,fg,bg,k)=>{if(!probeSel)return;try{if(!el.closest(probeSel))return;}catch(e){return;}(out.probe=out.probe||[]).push({el:name(el),text:txt.trim().slice(0,40),fg:hex(fg),bg:hex(bg),ratio:+k.toFixed(3)});};
   const tiny=(el,px,txt)=>{if(px<9&&out.tiny.length<12)out.tiny.push({el:name(el),text:txt.slice(0,30),px:+px.toFixed(1)});};
   // HTML text: background = nearest opaque ancestor background
   const tw=document.createTreeWalker(document.body,NodeFilter.SHOW_TEXT);let n;
   while((n=tw.nextNode())){const el=n.parentElement;if(!n.textContent.trim()||!el||el.closest('svg')||el.closest('script,style,title,#__out'))continue;
     const r=el.getBoundingClientRect();if(!r.width||!r.height)continue;const cs=getComputedStyle(el);if(cs.visibility==='hidden'||parseFloat(cs.opacity)===0)continue;
-    const fg=parse(cs.color);if(!fg){out.unknown=(out.unknown||[]).concat(name(el)+' '+cs.color).slice(0,8);continue;}   // a colour the parser does not read is listed, never a crash
-    out.texts++;const k=ratio(fg,bgOf(el)),need=big(cs)?3:4.5;
+    const fg=parse(cs.color);if(!fg){unmeasured(el,cs.color);continue;}   // a colour the parser does not read is listed and counted, never a crash
+    out.texts++;const bg=bgOf(el),k=ratio(over(fg,bg),bg),need=big(cs)?3:4.5;
     if(k<need)out.contrast.push({el:name(el),text:n.textContent.trim().slice(0,40),ratio:+k.toFixed(2),need});
+    probe(el,n.textContent,over(fg,bg),bg,k);
     if(el.offsetWidth)tiny(el,parseFloat(cs.fontSize)*r.width/el.offsetWidth,n.textContent.trim());}
   // SVG text: background = topmost painted shape under the text's centre
   document.querySelectorAll('svg').forEach(svg=>{
@@ -39,9 +64,11 @@ function measure(){
       if(r.left<sr.left-.5||r.right>sr.right+.5||r.top<sr.top-.5||r.bottom>sr.bottom+.5)out.overlap.push({svg:svg.id,a:t.textContent,b:'outside svg'});
       let bg=null;for(const e of document.elementsFromPoint(r.left+r.width/2,r.top+r.height/2)){if(e===t||e.tagName==='text'||e.tagName==='tspan')continue;
         if(e instanceof SVGElement&&!(e instanceof SVGSVGElement)){if(/^(line|polyline)$/.test(e.tagName)){continue;}const eb=e.getBoundingClientRect();if(eb.width<3||eb.height<3)continue;   // lines are not backgrounds
-          const cs=getComputedStyle(e),f=parse(cs.fill);if(f&&cs.fill!=='none'&&parseFloat(cs.fillOpacity)*parseFloat(cs.opacity)>=.5){bg=f;break;}continue;}
+          const cs=getComputedStyle(e),f=parse(cs.fill),fa=f?f.a*parseFloat(cs.fillOpacity)*parseFloat(cs.opacity):0;if(fa>=.5){bg=over({...f,a:fa},bgOf(svg));break;}continue;}
         bg=bgOf(e);break;}
-      const k=ratio(parse(getComputedStyle(t).fill),bg||bgOf(svg));if(k<4.5)out.contrast.push({el:(svg.id||'svg')+' text',text:t.textContent.slice(0,40),ratio:+k.toFixed(2),need:4.5});
+      bg=bg||bgOf(svg);const tcs=getComputedStyle(t),tf=parse(tcs.fill);if(!tf){out.texts--;unmeasured(t,tcs.fill);return;}   // a gradient or pattern fill is listed, never a crash
+      const fg=over({...tf,a:tf.a*parseFloat(tcs.fillOpacity)},bg),k=ratio(fg,bg);if(k<4.5)out.contrast.push({el:(svg.id||'svg')+' text',text:t.textContent.slice(0,40),ratio:+k.toFixed(2),need:4.5});
+      probe(t,t.textContent,fg,bg,k);
       try{const bb=t.getBBox();if(bb.height)tiny(t,parseFloat(getComputedStyle(t).fontSize)*r.height/bb.height,t.textContent);}catch(e){}});
     // A rotated label's screen box is an axis-aligned hull far bigger than its glyphs, so parallel 45-degree labels
     // on an axis "overlap" with clear space between them. Rotated text is judged on its own oriented box instead
