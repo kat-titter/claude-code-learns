@@ -83,6 +83,52 @@ found by brace matching, so it is approximate; Python uses the AST.
 - **Published results keep their exact behaviour**: scripts behind a shipped render or paper change only to import an
   identical helper.
 
+## Review by three
+
+Three reviewers with different opinions review each pull request apart, their consensus stands in for a person's
+review, and only the taste calls reach the person. Agents judge; `scripts/review3.py` holds everything with one right
+answer: the PR's facts, the 2-of-3 tally, the one GitHub review, the commit status and the merge gate.
+
+- **Run it**: `review3.py prep OWNER/REPO N --repo-dir CLONE` (prints RUN), then
+  `Workflow({name: 'review-3', args: {run: RUN, repo: 'OWNER/REPO', pr: N}})`, then `review3.py ready RUN`. The
+  workflow is `scripts/review-3.js`; link it into `~/.claude/workflows/` to call it by name. If prep says the head was
+  already reviewed, skip the workflow.
+- **Three schools, separate contexts**: grug (no to abstraction, the 80/20, integration tests), Ousterhout (deep
+  modules, leakage, design it twice) and maintainability (the table above, starting from the audit delta). They
+  disagree on purpose, on function length most of all. Each finds alone, at most 8 findings, then votes blind on the
+  other two schools' findings without knowing who raised them.
+- **Consensus is counted in code** (`review3.py selftest` pins it): 2 of 3 agreeing is a finding to act on; 2 of 3
+  calling it important blocks; 1 of 3 is a taste call, listed and never blocking. Rows on the same file:line merge,
+  and so do consensus rows within 3 lines (one run cited one bug at `:82` and `:84`); a taste call stays its own row.
+  A finding outside the diff, such as a doc the PR left stale, goes in the review body, not inline.
+- **Built pages are judged at their script**: prep lists the pages `code_audit.py` traces to a builder in
+  `generated.txt` and drops them from the diff the reviewers read. On a first run a 5k-line built page was most of
+  the 814k tokens.
+- **One review on the PR, event COMMENT**: verdict, a consensus table, a "Taste calls" table (reviewer, position, why,
+  the other two), inline comments on consensus lines only, the audit delta folded. Reviewers never approve or block.
+- **The gate lives on GitHub**: prep sets the `review-3` commit status to pending on the head; post sets success at 0
+  blocking or failure otherwise, linked to the review. Require `review-3` on the default branch (strict off, admins
+  not enforced) and the merge button waits for a review of the current head, while an owner can still override on
+  purpose. A private repo on a free plan cannot require a check, but the status still shows. The lesson behind it: a
+  PR was merged from the web page while its second review ran, and that review found 5 blockers; a gate only
+  protects a merge that waits for it.
+- **It starts itself**: `scripts/review3-hook.py` is a PostToolUse hook on Bash. After `gh pr create`, `gh pr ready`
+  or a push that gives an open, non-draft PR the gh user owns a new head, it adds one line telling the session to
+  review it, and prints nothing on every other command (about 45 ms). Keep a PR in draft while pushing fixes;
+  `gh pr ready` starts the review. The installer does not add it, because each review costs real tokens:
+
+  ```json
+  "PostToolUse": [{ "matcher": "Bash", "hooks": [{ "type": "command", "timeout": 15,
+    "command": "python3 \"$HOME/.claude/skills/code-practice/scripts/review3-hook.py\"" }] }]
+  ```
+- **Ready is a gate a program can fail**: open, based on the default branch, no conflicts, the review covers the
+  current head, 0 blocking, CI not failing or running. Other open PRs on the same files and uncommitted edits in
+  worktrees print as warnings with a merge order. Then, on the person's word,
+  `gh pr merge N --squash --match-head-commit SHA`.
+- **Why this shape**: hosted review bots never approve, post inline plus a summary, and verify before posting; the
+  noisiest tools catch the most and get read the least, so findings are capped and 1 of 3 never blocks; correlated
+  judges fail together, so contexts stay separate and votes blind.
+
 ## One home per helper
 
 - **The second copy is the signal.** When a function is needed in a second script, move it to a shared module and import
@@ -126,4 +172,5 @@ found by brace matching, so it is approximate; Python uses the AST.
 organized, logical flow, minimal redundancy, one thing at a time"; the design-rules table and `code_audit.py`, and the
 Pages pictures rule. 2026-10-25, on an art project's code folder: "repo should be organized, avoid redundant code".
 2026-10-26: "skills: clean code, refactors, code organization"; renamed from code-organization the same day; cases
-from the lessons inbox.
+from the lessons inbox. 2026-11-21: review by three, `review3.py` and the `review-3` workflow; 2026-11-22:
+the `review-3` commit status, the hook, near-twin merging and built pages left out.

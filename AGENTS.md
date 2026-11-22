@@ -78,7 +78,9 @@ skills/capture-lesson/        how a lesson is generalized, routed, written
 skills/prompt-practice/       a terse request becomes a brief; has a hook
 skills/workflow-design/       loops inside a graph; check-repair.js template
 skills/code-practice/         clean code and repo layout; code_audit.py reads
-                              page-design rules as code
+                              page-design rules as code; review3.py,
+                              review-3.js and review3-hook.py run review
+                              by three
 skills/*/                     34 example skills, installed with --examples:
                               how work runs, code, pages and apps, figures,
                               measuring, writing and science, audio
@@ -137,15 +139,17 @@ last and only where a mistake is hard to undo.
 
 1. **Checks.** `.github/workflows/checks.yml` runs the eight checks above on every pull request, one job each. All eight
    green, or nothing merges. A red check is fixed on the branch, never skipped.
-2. **Agent review.** `.github/workflows/claude-review.yml` has Claude review the diff with the `code-review` plugin and
-   leave inline comments, once the repo has a `CLAUDE_CODE_OAUTH_TOKEN` secret. The plugin reviews a pull request once,
-   when it opens or leaves draft. Four cases need a review run by hand: before a first review, after later pushes,
-   without the secret, and for a large change. Then a fresh session, not the one that wrote the change, runs
-   `/code-review high --comment <PR#>`. `/code-review ultra` is the deep cloud review, which only a person starts
-   and which is billed. The `review` job is green even when it
-   skipped, so the review is the comments on the pull request, never the job's colour. The reviewer gets the diff, not the
-   author's summary. A finding counts only once the author has checked it: reproduced it, or read the line and agreed.
-   A confirmed finding is fixed and pinned with a check; a refuted one gets a reply that says why.
+2. **Agent review.** Review by three (code-practice) runs in a local session: three reviewers of different schools
+   review apart, vote blind, and `review3.py` counts 2 of 3 and posts one comment review. It sets the `review-3` commit
+   status on the head, the check `main` requires: pending while it runs, success at 0 blocking, failure otherwise. A
+   push leaves the new head with no status, so the merge button waits for a fresh review; the owner can still override
+   on purpose. The code-practice hook starts it after `gh pr create`, `gh pr ready` or a push; without the hook, a
+   fresh session, not the one that wrote the change, runs it by hand. `/code-review high --comment <PR#>` is a second
+   opinion, and `/code-review ultra` the deep cloud review, which only a person starts and which is billed.
+   `claude-review.yml` would add a hosted review once the repo has a `CLAUDE_CODE_OAUTH_TOKEN` secret; it has none, so
+   it has never run. The reviewer gets the diff, not the author's summary. A finding counts only once the author has
+   checked it: reproduced it, or read the line and agreed. A confirmed finding is fixed and pinned with a check; a
+   refuted one gets a reply that says why.
 3. **A person, by lane.** The lane is set by what the change touches, never by a score.
 
 | lane | touches | merges when |
