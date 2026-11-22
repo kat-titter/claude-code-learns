@@ -112,10 +112,15 @@ def write(run, name, data):
     Path(run, name).write_text(data if isinstance(data, str) else json.dumps(data))
 
 
-def quiet(fn, *args, **kw):
-    with contextlib.redirect_stdout(io.StringIO()) as out, contextlib.redirect_stderr(io.StringIO()):
+def captured(fn, *args, **kw):
+    """Run fn with stdout and stderr captured; return both."""
+    with contextlib.redirect_stdout(io.StringIO()) as out, contextlib.redirect_stderr(io.StringIO()) as err:
         fn(*args, **kw)
-    return out.getvalue()
+    return out.getvalue(), err.getvalue()
+
+
+def quiet(fn, *args, **kw):
+    return captured(fn, *args, **kw)[0]
 
 
 def tallied_run(run):
@@ -213,12 +218,17 @@ def ready_calls(calls):
 def selftest_post_draft():
     """On a PR prep drafted (its mark exists), post marks it ready only at 0 blocking on the head the review read, and
     then drops the mark; with blockers, or a head pushed during the review, it stays a draft and keeps the mark. On a
-    PR prep left alone (the check is required, or the author made the draft), post never touches the draft flag."""
+    PR prep left alone (the check is required, or the author made the draft), post never touches the draft flag. A
+    marked PR closed or merged during the review is left alone and its mark dropped, with one line saying so."""
     bad, undo, ready = [], [["7", "--repo", "o/r", "--undo"]], [["7", "--repo", "o/r"]]
-    cases = [(True, 1, SHA, undo, True), (True, 0, SHA, ready, False), (True, 0, "b" * 40, undo, True),
-             (False, 1, SHA, [], False), (False, 0, SHA, [], False)]  # (marked, blocking, live head) -> calls, mark
-    for marked, blocking, head, want, kept in cases:
-        canned = {"pulls/7/reviews": {"html_url": REVIEW_URL, "id": 1}, "pr view": {"headRefOid": head}}
+    gone = "left #7 alone: it was {} during the review; dropped its draft mark"
+    cases = [  # (marked, blocking, live head, live state) -> gh pr ready calls, mark kept, a line on stderr
+        (True, 1, SHA, "OPEN", undo, True, ""), (True, 0, SHA, "OPEN", ready, False, ""),
+        (True, 0, "b" * 40, "OPEN", undo, True, ""), (False, 1, SHA, "OPEN", [], False, ""),
+        (False, 0, SHA, "OPEN", [], False, ""), (True, 0, SHA, "MERGED", [], False, gone.format("merged")),
+        (True, 1, SHA, "CLOSED", [], False, gone.format("closed"))]
+    for marked, blocking, head, state, want, kept, told in cases:
+        canned = {"pulls/7/reviews": {"html_url": REVIEW_URL, "id": 1}, "pr view": {"headRefOid": head, "state": state}}
         with tempfile.TemporaryDirectory() as run, fake_gh(canned) as calls, runs_in(run):
             tallied_run(run)
             if marked:
@@ -226,11 +236,11 @@ def selftest_post_draft():
             if not blocking:
                 t = review3.load(run, "tally.json")
                 write(run, "tally.json", dict(t, blocking=0, rows=[dict(r, blocking=False) for r in t["rows"]]))
-            quiet(post, run)
+            err = captured(post, run)[1]
             got = ready_calls(calls()), review3.draft_mark("o/r", 7).exists()
-        if got != (want, kept):
-            bad.append(f"post (marked {marked}, {blocking} blocking, head {head[:7]}): gh pr ready {got[0]}, mark "
-                       f"{got[1]}; want {want}, mark {kept}")
+        if got != (want, kept) or told not in err.splitlines() + [""]:
+            bad.append(f"post (marked {marked}, {blocking} blocking, head {head[:7]}, {state}): gh pr ready {got[0]}, "
+                       f"mark {got[1]}, said {err!r}; want {want}, mark {kept}, {told!r}")
     return bad
 
 
@@ -263,37 +273,47 @@ def selftest_prep():
     """A fresh prep marks the head pending and asks the base branch's protection whether review-3 is required. Only a
     list naming it counts: then the draft flag is never touched. A 404 (no protection), a 403 (a private repo on the
     free plan), any other failure or a list without it writes the PR's mark and drafts it. An author's own draft is
-    left alone and unmarked, so post never readies it. Once marked, prep keeps the draft as its own: on a rerun or
-    after a crash (still a draft) and in the next round (readied by `gh pr ready` to start it)."""
+    left alone and unmarked, with a line saying so, so post never readies it. Once marked, prep keeps the draft as its
+    own: on a rerun or after a crash (still a draft) and in the next round (readied by `gh pr ready` to start it). A
+    check required only by a ruleset counts: the protection endpoint answers 404 there, and the branch's rules name
+    it (vercel/next.js read live, 2026-11-22)."""
     protected = {"contexts": ["review-3"], "checks": [{"context": "review-3", "app_id": None}]}
-    free_plan = "Upgrade to GitHub Pro or make this repository public to enable this feature. (HTTP 403)"
+    free_plan = {"fail": "Upgrade to GitHub Pro or make this repository public to enable this feature. (HTTP 403)"}
     gone = {"fail": "Not Found (HTTP 404)"}
-    cases = [  # (the protection API's answer, the PR already a draft, marked before) -> prep drafts it and marks it
-        (gone, False, False, True), ({"fail": free_plan}, False, False, True),
-        ({"fail": "Bad Gateway (HTTP 502)"}, False, False, True),
-        ({"contexts": ["python"], "checks": [{"context": "python", "app_id": 15368}]}, False, False, True),
-        (protected, False, False, False), (gone, True, False, False), (gone, True, True, True),
-        (gone, False, True, True)]
+    ruleset = lambda *names: [{"type": "deletion", "ruleset_id": 1}, {"type": "required_status_checks", "parameters": {
+        "required_status_checks": [{"context": n} for n in names], "strict_required_status_checks_policy": False}}]
+    author = "left #7 as the author's draft: post will not ready it"
+    cases = [  # (protection, rules, already a draft, marked before) -> prep drafts and marks it, a line on stderr
+        (gone, [], False, False, True, "drafting #7 while it is reviewed: main does not require review-3"),
+        (free_plan, free_plan, False, False, True, "drafting #7 while it is reviewed: main cannot require review-3 "
+         "here (gh: Upgrade to GitHub Pro or make this repository public to enable this feature. (HTTP 403))"),
+        ({"fail": "Bad Gateway (HTTP 502)"}, [], False, False, True, ""),
+        ({"contexts": ["python"], "checks": [{"context": "python", "app_id": 15368}]}, [], False, False, True, ""),
+        (protected, [], False, False, False, ""), (gone, ruleset("python", "review-3"), False, False, False, ""),
+        (gone, ruleset("python"), False, False, True, ""), (gone, [], True, False, False, author),
+        (gone, [], True, True, True, ""), (gone, [], False, True, True, "")]
     bad = []
     with tempfile.TemporaryDirectory() as where:
         clone, head = pr_clone(where)
         pr_view = {"number": 7, "title": "t", "body": "", "url": "https://github.com/o/r/pull/7", "headRefOid": head,
                    "baseRefName": "main", "files": [{"path": "a.py"}], "author": {"login": "o"}, "isDraft": False}
         patch = "diff --git a/a.py b/a.py\n+++ b/a.py\n@@ -1,2 +1,2 @@\n-\"\"\"Say 1.\"\"\"\n+\"\"\"Say 2.\"\"\"\n"
-        for i, (answer, draft, marked, want) in enumerate(cases):
-            canned = {"pr view": dict(pr_view, isDraft=draft), "required_status_checks": answer, "pr diff": patch}
+        for i, (answer, rules, draft, marked, want, told) in enumerate(cases):
+            canned = {"pr view": dict(pr_view, isDraft=draft), "required_status_checks": answer,
+                      "rules/branches/main": rules, "pr diff": patch}
             with fake_gh(canned) as calls, runs_in(Path(where, f"runs{i}")):
                 if marked:
                     Path(where, f"runs{i}").mkdir()
                     review3.draft_mark("o/r", 7).write_text(head)
-                quiet(prep, "o/r", 7, str(clone))
+                err = captured(prep, "o/r", 7, str(clone))[1]
                 got = review3.draft_mark("o/r", 7).exists()
                 drafts = ready_calls(calls())
                 pending = statuses(calls())[:1] == [("pending", "review-3", head, pr_view["url"])]
             want_drafts = [["7", "--repo", "o/r", "--undo"]] if want else []
-            if (got, drafts, pending) != (want, want_drafts, True):
-                bad.append(f"prep with protection {answer}, a draft already {draft}, marked {marked}: mark {got}, "
-                           f"gh pr ready {drafts}, pending {pending}; want mark {want}")
+            if (got, drafts, pending) != (want, want_drafts, True) or told not in err.splitlines() + [""]:
+                bad.append(f"prep with protection {answer}, rules {rules}, a draft already {draft}, marked {marked}: "
+                           f"mark {got}, gh pr ready {drafts}, pending {pending}, said {err!r}; want mark {want}, "
+                           f"{told!r}")
     return bad
 
 
@@ -301,7 +321,7 @@ def selftest_prep_restore():
     """prep on a head already posted puts that review's verdict back whole (a pending status from a rerun of prep
     would hold the merge forever): the status and, on a PR it drafted (marked), the draft flag, which heals a post cut
     off before its `gh pr ready`. It touches nothing else: no fetch, no snapshot, no new review."""
-    pr_view = {"headRefOid": SHA, "url": "https://github.com/o/r/pull/7", "baseRefName": "main"}
+    pr_view = {"headRefOid": SHA, "url": "https://github.com/o/r/pull/7", "baseRefName": "main", "state": "OPEN"}
     with tempfile.TemporaryDirectory() as runs, fake_gh({"pr view": pr_view}) as calls, runs_in(runs):
         run = Path(runs, f"o-r-7-{SHA[:7]}")
         run.mkdir()

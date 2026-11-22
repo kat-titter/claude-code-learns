@@ -109,7 +109,10 @@ def hold_by_draft(repo, pr, info):
     reviewed. The mark is written before the draft. An author's own draft is left alone, so post never readies it."""
     mark = draft_mark(repo, pr)
     if not mark.exists():
-        required, why = (True, "") if info["isDraft"] else check_required(repo, info["baseRefName"])
+        if info["isDraft"]:
+            print(f"left #{pr} as the author's draft: post will not ready it", file=sys.stderr)
+            return
+        required, why = check_required(repo, info["baseRefName"])
         if required:
             return
         print(f"drafting #{pr} while it is reviewed: {why}", file=sys.stderr)
@@ -119,16 +122,28 @@ def hold_by_draft(repo, pr, info):
 
 
 def check_required(repo, branch):
-    """(required, why not): whether the branch's protection requires the review-3 check. Only an answer naming it
+    """(required, why not): whether the branch requires the review-3 check, through its protection or an active
+    ruleset (where only a ruleset requires a check, the protection endpoint answers 404). Only an answer naming it
     counts; a 404 (no protection), a 403 (a private repo on the free plan) or any other failure gives the stricter
     gate, a draft that post lifts at 0 blocking."""
-    p = subprocess.run(["gh", "api", f"repos/{repo}/branches/{branch}/protection/required_status_checks"],
-                       capture_output=True, text=True)
+    protection, failed = api_or_error(f"repos/{repo}/branches/{branch}/protection/required_status_checks", {})
+    if STATUS in protection.get("contexts", []) + [c.get("context") for c in protection.get("checks", [])]:
+        return True, ""
+    rules, rules_failed = api_or_error(f"repos/{repo}/rules/branches/{branch}", [])
+    if STATUS in [c["context"] for rule in rules if rule["type"] == "required_status_checks"
+                  for c in rule["parameters"]["required_status_checks"]]:
+        return True, ""
+    if failed and rules_failed:
+        return False, f"{branch} cannot require {STATUS} here ({failed})"
+    return False, f"{branch} does not require {STATUS}"
+
+
+def api_or_error(endpoint, empty):
+    """(gh api's answer, "") or, when the call fails (a 404, a 403), (empty, gh's error line)."""
+    p = subprocess.run(["gh", "api", endpoint], capture_output=True, text=True)
     if p.returncode:
-        return False, f"{branch} cannot require {STATUS} here ({(p.stderr.strip() or f'gh exit {p.returncode}')[:200]})"
-    rules = json.loads(p.stdout)
-    required = STATUS in rules.get("contexts", []) + [c.get("context") for c in rules.get("checks", [])]
-    return required, "" if required else f"{branch} does not require {STATUS}"
+        return empty, (p.stderr.strip() or f"gh exit {p.returncode}")[:200]
+    return json.loads(p.stdout), ""
 
 
 def ready_command(run):
@@ -413,12 +428,19 @@ def final_status(t):
 def publish_verdict(pr, t, url):
     """The verdict on GitHub: the review-3 status on the head and, on a PR prep drafted, the draft flag it earns.
     Ready only at 0 blocking on the head the review read; a draft otherwise, since a push during the review is a head
-    nobody reviewed (a no-op on a draft, and a fix if someone readied it mid-review)."""
+    nobody reviewed (a no-op on a draft, and a fix if someone readied it mid-review). A PR closed or merged during the
+    review has no flag to set: its mark goes."""
     set_status(pr["repo"], t["head_sha"], *final_status(t), url)
     mark, n, repo = draft_mark(pr["repo"], pr["number"]), str(pr["number"]), pr["repo"]
     if not mark.exists():
         return
-    head = gh_json("pr", "view", n, "--repo", repo, "--json", "headRefOid")["headRefOid"]
+    live = gh_json("pr", "view", n, "--repo", repo, "--json", "headRefOid,state")
+    head = live["headRefOid"]
+    if live["state"] != "OPEN":
+        mark.unlink()
+        print(f"left #{n} alone: it was {live['state'].lower()} during the review; dropped its draft mark",
+              file=sys.stderr)
+        return
     if t["blocking"] or head != t["head_sha"]:
         sh("gh", "pr", "ready", n, "--repo", repo, "--undo")
         why = f"{t['blocking']} blocking" if t["blocking"] else f"the head moved to {head[:7]} during the review"
