@@ -38,7 +38,7 @@ const cases = [
     assert.match(good.prompts.post, /python3 "\/skills dir\/review3\.py" post "\/runs\/o-r-7"/)
     assert.ok(!good.prompts.post.includes('$HOME'))
   }],
-  ['next is ready on the same script', () => assert.equal(good.out.next, 'python3 "/skills dir/review3.py" ready "/runs/o-r-7"')],
+  ['the ready command is left to review3.py: no second copy here', () => assert.ok(!JSON.stringify(good.out).includes(' ready '))],
   ['a good post returns no raw', () => assert.ok(!('raw' in good.out))],
   ['a failed post returns raw whole, to rerun tally from', () => {
     assert.equal(failed.out.raw.findings.length, 3)

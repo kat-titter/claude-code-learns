@@ -8,6 +8,8 @@ import contextlib
 import io
 import json
 import os
+import re
+import shlex
 import sys
 import tempfile
 from pathlib import Path
@@ -75,7 +77,7 @@ def selftest_twins(f, v):
     # a twin's title is agent text: a | or a line break in it must not split the table row
     row = merge_twins([cons("m8", "maintainability", 5), dict(cons("o8", "ousterhout", 5), title="a | b\nc")])
     table_row = consensus_table(row)[2]
-    if table_row.replace("\\|", "").count("|") != 6 or "\n" in table_row:
+    if table_row.replace("\\|", "").count("|") != consensus_table([])[0].count("|") or "\n" in table_row:
         bad.append(f"consensus_table: a twin title broke the row: {table_row!r}")
     return bad
 
@@ -213,15 +215,17 @@ def selftest_prep_restore():
 
 
 def selftest_next_steps():
-    """The Workflow call prep prints is valid JSON args carrying review3.py's own resolved path, so review-3.js runs
-    the script that prepared the run wherever the skill is installed."""
+    """The Workflow call prep prints names the review-3.js beside review3.py and hands it review3.py's own resolved
+    path, so the pair runs together wherever the skill is installed; the ready line splits back into its words in a
+    shell, whatever the path holds (a space included)."""
     first, then = review3.next_steps(Path("/runs/o-r-7"), "o/r", 7).splitlines()
-    head = "next: Workflow({name: 'review-3', args: "
-    args = json.loads(first[len(head):-2]) if first.startswith(head) and first.endswith("})") else None
-    script = str(Path(review3.__file__).resolve())
-    want = {"run": "/runs/o-r-7", "repo": "o/r", "pr": 7, "script": script}
-    if args != want or then != f"then: python3 {script} ready /runs/o-r-7":
-        return [f"next_steps printed {first!r} / {then!r}; want args {want} and ready"]
+    m = re.fullmatch(r'next: Workflow\(\{scriptPath: ("(?:[^"\\]|\\.)*"), args: (\{.*\})\}\)', first)
+    path, args = (json.loads(m[1]), json.loads(m[2])) if m else (None, None)
+    here = Path(review3.__file__).resolve()
+    want = {"run": "/runs/o-r-7", "repo": "o/r", "pr": 7, "script": str(here)}
+    words = shlex.split(then.removeprefix("then: "))
+    if path != str(here.with_name("review-3.js")) or args != want or words != ["python3", str(here), "ready", "/runs/o-r-7"]:
+        return [f"next_steps printed {first!r} / {then!r}; want review-3.js and args {want}, then ready"]
     return []
 
 

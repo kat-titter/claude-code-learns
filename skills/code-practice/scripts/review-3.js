@@ -146,4 +146,4 @@ if (failed) log(`post step failed: ${posted ? posted.output : 'agent died'}`)
 // Find and Vote again. After a good post it would only add ~20k characters to the session's context.
 return { review_url: posted ? posted.review_url : '', tally_exit: posted ? posted.tally_exit : null,
   post_exit: posted ? posted.post_exit : null, output: posted ? posted.output : '', counts: raw.counts,
-  missing_reviewers: missing, next: `python3 "${SCRIPT}" ready "${RUN}"`, ...(failed ? { raw } : {}) }
+  missing_reviewers: missing, ...(failed ? { raw } : {}) } // the ready command is review3.py's to print (prep, post)

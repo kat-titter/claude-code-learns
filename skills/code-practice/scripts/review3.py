@@ -99,10 +99,13 @@ def ready_command(run):
 
 
 def next_steps(run, repo, pr):
-    """The two calls after prep, ready to paste. The workflow gets this file's own path, so wherever the skill is
-    installed (CLAUDE_CONFIG_DIR, a clone), review-3.js runs the review3.py that prepared the run."""
-    args = {"run": str(run), "repo": repo, "pr": pr, "script": str(Path(__file__).resolve())}
-    return f"next: Workflow({{name: 'review-3', args: {json.dumps(args)}}})\nthen: {ready_command(run)}"
+    """The two calls after prep, ready to paste. The Workflow call names review-3.js by its path and hands it this
+    file's own path, so wherever the skill is installed (CLAUDE_CONFIG_DIR, a clone) the two files beside each other
+    run together, with no link to keep."""
+    here = Path(__file__).resolve()
+    args = {"run": str(run), "repo": repo, "pr": pr, "script": str(here)}
+    call = f"Workflow({{scriptPath: {json.dumps(str(here.with_name('review-3.js')))}, args: {json.dumps(args)}}})"
+    return f"next: {call}\nthen: {ready_command(run)}"
 
 
 def snapshot(repo_dir, sha, dest):
@@ -361,7 +364,7 @@ def post(run, again=False):
     review = json.loads(p.stdout)
     save(run, "posted.json", {"url": review["html_url"], "id": review["id"], "head_sha": t["head_sha"]})
     set_status(pr["repo"], t["head_sha"], *final_status(t), review["html_url"])
-    print(review["html_url"])
+    print(f"{review['html_url']}\nnext: {ready_command(run)}")
 
 
 def final_status(t):

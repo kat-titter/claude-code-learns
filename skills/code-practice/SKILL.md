@@ -90,9 +90,9 @@ review, and only the taste calls reach the person. Agents judge; `scripts/review
 answer: the PR's facts, the 2-of-3 tally, the one GitHub review, the commit status and the merge gate.
 
 - **Run it**: `review3.py prep OWNER/REPO N --repo-dir CLONE`, then do what it prints: the exact `Workflow` call,
-  whose args carry review3.py's own path as `script` (one install path, `CLAUDE_CONFIG_DIR` included), then
-  `review3.py ready RUN`. If the head was already reviewed, prep prints only the ready command. The workflow is
-  `scripts/review-3.js`; link it into `~/.claude/workflows/` to call it by name.
+  which names the `review-3.js` beside review3.py by its path and hands it review3.py's own path as `script` (one
+  install path, `CLAUDE_CONFIG_DIR` included, no link to keep), then `review3.py ready RUN`. If the head was already reviewed, prep prints only the ready command. A link in
+  `$CLAUDE_CONFIG_DIR/workflows/` only adds the name `review-3`.
 - **Three schools, separate contexts**: grug (no to abstraction, the 80/20, integration tests), Ousterhout (deep
   modules, leakage, design it twice) and maintainability (the table above, starting from the audit delta). They
   disagree on purpose, on function length most of all. Each finds alone, at most 8 findings, then votes blind on the
@@ -118,7 +118,7 @@ answer: the PR's facts, the 2-of-3 tally, the one GitHub review, the commit stat
 - **It starts itself**: `scripts/review3-hook.py` is a PostToolUse hook on Bash. After `gh pr create`, `gh pr ready`
   or a push, when the PR is open, not a draft, in a repo the gh user owns, and its head has no `review-3` status yet,
   it adds one line telling the session to review it; it reads that status, never the push output (`git push -q`
-  prints nothing). On every other command it prints nothing (about 45 ms). Keep a PR in draft while pushing fixes;
+  prints nothing), and a pushed commit GitHub does not show as the head yet counts as unreviewed. On every other command it prints nothing (about 45 ms). Keep a PR in draft while pushing fixes;
   `gh pr ready` starts the review. The installer does not add it, because each review costs real tokens:
 
   ```json
