@@ -236,7 +236,7 @@ install.sh               set up, or undo, in one command
 skills/capture-lesson/   the skill that writes skills, with its hooks
 skills/prompt-practice/  turns a terse or dictated request into a brief
 skills/workflow-design/  loops inside a graph, with a working template
-skills/code-practice/    clean code and a tidy repo, with code_audit.py
+skills/code-practice/    clean code, a tidy repo, review by three
 skills/judgement-calls/  what to do when two lessons disagree
 skills/*/                34 example skills, installed with --examples
 templates/, *.example*   starting points the installer copies
