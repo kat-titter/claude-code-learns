@@ -1,17 +1,20 @@
 #!/usr/bin/env python3
-"""Draw the README's banner and figures as SVG text files, one light and one dark copy of each.
+"""Draw the README's banner and figures as SVG text files, one light and one dark copy of each, and the site's icons.
 
-Usage: python3 assets/draw.py          writes assets/*-light.svg and assets/*-dark.svg, the site's icon and share card
-                                       (then assets/render_png.py turns those two into PNGs)
+Usage: python3 assets/draw.py          writes assets/*-light.svg and assets/*-dark.svg; the home-screen icon and share
+                                       card (light only: assets/render_png.py turns them into PNGs); and the tab icon
+                                       and character into index.html, between their markers
 Each colour has one meaning, in every figure and on index.html: orange is Claude, blue is code (a check a program can
 fail), green is what it keeps, ink is you, grey pages are files. Exits 1 if any text colour falls under WCAG AA (4.5:1)
-on the fill it sits on.
+on the fill it sits on, or any icon mark under 3:1 on its ground.
 """
 import os, re, sys
 from urllib.parse import quote
 
 HERE = os.path.dirname(os.path.abspath(__file__))
 MONO = "'IBM Plex Mono',ui-monospace,'SF Mono',SFMono-Regular,Menlo,Consolas,'Liberation Mono',monospace"
+FONT_CSS = 'https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500&display=swap'   # the page's mono
+THESIS = ('Learns in one turn.', 'Keeps it for good.')
 SANS = "Archivo,-apple-system,'Segoe UI','Helvetica Neue',Helvetica,Arial,sans-serif"
 
 THEMES = {
@@ -40,15 +43,15 @@ def esc(s):
 
 
 class Svg:
-    def __init__(self, w, h, t, title):
+    def __init__(self, w, h, t, title, frame=True):
         self.w, self.h, self.t, self.out = w, h, t, []
         self.head = (f'<svg xmlns="http://www.w3.org/2000/svg" width="{w}" height="{h}" viewBox="0 0 {w} {h}" '
                      f'role="img" aria-label="{esc(title)}">\n<title>{esc(title)}</title>\n'
                      f'<defs><marker id="a" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" '
                      f'orient="auto-start-reverse"><path d="M1 1L9 5L1 9" fill="none" stroke="{t["edge"]}" '
                      f'stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></marker></defs>\n'
-                     f'<rect x="0.5" y="0.5" width="{w - 1}" height="{h - 1}" rx="16" fill="{t["bg"]}" '
-                     f'stroke="{t["hair"]}"/>\n')
+                     + (f'<rect x="0.5" y="0.5" width="{w - 1}" height="{h - 1}" rx="16" fill="{t["bg"]}" '
+                        f'stroke="{t["hair"]}"/>\n' if frame else f'<rect width="{w}" height="{h}" fill="{t["bg"]}"/>\n'))
 
     def add(self, s):
         self.out.append(s)
@@ -151,9 +154,9 @@ ooooooooogLLg
 
 def banner(t):
     """The thesis, and Claude keeping one line of it."""
-    s = Svg(1280, 300, t, 'claude-code-learns: Learns in one turn. Keeps it for good.')
-    s.text(72, 136, 'Learns in one turn.', 76, t['ink'], MONO, 500, spacing=-1.5)
-    s.text(72, 230, 'Keeps it for good.', 76, t['claude'][2], MONO, 500, spacing=-1.5)
+    s = Svg(1280, 300, t, 'claude-code-learns: ' + ' '.join(THESIS))
+    s.text(72, 136, THESIS[0], 76, t['ink'], MONO, 500, spacing=-1.5)
+    s.text(72, 230, THESIS[1], 76, t['claude'][2], MONO, 500, spacing=-1.5)
     CHECK.append((t['claude'][2], t['bg']))
     cell, x0, y0 = 18, 1000, 78
     s.add('<g shape-rendering="crispEdges">')
@@ -187,10 +190,12 @@ ICON = """\
 .gggggg.
 .gggggg.
 .gggggg."""
-# in a tab, light bars get keep one notch darker so it clears 3:1 on Chrome's grey inactive tab (#dee1e6)
-ICON_GREEN = {'light': '#718458', 'dark': THEMES['dark']['keep'][0]}
-TAB_BARS = {'light': ('#ffffff', '#dee1e6'), 'dark': ('#35363a', '#202124')}
-GRAPHIC = []   # (mark, ground) pairs a graphic must hold at 3:1
+# in a tab: keep (#788c5d) one notch darker, the one green that clears 3:1 on Chrome's light and dark tab bars
+# (#788c5d itself scores 2.81 on the grey inactive tab #dee1e6)
+ICON_GREEN = '#73865a'
+TAB_BARS = ('#ffffff', '#dee1e6', '#35363a', '#202124')
+GRAPHIC = [(ICON_GREEN, bar) for bar in TAB_BARS]   # (mark, ground) pairs a graphic must hold at 3:1
+STALE = []   # PNG sources this run changed
 URI_SAFE = "=:/;,()-.'"   # left readable in the data URI; < > # { } and spaces are escaped
 
 
@@ -201,12 +206,9 @@ def icon_path(cell=1, x0=0, y0=0):
 
 
 def favicon_link():
-    """The tab icon for index.html's head: one inline SVG whose green follows the browser's light or dark theme."""
-    svg = (f"<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 8 8' shape-rendering='crispEdges'><style>"
-           f"path{{fill:{ICON_GREEN['light']}}}@media(prefers-color-scheme:dark){{path{{fill:{ICON_GREEN['dark']}}}}}"
-           f"</style><path d='{icon_path()}'/></svg>")
-    for theme, bars in TAB_BARS.items():
-        GRAPHIC.extend((ICON_GREEN[theme], bar) for bar in bars)
+    """The tab icon for index.html's head, as one inline SVG."""
+    svg = (f"<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 8 8' shape-rendering='crispEdges'>"
+           f"<path fill='{ICON_GREEN}' d='{icon_path()}'/></svg>")
     return f'<link rel="icon" type="image/svg+xml" href="data:image/svg+xml,{quote(svg, safe=URI_SAFE)}">'
 
 
@@ -216,28 +218,42 @@ def apple_touch_icon(t):
     s += f'<rect width="180" height="180" fill="{t["bg"]}"/>'
     s += f'<path d="{icon_path(18, 18, 18)}" fill="{t["keep"][0]}" shape-rendering="crispEdges"/></svg>\n'
     GRAPHIC.append((t['keep'][0], t['bg']))
-    open(os.path.join(HERE, 'apple-touch-icon.svg'), 'w').write(s)
+    write_png_source('apple-touch-icon.svg', s)
 
 
 def share_card(t):
     """The link preview (og:image), 1200 x 630: the title, the thesis and the kept page as the hero."""
-    s = Svg(1200, 630, t, 'claude-code-learns: Learns in one turn. Keeps it for good.')
-    s.head = s.head.replace(f'<rect x="0.5" y="0.5" width="1199" height="629" rx="16" fill="{t["bg"]}" '
-                            f'stroke="{t["hair"]}"/>', f'<rect width="1200" height="630" fill="{t["bg"]}"/>')
-    s.text(80, 128, 'claude-code-learns', 34, t['ink'], MONO, 500)
-    s.text(80, 300, 'Learns in one turn.', 60, t['ink'], MONO, 500, spacing=-1.2)
-    s.text(80, 384, 'Keeps it for good.', 60, t['claude'][2], MONO, 500, spacing=-1.2)
-    s.text(80, 546, 'github.com/kat-titter/claude-code-learns', 24, t['muted'], MONO)
+    w, h, margin, cell = 1200, 630, 80, 38
+    s = Svg(w, h, t, 'claude-code-learns: ' + ' '.join(THESIS), frame=False)
+    s.add(f'<style>@import url({FONT_CSS});</style>')   # render_png.py fetches it first, so offline fails loudly
+    s.text(margin, 128, 'claude-code-learns', 34, t['ink'], MONO, 500)
+    s.text(margin, 300, THESIS[0], 60, t['ink'], MONO, 500, spacing=-1.2)
+    s.text(margin, 384, THESIS[1], 60, t['claude'][2], MONO, 500, spacing=-1.2)
+    s.text(margin, 546, 'github.com/kat-titter/claude-code-learns', 24, t['muted'], MONO)
     CHECK.extend([(t['ink'], t['bg']), (t['claude'][2], t['bg']), (t['muted'], t['bg'])])
-    s.add(f'<path d="{icon_path(38, 854, 163)}" fill="{t["keep"][0]}" shape-rendering="crispEdges"/>')
+    rows = ICON.splitlines()   # the page's right edge on the right margin, the grid centred top to bottom
+    right = max(len(r.rstrip('.')) for r in rows)
+    x0, y0 = w - margin - right * cell, (h - len(rows) * cell) // 2
+    s.add(f'<path d="{icon_path(cell, x0, y0)}" fill="{t["keep"][0]}" shape-rendering="crispEdges"/>')
     GRAPHIC.append((t['keep'][0], t['bg']))
-    s.save('share-card.svg')
+    write_png_source('share-card.svg', s.head + '\n'.join(s.out) + '\n</svg>\n')
 
 
-def fill(html, name, content):
-    """Put content between html's <!--name--> and <!--/name--> markers."""
-    a, b = html.find(f'<!--{name}-->'), html.find(f'<!--/{name}-->')
-    return html[:a + len(name) + 7] + content + html[b:] if 0 <= a < b else html
+def write_png_source(name, svg):
+    """Write an SVG that render_png.py turns into a committed PNG, and say when that PNG is now stale."""
+    path = os.path.join(HERE, name)
+    if not os.path.exists(path) or open(path).read() != svg:
+        STALE.append(name)
+    open(path, 'w').write(svg)
+
+
+def between_markers(html, name, content):
+    """Put content between html's <!--name--> and <!--/name--> markers; a missing marker is an error."""
+    start, end = f'<!--{name}-->', f'<!--/{name}-->'
+    a, b = html.find(start), html.find(end)
+    if not 0 <= a < b:
+        sys.exit(f'index.html has no {start} ... {end} markers')
+    return html[:a + len(start)] + content + html[b:]
 
 
 HOOKS = [('feedback-nudge.py', 1), ('skill-router.py', 1), ('prompt-nudge.py', 1), ('scan-corrections.py', 1),
@@ -453,7 +469,9 @@ if __name__ == '__main__':
     page = os.path.join(HERE, '..', 'index.html')
     if os.path.exists(page):   # the page's copy of the character and its tab icon, between their markers
         html = open(page).read()
-        open(page, 'w').write(fill(fill(html, 'mark', mark_inline()), 'icon', favicon_link()))
+        open(page, 'w').write(between_markers(between_markers(html, 'mark', mark_inline()), 'icon', favicon_link()))
+    for name in STALE:
+        print(f'{name} changed: run python3 assets/render_png.py to remake its PNG')
     bad = sorted({(a, b, round(contrast(a, b), 2)) for a, b in CHECK if contrast(a, b) < 4.5})
     for a, b, c in bad:
         print(f'text {a} on {b}: {c}:1, under 4.5')

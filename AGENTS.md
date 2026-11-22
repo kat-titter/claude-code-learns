@@ -119,10 +119,11 @@ tests/check-repair.test.mjs   runs the template against stub agents
 # check-repair, mermaid, privacy, formatting
 sh tests/checks.sh
 
-# after a figure edit: exits 1 if a figure's text falls under WCAG AA contrast
+# after a figure or icon edit: exits 1 if text falls under WCAG AA contrast
+# or an icon mark under 3:1, and names any PNG source it changed
 python3 assets/draw.py
 
-# after an icon or share-card edit: remakes both PNGs, exits 1 on a wrong size
+# then remake the PNGs: exits 1 offline, on a size unlike the SVG's or at 300 KB
 python3 assets/render_png.py
 ```
 

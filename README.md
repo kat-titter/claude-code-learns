@@ -244,7 +244,7 @@ coding-skills.md         every skill, one line each
 index.html               the explainer page: the design and the research
 AGENTS.md                the map, invariants, checks and merge lanes
 tests/, .github/         the eight checks every pull request runs
-assets/                  the banner, figures and site icon, from draw.py
+assets/                  banner, figures, icons, share card: draw.py
 ```
 
 <details>
