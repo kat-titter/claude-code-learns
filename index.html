@@ -95,9 +95,9 @@ Claude Code already has: Skills, hooks, memory and scheduled tasks.</p>
 
 <h2><span>01</span>notice</h2>
 <p>Hooks are tiny scripts Claude Code runs at set moments. When your message reads like feedback, one adds a line of
-context: <em>does this apply beyond the task? if so, route it.</em> When a request shares rare words with a skill's
-description, another names that skill, because skills often go unused even when they fit; when nothing matches and no skill has
-loaded yet, it asks Claude to pick from the skill list itself. After each reply, a third
+context: <em>does this apply beyond the task? if so, route it.</em> Skills often go unused even when they fit, so a
+second hook reads each request for rare words that match a skill's description and names that skill. When nothing
+matches and no skill has loaded yet, it asks Claude to pick from the list itself. After each reply, a third
 jots any feedback into a lessons inbox, a quick notebook. The agent also counts its own surprise ("17 s a frame seems
 like a lot") and its own debugging as signals. Most messages trigger none of this.</p>
 
@@ -200,10 +200,10 @@ the weekly pass three days after its last report.</p>
 </div>
 <p>The graphs were good: most fanned out, and most agents returned a fixed shape. The loops closed through the person.
 Agents were asked to run tests in 81 workflows, but no script read an exit code: where one gated, it gated on an
-agent's verdict. No script repaired a failing unit and tried again; whole workflows were rerun instead of resumed, one
-six times; and 21 reviews, audits and verify passes were each drawn fresh. The example skill
+agent's verdict. No script repaired a failing unit and tried again. Whole workflows were rerun instead of resumed, one
+of them six times, and 21 reviews, audits and verify passes were each drawn fresh. The example skill
 <a href="https://github.com/kat-titter/claude-code-learns/blob/main/skills/workflow-design/SKILL.md"><code>workflow-design</code></a>
-holds the rules, and its <code>check-repair.js</code> template is a working graph: units fan out, each is checked by
+holds the rules, and its <code>check-repair.js</code> template is a working graph. Units fan out, each is checked by
 exit code and repaired alone up to three times, and every repair that passes comes back as a candidate rule.</p>
 <figure class="fig"><picture>
   <source media="(max-width: 600px) and (prefers-color-scheme: dark)" srcset="assets/check-repair-phone-dark.svg">
@@ -251,7 +251,12 @@ cd claude-code-learns && ./install.sh --name yourname --dry-run
 <code>CLAUDE.md</code> that routes feedback, an inbox and an index, and merges five small hooks into
 <code>settings.json</code> after a backup. Re-running is
 safe, and <code>./install.sh --uninstall</code> undoes it. For the weekly watch, paste <code>weekly-watch.md</code>
-into a weekly scheduled task.</p>
+into a weekly scheduled task. Add <code>--examples</code> for the 34 example skills: how work runs, code, pages and
+figures, writing and science, audio.</p>
+
+<p>One limit worth saying out loud. Every number on this page was measured on one person's library and sessions, so
+the rates are a case, not a benchmark. The scripts that produced them ship with the repo, so you can measure your
+own.</p>
 
 <h2><span>11</span>references</h2>
 <ol class="refs">
