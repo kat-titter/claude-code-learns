@@ -95,8 +95,11 @@ one() {
       [ "$got" = "$want" ] || { say "$f: $want Mermaid blocks, $got rendered"; return 1; }
       say "$f: $got Mermaid block(s) rendered"
     done ;;
-  privacy)  # no email, home path or private word in a tracked file (the words live outside the repo: tests/privacy.py)
+  privacy)  # no email, home path or private word in a tracked file, and the prose mode a PR body is checked with
     python3 tests/privacy.py --test
+    b=$(mktemp); printf 'a home path /%s/someone/x leaks here\n' Users > "$b"
+    python3 tests/privacy.py --text "$b" >/dev/null && { say "privacy --text passed a leaking body"; rm -f "$b"; return 1; }
+    rm -f "$b"
     python3 tests/privacy.py ;;
   formatting)  # nothing public wraps where wrapping breaks a column layout
     python3 tests/formatting.py --test
