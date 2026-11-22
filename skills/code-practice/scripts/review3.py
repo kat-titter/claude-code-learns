@@ -69,9 +69,10 @@ def save(run, name, data):
 # ---------- prep: the facts the reviewers read ----------
 
 def prep(repo, pr, repo_dir):
-    """Mark the head pending, snapshot it and its merge base, save the diff and the audit findings new in the head."""
+    """Mark the head pending, make the PR a draft where review-3 cannot be required, snapshot the head and its merge
+    base, save the diff and the audit findings new in the head."""
     info = gh_json("pr", "view", str(pr), "--repo", repo, "--json",
-                   "number,title,body,url,headRefOid,baseRefName,files,author")
+                   "number,title,body,url,headRefOid,baseRefName,files,author,isDraft")
     sha = info["headRefOid"]
     run = RUNS / f"{repo.replace('/', '-')}-{pr}-{sha[:7]}"
     if (run / "posted.json").exists():  # this head was reviewed: restore its verdict rather than review it twice
@@ -80,8 +81,9 @@ def prep(repo, pr, repo_dir):
         print(f"already reviewed at {sha[:7]}: {posted['url']}; skip the workflow and run ready", file=sys.stderr)
         print(f"{run}\nnext: {ready_command(run)}")
         return
-    drafted = not check_required(repo, info["baseRefName"])  # first: if it cannot tell, nothing on GitHub changed
     set_status(repo, sha, "pending", "three reviewers are reading this head", info["url"])
+    # drafted records the change prep made, so post undoes only that: an author's own draft stays a draft
+    drafted = not info["isDraft"] and not check_required(repo, info["baseRefName"])
     if drafted:  # nothing else stops a merge here: the draft flag holds it until post finds 0 blocking
         sh("gh", "pr", "ready", str(pr), "--repo", repo, "--undo")
     sh("git", "-C", repo_dir, "fetch", "-q", "origin", f"pull/{pr}/head", info["baseRefName"])
@@ -100,16 +102,13 @@ def prep(repo, pr, repo_dir):
 
 
 def check_required(repo, branch):
-    """Whether the branch's protection requires the review-3 check. A 404 (no protection) or 403 (a private repo on
-    the free plan, which cannot require checks) means no; any other failure stops prep, since a guess either way
-    would draft a PR the check already guards or leave one unguarded."""
+    """Whether the branch's protection requires the review-3 check. Only an answer naming it counts: a 404 (no
+    protection), a 403 (a private repo on the free plan) or any other failure gives the stricter gate, a draft that
+    post lifts at 0 blocking."""
     p = subprocess.run(["gh", "api", f"repos/{repo}/branches/{branch}/protection/required_status_checks"],
                        capture_output=True, text=True)
     if p.returncode:
-        code = re.search(r"HTTP (\d+)", p.stderr)
-        if code and code.group(1) in ("403", "404"):
-            return False
-        raise SystemExit(f"cannot tell whether {repo}@{branch} requires {STATUS}: {p.stderr.strip()[:300]}")
+        return False
     rules = json.loads(p.stdout)
     return STATUS in rules.get("contexts", []) + [c.get("context") for c in rules.get("checks", [])]
 

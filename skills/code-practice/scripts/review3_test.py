@@ -259,39 +259,33 @@ def runs_in(folder):
 def selftest_prep():
     """A fresh prep marks the head pending and asks the base branch's protection whether review-3 is required. Only a
     list naming it counts: then the draft flag is never touched. A 404 (no protection), a 403 (a private repo on the
-    free plan) or a list without it drafts the PR and records drafted in pr.json; any other failure stops prep before
-    it changes anything on GitHub."""
+    free plan), any other failure or a list without it drafts the PR and records drafted in pr.json. A PR its author
+    already made a draft is left alone and recorded undrafted, so post never readies the author's work."""
     protected = {"contexts": ["review-3"], "checks": [{"context": "review-3", "app_id": None}]}
     free_plan = "Upgrade to GitHub Pro or make this repository public to enable this feature. (HTTP 403)"
-    cases = [({"fail": "Not Found (HTTP 404)"}, True), ({"fail": free_plan}, True),
-             ({"contexts": ["python"], "checks": [{"context": "python", "app_id": 15368}]}, True),
-             (protected, False), ({"fail": "Bad Gateway (HTTP 502)"}, "stops")]
+    cases = [  # (the protection API's answer, the PR already a draft) -> prep drafts it
+        ({"fail": "Not Found (HTTP 404)"}, False, True), ({"fail": free_plan}, False, True),
+        ({"fail": "Bad Gateway (HTTP 502)"}, False, True),
+        ({"contexts": ["python"], "checks": [{"context": "python", "app_id": 15368}]}, False, True),
+        (protected, False, False), ({"fail": "Not Found (HTTP 404)"}, True, False)]
     bad = []
     with tempfile.TemporaryDirectory() as where:
         clone, head = pr_clone(where)
         pr_view = {"number": 7, "title": "t", "body": "", "url": "https://github.com/o/r/pull/7", "headRefOid": head,
-                   "baseRefName": "main", "files": [{"path": "a.py"}], "author": {"login": "o"}}
+                   "baseRefName": "main", "files": [{"path": "a.py"}], "author": {"login": "o"}, "isDraft": False}
         patch = "diff --git a/a.py b/a.py\n+++ b/a.py\n@@ -1,2 +1,2 @@\n-\"\"\"Say 1.\"\"\"\n+\"\"\"Say 2.\"\"\"\n"
-        for i, (answer, want) in enumerate(cases):
-            canned = {"pr view": pr_view, "required_status_checks": answer, "pr diff": patch}
+        for i, (answer, draft, want) in enumerate(cases):
+            canned = {"pr view": dict(pr_view, isDraft=draft), "required_status_checks": answer, "pr diff": patch}
             with fake_gh(canned) as calls, runs_in(Path(where, f"runs{i}")):
-                try:
-                    quiet(prep, "o/r", 7, str(clone))
-                    pr = load_pr(Path(where, f"runs{i}", f"o-r-7-{head[:7]}"))
-                    got = pr.get("drafted")
-                except SystemExit:
-                    got = "stops"
+                quiet(prep, "o/r", 7, str(clone))
+                got = review3.load(Path(where, f"runs{i}", f"o-r-7-{head[:7]}"), "pr.json")["drafted"]
                 drafts = ready_calls(calls())
                 pending = statuses(calls())[:1] == [("pending", "review-3", head, pr_view["url"])]
-            want_drafts = [["7", "--repo", "o/r", "--undo"]] if want is True else []
-            if (got, drafts, pending) != (want, want_drafts, want != "stops"):
-                bad.append(f"prep with protection {answer}: drafted {got}, gh pr ready {drafts}, pending {pending}; "
-                           f"want drafted {want}")
+            want_drafts = [["7", "--repo", "o/r", "--undo"]] if want else []
+            if (got, drafts, pending) != (want, want_drafts, True):
+                bad.append(f"prep with protection {answer}, a draft already {draft}: drafted {got}, gh pr ready "
+                           f"{drafts}, pending {pending}; want drafted {want}")
     return bad
-
-
-def load_pr(run):
-    return json.loads(Path(run, "pr.json").read_text())
 
 
 def selftest_prep_restore():
@@ -326,7 +320,7 @@ def selftest_ready_draft():
     with tempfile.TemporaryDirectory() as run, fake_gh(canned), contextlib.redirect_stdout(io.StringIO()) as out:
         tallied_run(run)
         subprocess.run(["git", "init", "-q", run], check=True)
-        write(run, "pr.json", dict(load_pr(run), repo_dir=run))
+        write(run, "pr.json", dict(review3.load(run, "pr.json"), repo_dir=run))
         write(run, "posted.json", {"url": REVIEW_URL, "id": 1, "head_sha": SHA})
         try:
             review3.ready(run)
@@ -391,7 +385,7 @@ def selftest_hook():
     """review3-hook.py's nudge() end to end through the fake gh: after a push, GitHub's records decide. A refused push
     leaves the branch at the reviewed head (quiet); a PR GitHub has not moved yet to its branch's new commit gets a
     nudge naming that commit; a head with no review-3 status gets one naming the head. A PR from a fork reads its
-    branch in the fork, never a branch of the same name in the base repo."""
+    branch in the fork, never a branch of the same name in the base repo; a deleted fork falls back to the head."""
     spec = importlib.util.spec_from_file_location("review3_hook", Path(__file__).with_name("review3-hook.py"))
     hook = importlib.util.module_from_spec(spec)
     spec.loader.exec_module(hook)
@@ -403,7 +397,9 @@ def selftest_hook():
     refs = lambda base, fork=None: {"repos/f/r/git/ref/heads/feat": fork, "repos/o/r/git/ref/heads/feat": base}
     cases = [(view(status), refs(SHA), None), (view(status), refs("b" * 40), "bbbbbbb"), (view([]), refs(SHA), SHA[:7]),
              (view(status, fork="f"), refs("c" * 40, fork=SHA), None),  # base's own feat moved, the fork's did not
-             (view(status, fork="f"), refs(SHA, fork="b" * 40), "bbbbbbb")]
+             (view(status, fork="f"), refs(SHA, fork="b" * 40), "bbbbbbb"),
+             (dict(view([]), headRepository=None, headRepositoryOwner=None), refs("b" * 40), SHA[:7]),
+             (dict(view(status), headRepository=None, headRepositoryOwner=None), refs("b" * 40), None)]
     bad = []
     with tempfile.TemporaryDirectory() as where:
         for pr_view, branch, want in cases:
