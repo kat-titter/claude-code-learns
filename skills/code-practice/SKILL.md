@@ -39,8 +39,8 @@ python3 ${CLAUDE_SKILL_DIR}/scripts/code_audit.py REPO [REPO ...] [--detail N]
 
 It prints one row per repo, then each finding as file:line, and exits 1 on any. It reads only files git tracks.
 Calibrated on ten public repos (2026-11-19): README links to file families (`results/e16`) and folders marked
-"local only" pass, prose comments pass, and generated pages are judged at their builders. JS function length is
-found by brace matching, so it is approximate; Python uses the AST.
+"local only" or ignored by git pass, prose comments pass, and generated pages are judged at their builders. JS
+function length is found by brace matching, so it is approximate; Python uses the AST.
 
 - **Judge a generated page at its source.** A self-contained page built from one shared head carries copies by design;
   the head has one home in the builder (a docs folder built by `docs/build.py`). The audit traces each page to its

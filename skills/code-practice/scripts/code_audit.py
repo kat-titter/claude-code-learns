@@ -4,7 +4,7 @@
 Each check is a page-design rule read as a code rule:
   focus   one focal point per view      -> one job per function, files a reader can hold
   once    each fact once                -> no block of code living in two places
-  front   the page opens with its point -> a README that names files which exist, and the entry points
+  front   the page opens with its point -> a README that names files which exist (or git ignores), and the entry points
   clutter erase chartjunk               -> no v2/_old/final files, no commented-out code
   space   negative space groups things  -> a top level short enough to read at a glance
   legend  every figure has a caption    -> every script opens with a line saying what it does
@@ -180,9 +180,12 @@ def check_once(units, min_lines):
 
 
 def git_ignores(repo, path):
-    """True if git ignores path: a README may name what a script writes into an ignored folder (data/, build/)."""
-    return subprocess.run(["git", "-C", repo, "check-ignore", "-q", "--no-index", "--", path],
-                          stderr=subprocess.DEVNULL).returncode == 0
+    """True if git ignores path, as a file or as a folder: a README may name what a script writes into an ignored
+    folder (data/, build/), which need not exist yet. The folder form matters because a pattern like `build/` matches
+    only a directory, and on a fresh clone there is none. False when git cannot answer (exit 128, e.g. a path behind
+    a symlink), so the path still counts as missing; git's message for that is not shown."""
+    return any(subprocess.run(["git", "-C", repo, "check-ignore", "-q", "--", p],
+                              stderr=subprocess.DEVNULL).returncode == 0 for p in (path, path + "/"))
 
 
 def check_front(repo, files):
