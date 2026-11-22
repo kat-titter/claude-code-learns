@@ -133,7 +133,7 @@ a person with a style profile, read it too (`<name>-style`).
   (all nouns or all verb phrases) and on whether they carry a qualifier: one header with a parenthesis among plain
   ones breaks the row as surely as one card in a different font. Read the labels across, not down, before calling a
   page done. (A README's four tables ran "practice (source)", "What it is for" and "you say" side by side,
-  2026-11-22: "titles need more format harmony. one col has parent, one has caps, one all lowercase". The length
+  2026-11-21: "titles need more format harmony. one col has parent, one has caps, one all lowercase". The length
   rule for table headers is above; this is the form rule, and it holds for every set of sibling labels.)
 - **Numbers in one style, the field's standard** (APA for technical and science writing): words for zero to nine in
   prose counts, numerals from 10 up, numerals always with units and time (2 minutes, 3 s, 16 GB) and for every number
