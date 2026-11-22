@@ -46,7 +46,7 @@ For a PDF made with Chrome `--print-to-pdf`, look at chosen pages without instal
   five real collisions of that raise, none of which the overlap test saw.
 - **Open every `<details>` before measuring.** A figure inside a closed fold is laid out but never painted, so its
   labels measure against a box the reader never sees and report collisions and clipping that do not exist (the
-  same atlas run: 7 phantom entries, "outside svg" and a label on a dot, all from folded figures). A fold is
+  the same run: 7 phantom entries, "outside svg" and a label on a dot, all from folded figures). A fold is
   content and its figures must be legible too, so open them rather than skip them.
 - Measure at the width the reader uses, not only 1280 and 400: the Claude app's artifact pane is narrower than a full
   window, and a layout switched on above it (a `min-width:1440px` grid) is a fix the reader never sees (a peptide explainer
@@ -128,4 +128,4 @@ Read each text node's computed font family; a fallback such as Times means a mis
 For SVG figures with lines and curves (not just text and dots), add a checker that samples points along each path; this one tests text boxes only.
 
 Provenance: a tracker page tracker (2026-10-15). The first render passed contrast but had 11 label collisions, a mislocated city, a 412 px table at phone width, a clipped axis title and colliding tick labels at 400 px; a stress run dropped city labels under a 30-dot cluster. Validated on a different page: a public-health deck (slides 5 and 17) passes at 1280 px in both themes.
-Items 13 to 17: a DJ studio (2026-10-20): legends that mixed dots and lines, a map with unlabeled learned axes, a scrub bar 155 px off its plots, audit rows that jumped open, "ex_gf · p[i]lot" separators. See also the design-practice skill (composition, colour, interactivity) and field-vocabulary (words).
+Items 13 to 17: a DJ studio (2026-10-20): legends that mixed dots and lines, a map with unlabeled learned axes, a scrub bar 155 px off its plots, audit rows that jumped open, separator dots in a wordmark. See also the design-practice skill (composition, colour, interactivity) and field-vocabulary (words).
