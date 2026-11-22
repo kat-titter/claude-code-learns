@@ -60,7 +60,7 @@ named their author; the attributions kept their dates and quotes, the names went
 
 ## 3. Route: general, personal, project
 
-| the lesson is about | it goes to |
+| lesson | goes to |
 |---|---|
 | how anyone does this kind of work well | the matching general skill (or a new one, for a new question) |
 | this person's taste, voice, way of working | their style skill, `<name>-style` (for example `jo-style`) |

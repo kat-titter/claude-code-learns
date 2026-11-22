@@ -37,7 +37,7 @@ python3 ${CLAUDE_SKILL_DIR}/scripts/review_prose.py <file.html|.md|.txt> [--main
 
 Reference points measured with this script (2026-10-20). They show a feel for range, not targets:
 
-| Text | Words | Mean sentence | Spread | Grade | Linked | Evidence | Hedges /100 | Passives /100 | Lists /100 |
+| text | words | mean sentence | spread | grade | linked | evidence | hedges /100 | passives /100 | lists /100 |
 |---|---|---|---|---|---|---|---|---|---|
 | Karpathy, *Unreasonable Effectiveness of RNNs* (2015, went viral, human) | 5,902 | 19.8 | 12.3 | 10.9 | 70% | 18% | 8.7 | 10 | 1.7 |
 | an essay essay | 2,547 | 15.9 | 9.5 | 9.3 | 46% | 25% | 4.4 | 6 | 1.9 |

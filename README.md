@@ -39,7 +39,7 @@ line bend later.
 
 Not every lesson belongs in the same place, so each one is routed:
 
-| you say | where it goes | why |
+| you say | goes to | why |
 |---|---|---|
 | "legends go outside the plot" | a general skill | good practice for anyone |
 | "no dots between words, I find them fussy" | your own `yourname-style` | your taste, not everyone's rule |
@@ -57,7 +57,7 @@ likely one in a single line. Ask about *references* whose *numbering* has *drift
 <details>
 <summary><b>Three words, in plain terms</b></summary>
 
-| word | what it means here |
+| word | meaning |
 |---|---|
 | **skill** | a short how-to file. Each session sees only its one-paragraph description, like a label on a shelf; the full text is read when a task matches |
 | **hook** | a tiny script Claude Code runs at a set moment, such as when you send a message. These ones add a line of context or write a log, and they cannot block you |
@@ -141,7 +141,7 @@ Proposed     at most five changes, grouped by what a mistake would cost to undo
 That last line is the whole design of the thing. Proposals are sorted by how hard a mistake would be to undo, and you
 say yes once per lane rather than once per item.
 
-| lane | what it holds | what it takes to land |
+| lane | holds | lands when |
 |---|---|---|
 | **open** | wording inside a skill, kept in git | one revert away, so one line in the weekly prompt lets it apply itself |
 | **evidence** | a skill's description, which changes *when* it loads | [`refactor-gate.py`](skills/capture-lesson/scripts/refactor-gate.py) exits 0: the flag it targeted cleared, nothing new got flagged, the trigger test did no worse |
@@ -235,7 +235,10 @@ assets/                   the banner and figures as SVG text, drawn by assets/dr
 <details>
 <summary><b>Built on current practice, and what it adds</b></summary>
 
-| practice (source) | what Claude Code gives you | what this setup adds |
+One row per documented practice this setup follows: the source, what Claude Code already gives you, and what this
+repo adds on top.
+
+| practice | Claude Code | this setup |
 |---|---|---|
 | Rules that must hold every time go in hooks; skills and `CLAUDE.md` are guidance ([Claude Code best practices](https://code.claude.com/docs/en/best-practices)) | hooks, skills, `CLAUDE.md` | hooks that only remind and log; the lesson itself stays guidance Claude can weigh |
 | Context is a finite budget: load the smallest set of high-signal tokens ([Effective context engineering](https://www.anthropic.com/engineering/effective-context-engineering-for-ai-agents)) | a skill listing and on-demand bodies | hooks that stay silent on most prompts, with fire rates measured on real prompts |

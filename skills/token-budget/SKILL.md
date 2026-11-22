@@ -56,7 +56,7 @@ packages back to Opus and added seven; the routed plan still came to 38% of the 
 
 ## 5. Route by the check that exists
 
-| the work | model and effort |
+| the work | runs on |
 |---|---|
 | a wrong call silently changes the output or leaks data; thresholds, oracles, state-holding cores | top model, high or xhigh |
 | an exact oracle checks every result (byte identity, tests, manifest equality) | Sonnet high; escalate to the top model only when the check fails |

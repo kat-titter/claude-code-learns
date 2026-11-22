@@ -118,8 +118,9 @@ a person with a style profile, read it too (`<name>-style`).
 - **Every table says what it is, and every column title fits on one line.** A title or lead-in above the table names what
   its rows are ("Who has tried to tabulate biology, and how each attempt holds up"); each column gets a header, one or two
   plain words ("counts", "misses", "evidence"), never a phrase that wraps ("what it says about treatment"); a first column
-  of row names gets its header too ("disease"). (an essay, 2026-11-19: "what is this table describing? tables
-  need headers"; "table column titles should fit in 1 line, minimal".)
+  of row names gets its header too ("disease"). The headers are siblings, so they take one form between them, below.
+  (an essay, 2026-11-19: "what is this table describing? tables need headers"; "table column titles should fit in 1
+  line, minimal".)
 
 - **One title and description style for every section**: the same title size and face, its description stacked beneath
   at one measure; facts a table already gives leave the description (an art doc, 2026-10-26: "use consistent title and
@@ -127,6 +128,13 @@ a person with a style profile, read it too (`<name>-style`).
 - **Items in one list carry the same parts**: every item has a subtext, or none does; one card with a caption among
   bare cards reads as an error (an open call's about page, 2026-11-19: "why do some items have subtext and some dont?
   cosnistency").
+- **Siblings share one form of words, not just one size.** Labels that sit beside each other — a table's column
+  headers, a card grid's titles, a nav's items, a figure's key rows — agree on capitalisation, on part of speech
+  (all nouns or all verb phrases) and on whether they carry a qualifier: one header with a parenthesis among plain
+  ones breaks the row as surely as one card in a different font. Read the labels across, not down, before calling a
+  page done. (A README's four tables ran "practice (source)", "What it is for" and "you say" side by side,
+  2026-11-22: "titles need more format harmony. one col has parent, one has caps, one all lowercase". The length
+  rule for table headers is above; this is the form rule, and it holds for every set of sibling labels.)
 - **Numbers in one style, the field's standard** (APA for technical and science writing): words for zero to nine in
   prose counts, numerals from 10 up, numerals always with units and time (2 minutes, 3 s, 16 GB) and for every number
   in a comparison that reaches 10 (3 of 10 steps), a word or a recast at a sentence start; labels, versions and display

@@ -62,7 +62,7 @@ one-line mechanism strip repeating the caption's bold line is the first thing to
 
 ## The four figures
 
-| # | what it shows | how it is drawn |
+| # | shows | drawn as |
 |---|---|---|
 | 0 | masthead | the molecule plus the cell-level mechanism, above the fold (see above); draw the structure on a smaller canvas rather than scaling the big one down, or its labels shrink below the floor |
 | 1 | the mechanism | the target in its place, the ligand at its site, and the step that stops: `references/moa-figures.md` |
