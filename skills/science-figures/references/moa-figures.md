@@ -67,6 +67,7 @@ A mechanism figure in a moving field dates within months, so it carries its own 
 
 A whole mechanism-of-action explainer - the five beats, the four figures, the primary-source retrieval recipes and
 the checks - is the `moa-explainer` skill. This file stays the playbook for the mechanism figure itself.
+Worked examples of the whole page, with what to take and what to leave, are in `exemplars.md` beside this file.
 
 ## Scope
 

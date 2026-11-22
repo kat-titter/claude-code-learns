@@ -137,6 +137,9 @@ comparison, its controls and its scale bars are controlled-comparisons; a whole 
   what to draw per target class (GPCR, enzyme, transporter, channel, nuclear receptor, biologic), the evidence tier and
   the dashed arrow for an inferred step, the open question and date that keep a moving field's figure honest, and the
   scope it stays inside (mechanism, not use).
+- **Praised examples sit in `references/exemplars.md`**: finished science pieces read in the original, each split into
+  what to adopt and what not to copy. Read it before a new kind of figure or booklet (work-practice §2), and add each
+  new example the same way.
 - **A mechanism gets a deep figure: parts, circuit, signal**: three panes under one plate, each with a small header
   and live readout; flux drawn as dots moving along each reaction at the model's speed; the abstract circuit; the
   signal on a strip chart with the real parameter on one slider; a chain row reading shape → pattern → function.
