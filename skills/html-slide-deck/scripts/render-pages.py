@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 """Render every page of a PDF to PNG for review: look at each click view as the room will see it.
 
-Usage: render-pages.py DECK.pdf OUTDIR [--dpi 96] [--labels "01,02a,02b,..."] [--only 02a,A1]
+Usage: render-pages.py DECK.pdf OUTDIR [--dpi 96] [--labels "01,02a,02b,..."] [--only 05a,A9]
 Needs PyMuPDF:  python3 -m venv ~/.cache/pdfenv && ~/.cache/pdfenv/bin/pip install pymupdf
                 then run this script with ~/.cache/pdfenv/bin/python
 Writes OUTDIR/NN-LABEL.png (labels default to page numbers). Read the PNGs, don't trust the HTML: overflow, text under
