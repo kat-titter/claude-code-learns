@@ -21,7 +21,7 @@ question (a simplicity skill such as grug-brain, if you keep one).
 A repo is a page someone reads, so the rules of good page design carry over. Each row has a check in
 `scripts/code_audit.py` that can fail, except the last two, which the eye or a formatter keeps.
 
-| Page rule | Code rule | Check |
+| page rule | code rule | check |
 |---|---|---|
 | One focal point per view | One job per function; the top reads as the recipe | `focus`: function ≤ 60 lines, file ≤ 500 |
 | Say each fact once | One home per helper; one source for a shared page head | `once`: no 8-line block in two places |

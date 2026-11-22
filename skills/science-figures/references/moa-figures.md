@@ -44,7 +44,7 @@ Five things, in this order, one step per arrow:
 A novel domain's figures are read by people deciding what to believe, so each one says what tier its claim sits at.
 A small mono tag by the caption, not a colour nobody can decode:
 
-| tier | what the tag says |
+| tier | says |
 |---|---|
 | approved | the agency and the indication (approvals differ by country; "approved in Russia, not FDA-approved" is one tag, not two figures) |
 | in trials | the phase and the registry id (NCT…), so the reader can check it themselves |

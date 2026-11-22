@@ -44,7 +44,7 @@ measurements).
 
 ## The slide set, beat by beat
 
-| beat | slide | the room leaves knowing | the figure that carries it |
+| beat | slide | takeaway | figure |
 |---|---|---|---|
 | 1 | Title | what it is, in a line they can repeat | one quiet picture of the product's world |
 | 2 | Why now | the change that makes it possible today | three or four dated tiles on one timeline |
@@ -195,7 +195,7 @@ path, the methods behind each key number, the free alternative.
 
 ## Figures by message
 
-| the message | the form | the one accent |
+| message | form | accent |
 |---|---|---|
 | a change over time | a line with one threshold | the point that crosses |
 | counts, money, parts of a whole | a waffle of rounded squares, one unit each | the target or your share, outlined |

@@ -39,7 +39,7 @@ line bend later.
 
 Not every lesson belongs in the same place, so each one is routed:
 
-| you say | where it goes | why |
+| you say | goes to | why |
 |---|---|---|
 | "legends go outside the plot" | a general skill | good practice for anyone |
 | "no dots between words, I find them fussy" | your own `yourname-style` | your taste, not everyone's rule |
@@ -57,11 +57,14 @@ likely one in a single line. Ask about *references* whose *numbering* has *drift
 <details>
 <summary><b>Three words, in plain terms</b></summary>
 
-| word | what it means here |
-|---|---|
-| **skill** | a short how-to file. Each session sees only its one-paragraph description, like a label on a shelf; the full text is read when a task matches |
-| **hook** | a tiny script Claude Code runs at a set moment, such as when you send a message. These ones add a line of context or write a log, and they cannot block you |
-| **memory and `CLAUDE.md`** | notes Claude Code keeps per project, read through a one-line index, and a short file of standing instructions read at the start of every session |
+**skill** — a short how-to file. Each session sees only its one-paragraph description, like a label on a shelf.
+The full text is read when a task matches.
+
+**hook** — a tiny script Claude Code runs at a set moment, such as when you send a message. These ones add a line of
+context or write a log, and they cannot block you.
+
+**memory and `CLAUDE.md`** — notes Claude Code keeps per project, read through a one-line index, and a short file of
+standing instructions read at the start of every session.
 
 Everything above is Markdown, so the memory is files you can open, read and edit.
 
@@ -107,6 +110,8 @@ That draws your whole library as one page: hover a file to read it rendered, sea
   <img alt="How it works. Every turn: your correction reaches a hook, which hands Claude a one-line reminder and the likely skill; Claude writes a one-line lesson into your library and reads skills from it on a match; hooks log a quoted line and each skill use. Every week: scripts read the logs, new upstream skills and X posts, and whether last week's text landed; a weekly agent drafts at most five proposals by undo cost; the open lane, and the evidence lane on a passing check, can apply themselves; the rest come back to you, one yes per lane." src="assets/how-it-works-light.svg" width="740">
 </picture>
 
+*Every arrow carries a named value, and you are the one dark node.*
+
 You appear twice: once with a correction, once with a yes. Every arrow names what it carries, and the colours hold
 across every figure here and on the explainer page. [`AGENTS.md`](AGENTS.md#map) has the same map as text.
 
@@ -141,13 +146,16 @@ Proposed     at most five changes, grouped by what a mistake would cost to undo
 That last line is the whole design of the thing. Proposals are sorted by how hard a mistake would be to undo, and you
 say yes once per lane rather than once per item.
 
-| lane | what it holds | what it takes to land |
+| lane | holds | lands when |
 |---|---|---|
-| **open** | wording inside a skill, kept in git | one revert away, so one line in the weekly prompt lets it apply itself |
-| **evidence** | a skill's description, which changes *when* it loads | [`refactor-gate.py`](skills/capture-lesson/scripts/refactor-gate.py) exits 0: the flag it targeted cleared, nothing new got flagged, the trigger test did no worse |
-| **closed** | hooks, `settings.json`, `CLAUDE.md`, installs, deletions | your yes, every time |
+| **open** | wording inside a skill | it applies itself, one revert away |
+| **evidence** | a skill's description | the gate passes |
+| **closed** | hooks, settings, installs, deletions | you say yes |
 
-A gate that fails leaves the change sitting as a proposal, which is the point.
+A description changes *when* a skill loads, which is why that lane has a gate:
+[`refactor-gate.py`](skills/capture-lesson/scripts/refactor-gate.py) exits 0 only if the flag it targeted cleared,
+nothing new got flagged, and the trigger test did no worse. A gate that fails leaves the change sitting as a
+proposal, which is the point.
 
 Write your own agent loops and the same four rules apply. Each node gets a check a program can fail. Every cycle gets
 a round limit. A failure goes back one unit at a time. And a person stands only where a mistake cannot be undone. The
@@ -235,16 +243,19 @@ assets/                   the banner and figures as SVG text, drawn by assets/dr
 <details>
 <summary><b>Built on current practice, and what it adds</b></summary>
 
-| practice (source) | what Claude Code gives you | what this setup adds |
+One row per documented practice this setup follows: the source, what Claude Code already gives you, and what this
+repo adds on top.
+
+| practice | Claude Code | this setup |
 |---|---|---|
-| Rules that must hold every time go in hooks; skills and `CLAUDE.md` are guidance ([Claude Code best practices](https://code.claude.com/docs/en/best-practices)) | hooks, skills, `CLAUDE.md` | hooks that only remind and log; the lesson itself stays guidance Claude can weigh |
-| Context is a finite budget: load the smallest set of high-signal tokens ([Effective context engineering](https://www.anthropic.com/engineering/effective-context-engineering-for-ai-agents)) | a skill listing and on-demand bodies | hooks that stay silent on most prompts, with fire rates measured on real prompts |
-| Progressive disclosure: descriptions always, bodies on demand ([Agent Skills](https://code.claude.com/docs/en/skills)) | the skill listing | one line per lesson, an audit that flags long or overlapping skills, `references/` for long tails |
-| Keep memory outside the context window ([memory docs](https://code.claude.com/docs/en/memory)) | auto memory and `CLAUDE.md` | a routing rule that gives every lesson one home, and an inbox that is never loaded |
-| Write descriptions as triggers, and test them ([skill best practices](https://platform.claude.com/docs/en/agents-and-tools/agent-skills/best-practices)) | skill-creator's evals | old against new description at three runs each, a miss report from real sessions, and a router hook that names the likely skill |
-| Hooks are fast, quoted and fail-safe, with timeouts ([hooks docs](https://code.claude.com/docs/en/hooks)) | `timeout`, `async` | every hook exits cleanly in about 30 ms; loggers run in the background |
-| Outside content is data, not instructions ([Equipping agents with skills](https://www.anthropic.com/engineering/equipping-agents-for-the-real-world-with-agent-skills)) | permission prompts | the weekly pass reads upstream skills and the inbox as quotes to judge, and waits for your yes |
-| Cheap rollback ([Effective harnesses for long-running agents](https://www.anthropic.com/engineering/effective-harnesses-for-long-running-agents)) | checkpoints | backups before every change, `--uninstall`, and the skills folder kept in git |
+| [hooks hold the rules, skills guide](https://code.claude.com/docs/en/best-practices) | both | hooks that only remind and log |
+| [context is a finite budget](https://www.anthropic.com/engineering/effective-context-engineering-for-ai-agents) | listing plus bodies | silent on most prompts, rates measured |
+| [progressive disclosure](https://code.claude.com/docs/en/skills) | the skill listing | one line per lesson, `references/` for tails |
+| [memory outside the context window](https://code.claude.com/docs/en/memory) | auto memory | one home per lesson, an inbox never loaded |
+| [descriptions are triggers, so test them](https://platform.claude.com/docs/en/agents-and-tools/agent-skills/best-practices) | skill-creator evals | old against new, three runs, plus real misses |
+| [hooks stay fast and fail-safe](https://code.claude.com/docs/en/hooks) | `timeout`, `async` | every hook exits in about 30 ms |
+| [outside content is data](https://www.anthropic.com/engineering/equipping-agents-for-the-real-world-with-agent-skills) | permission prompts | quotes to judge, and your yes |
+| [rollback stays cheap](https://www.anthropic.com/engineering/effective-harnesses-for-long-running-agents) | checkpoints | backups, `--uninstall`, skills in git |
 
 </details>
 

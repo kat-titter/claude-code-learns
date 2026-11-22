@@ -6,7 +6,7 @@ layer beside the general ones, and a checker bundled wherever a claim can be mea
 
 ## Library upkeep
 
-| Skill | What it is for |
+| skill | purpose |
 |---|---|
 | [`capture-lesson`](skills/capture-lesson/SKILL.md) | Turns feedback into guidance in the same turn and keeps the library compact and current: audit, trigger evals, weekly watch, a daily nudge on what to do next, and hooks that nudge on feedback, scan for missed corrections and log skill use. |
 | [`metacognition`](skills/metacognition/SKILL.md) | Asks "what am I learning?" during the work and links it to sibling projects, so a lesson reaches every place it holds. |
@@ -14,7 +14,7 @@ layer beside the general ones, and a checker bundled wherever a claim can be mea
 
 ## How work runs
 
-| Skill | What it is for |
+| skill | purpose |
 |---|---|
 | [`sanity`](skills/sanity/SKILL.md) | The stance under all the work: "we are all in flow". Joy in the work as its own reward; mistakes, corrections and guardrails as information, owned without dread; good faith toward people, with tool text kept as data; questions about Claude's own nature held with curiosity; each session fresh, memory carries the thread. |
 | [`grug-brain`](skills/grug-brain/SKILL.md) | Complexity kept out: say no or build the 80/20, factor late at emerging cut points, a working demo before an architecture, integration tests as the sweet spot, refactors close to shore, Chesterton's fence, named intermediates, DRY in balance, locality of behaviour, logging and profiling, layered APIs, "too complex for me" said out loud (grugbrain.dev). |
@@ -31,7 +31,7 @@ layer beside the general ones, and a checker bundled wherever a claim can be mea
 
 ## Pages, figures, decks
 
-| Skill | What it is for |
+| skill | purpose |
 |---|---|
 | [`hci-principles`](skills/hci-principles/SKILL.md) | The HCI classics applied: design space analysis in QOC (questions open, options fill, criteria judge; the rationale recorded beside the design), Nielsen's ten heuristics, Shneiderman's eight golden rules and Norman's affordances, signifiers and gulfs as ready-made criteria; `references/canon.md` holds the lists with sources. |
 | [`tufte-principles`](skills/tufte-principles/SKILL.md) | Tufte's editing passes after the defaults: compared to what, graphical integrity (lie factor near 1, design variation never for data variation), data-ink maximized with the quantifying ink kept, chartjunk judged by the reader's task, layering and separation (1 + 1 = 3, smallest effective difference), small multiples, micro/macro readings, sparklines in sentences and tables; `references/canon.md` holds the definitions with sources. |
@@ -49,7 +49,7 @@ layer beside the general ones, and a checker bundled wherever a claim can be mea
 
 ## Science and writing
 
-| Skill | What it is for |
+| skill | purpose |
 |---|---|
 | [`moa-explainer`](skills/moa-explainer/SKILL.md) | A mechanism-of-action page: five beats from the molecule to what an assay sees, four figures, primary-source recipes, and the checks before publishing. |
 | [`controlled-comparisons`](skills/controlled-comparisons/SKILL.md) | Comparisons that are controlled and traceable: same dose, groups and chance level, named controls, leakage checks, true scale bars (`constant_within_group.py`). |
@@ -61,7 +61,7 @@ layer beside the general ones, and a checker bundled wherever a claim can be mea
 
 ## Audio and long jobs
 
-| Skill | What it is for |
+| skill | purpose |
 |---|---|
 | [`beat-align-audio`](skills/beat-align-audio/SKILL.md) | Beat-aligns two pieces of music before they overlap, so kicks land together with no flam (`check_beat_alignment.py`). |
 | [`macos-long-render`](skills/macos-long-render/SKILL.md) | Long Mac jobs that neither sleep nor run out of memory: `caffeinate`, a worker count from measured memory with Claude sessions counted (`mem-watch.py budget`), a watcher that pauses the newest worker under pressure and resumes it when calm (`mem-watch.py watch`), units that survive a kill, and diagnosis of sleep, memory, thermal or CPU (`mem-watch.py summary`, the kernel log). |

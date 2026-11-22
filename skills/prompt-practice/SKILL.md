@@ -23,7 +23,7 @@ during the work; this skill turns both into a prompt.
 
 Before the first tool call, fill seven slots from the prompt and from what is already known:
 
-| Slot | What it holds | Where it comes from |
+| slot | holds | from |
 |---|---|---|
 | Outcome | what exists when this is done, and the direction the work is heading after it | the prompt, the session so far |
 | Deliverable | the artifact (file, page, commit, answer, render) and who reads or uses it | the prompt, the project's habits |

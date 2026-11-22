@@ -80,7 +80,7 @@ someone lowers on a busy day. A lane has no number to lower. Ask the person once
 
 ## 5. Who draws the graph
 
-| the job runs | a mistake is | so |
+| the job | a mistake | so |
 |---|---|---|
 | once | cheap to undo | the model writes the workflow; throw it away after |
 | once | costly | the model drafts the plan; the person reads only the plan |

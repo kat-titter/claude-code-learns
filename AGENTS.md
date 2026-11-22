@@ -142,7 +142,7 @@ last and only where a mistake is hard to undo.
    A confirmed finding is fixed and pinned with a check; a refuted one gets a reply that says why.
 3. **A person, by lane.** The lane is set by what the change touches, never by a score.
 
-| lane | what the change touches | merges when |
+| lane | touches | merges when |
 |---|---|---|
 | open | wording, a skill's body, a test, a new check, an isolated script change | checks pass and a review of the last push has every finding answered: an agent may merge it |
 | evidence | a skill's `description` or `when_to_use` (it changes when the skill loads), a shared script such as `lessonlib.py` | as open, and `refactor-gate.py` exits 0 for that skill |
