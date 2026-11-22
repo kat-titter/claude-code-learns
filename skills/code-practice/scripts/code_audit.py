@@ -4,7 +4,7 @@
 Each check is a page-design rule read as a code rule:
   focus   one focal point per view      -> one job per function, files a reader can hold
   once    each fact once                -> no block of code living in two places
-  front   the page opens with its point -> a README that names files which exist, and the entry points
+  front   the page opens with its point -> a README naming files that exist (or .gitignore covers) and the entry points
   clutter erase chartjunk               -> no v2/_old/final files, no commented-out code
   space   negative space groups things  -> a top level short enough to read at a glance
   legend  every figure has a caption    -> every script opens with a line saying what it does
@@ -179,6 +179,26 @@ def check_once(units, min_lines):
     return hits
 
 
+def in_ignored_folder(repo, path, tracked, is_folder=False):
+    """True if a .gitignore tracked in the repo ignores a folder that holds path: a README may name what a script writes
+    into an ignored folder (`build`, `data/`, or `data/*` beside `!data/.gitkeep`), which need not exist yet. Three
+    asks, each answered only by a non-negated rule from a tracked .gitignore: a folder above path, by any rule; path
+    itself, by a folder-contents rule (ending in /* or /**); path as a folder, when the README wrote a trailing slash
+    (is_folder). So a file rule (`*.png`, `**/*.png`, `/review/gone.png`) never excuses a stale file. Rules outside the
+    commit (.git/info/exclude, a global excludes file) do not count; git reports one rule per path, so a local rule on
+    a parent folder can still hide a tracked one on that machine. False when git cannot answer (exit 128)."""
+
+    def rule(ask):
+        r = subprocess.run(["git", "-C", repo, "check-ignore", "-v", "--", ask], capture_output=True, text=True)
+        source, _line, pattern = (r.stdout.split("\t")[0].split(":", 2) + ["", ""])[:3]  # .gitignore:3:build/<TAB>...
+        return pattern if r.returncode == 0 and source in tracked and not pattern.startswith("!") else None
+
+    parents = [path.rsplit("/", k)[0] + "/" for k in range(1, path.count("/") + 1)]
+    return (any(rule(folder) for folder in parents)
+            or (rule(path) or "").endswith(("/*", "/**"))
+            or (is_folder and rule(path + "/") is not None))
+
+
 def check_front(repo, files):
     readme = next((f for f in files if f.lower() in {"readme.md", "readme"}), None)
     if not readme:
@@ -193,11 +213,13 @@ def check_front(repo, files):
         if LOCAL_ONLY.search(line):
             continue
         # a link, or a backticked path with a folder in it; a bare `CLAUDE.md` in prose may name a file elsewhere
-        for ref in re.findall(r"`([\w.-]+/[\w./-]+)`|\]\((?!https?:|#|mailto:)([\w./%-]+)\)", line):
-            ref = (ref[0] or ref[1]).split("#")[0].replace("%20", " ").rstrip("/")
+        for ticked, linked in re.findall(r"`([\w.-]+/[\w./-]+)`|\]\((?!https?:|#|mailto:)([\w./%-]+)\)", line):
+            ref = (ticked or linked).split("#")[0].replace("%20", " ").rstrip("/")
             ref = ref[2:] if ref.startswith("./") else ref
             # `results/e16` may name a family of files (e16-*.json), so a prefix match counts
-            if ref and ref not in tracked and not any(f.startswith(ref) or f.endswith("/" + ref) for f in files):
+            in_git = ref in tracked or any(f.startswith(ref) or f.endswith("/" + ref) for f in files)
+            # a backticked path may name what a script writes into a folder git ignores; a link must resolve
+            if ref and not in_git and not (ticked and in_ignored_folder(repo, ref, tracked, ticked.endswith("/"))):
                 hits.append((readme, n, f"names {ref}, which is not in the repo"))
     top_code = [f for f in files if "/" not in f and os.path.splitext(f)[1] in CODE_EXT]
     hits += [(readme, 1, f"top-level {f} not mentioned") for f in top_code if f not in text]
