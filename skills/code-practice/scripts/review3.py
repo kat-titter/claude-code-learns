@@ -34,7 +34,6 @@ STATUS = "review-3"  # the commit status context; branch protection requires it 
 NEAR = 3  # lines: two consensus findings this close in one file are one problem (a run had twins at :82 and :84)
 RUNS = Path.home() / ".claude" / "review3"
 AUDIT = Path(__file__).with_name("code_audit.py")
-PRIVATE_WORDS = Path.home() / ".config" / "claude-code-learns" / "private-words"
 PASSING = {"SUCCESS", "NEUTRAL", "SKIPPED"}
 
 
@@ -157,6 +156,8 @@ def judge(finding, votes, in_diff):
 
 
 def tally(run):
+    if (Path(run) / "posted.json").exists():  # a new tally would no longer match the review on GitHub
+        raise SystemExit(f"already posted: {load(run, 'posted.json')['url']}; tally would overwrite what it says")
     raw, pr = load(run, "raw.json"), load(run, "pr.json")
     findings, votes = raw["findings"], raw["votes"]
     counted = {"findings": len(findings), "votes": sum(len(v) for v in votes.values())}
@@ -180,16 +181,14 @@ def tally(run):
 
 
 def is_twin(kept, r):
-    """Same file:line, or two consensus findings within NEAR lines: one problem, raised twice."""
-    if kept["file"] != r["file"]:
-        return False
-    return kept["line"] == r["line"] or (abs(kept["line"] - r["line"]) <= NEAR
-                                         and kept["kind"] == r["kind"] == "consensus")
+    """Two consensus findings in one file within NEAR lines (the same line included): one problem, raised twice."""
+    return (kept["file"] == r["file"] and abs(kept["line"] - r["line"]) <= NEAR
+            and kept["kind"] == r["kind"] == "consensus")
 
 
 def merge_twins(rows):
-    """One row per problem: keep the strongest of each set of twins and note the others' ids (and line, if it moved).
-    A taste call near a consensus finding stays its own row; it is one reviewer's separate opinion."""
+    """One row per problem: keep the strongest of each set of twins and note each other's id, line and title, so
+    nothing raised drops out of the review. Taste calls never merge: each is one reviewer's separate opinion."""
     kept = []
     for r in sorted(rows, key=lambda r: (r["kind"] != "consensus", not r["blocking"], -len(r["agree"]))):
         twin = next((k for k in kept if is_twin(k, r)), None)
@@ -197,7 +196,7 @@ def merge_twins(rows):
             kept.append(dict(r, also=[]))
             continue
         moved = "" if twin["line"] == r["line"] else f", line {r['line']}"
-        twin["also"].append(f"{r['id']} ({SCHOOL_NAME[r['school']]}{moved})")
+        twin["also"].append(f"{r['id']} ({SCHOOL_NAME[r['school']]}{moved}): {r['title']}")
     return kept
 
 
@@ -216,7 +215,7 @@ def consensus_table(rows):
     for r in rows:
         dissent = "; ".join(f"{SCHOOL_NAME[v['school']]}: {v['reason']}" for v in r["dissent"]) or "none"
         where = f"`{r['file']}:{r['line']}`" + ("" if r["in_diff"] else " (outside the diff)")
-        also = f" Also raised as {', '.join(r['also'])}." if r["also"] else ""
+        also = f" Also raised as {'; '.join(r['also'])}." if r["also"] else ""
         out.append(f"| {MARK[r['severity']]} | **{cell(r['title'])}** {cell(r['fix'])}{also} | {where} "
                    f"| {len(r['agree'])}/3 {names(r['agree'])} | {cell(dissent)} |")
     return out
@@ -279,11 +278,20 @@ def inline_comments(rows):
 
 # ---------- post: one review on GitHub ----------
 
-def private_hits(repo, body):
-    if not repo.endswith("/claude-code-learns") or not PRIVATE_WORDS.exists():
+def private_hits(run, repo, text):
+    """What the PR head's own tests/privacy.py finds in the review (emails, home paths, private words), so the word
+    list has one parser. Only claude-code-learns has that check; there, a missing one refuses the post."""
+    if not repo.endswith("/claude-code-learns"):
         return []
-    words = [w.strip() for w in PRIVATE_WORDS.read_text().splitlines() if w.strip() and not w.startswith("#")]
-    return [w for w in words if re.search(rf"\b{re.escape(w)}\b", body, re.I)]
+    checker = Path(run) / "head" / "tests" / "privacy.py"
+    spec = importlib.util.spec_from_file_location("privacy", checker)
+    privacy = importlib.util.module_from_spec(spec)
+    try:
+        spec.loader.exec_module(privacy)
+        own, word = privacy.own_address_rx(repo.split("/")[0]), privacy.word_rx(privacy.private_words())
+    except (OSError, AttributeError) as e:
+        raise SystemExit(f"cannot run {checker} ({e}): the review was not checked for private words, not posted")
+    return sorted({kind for line in text.splitlines() for kind in privacy.leaks(line, own, word)})
 
 
 def post(run, again=False):
@@ -291,9 +299,9 @@ def post(run, again=False):
     if (Path(run) / "posted.json").exists() and not again:
         raise SystemExit(f"already posted: {load(run, 'posted.json')['url']} (pass --again to post another)")
     body, comments = (Path(run) / "review.md").read_text(), load(run, "comments.json")
-    hits = private_hits(pr["repo"], body + json.dumps(comments))
+    hits = private_hits(run, pr["repo"], body + "\n" + "\n".join(c["body"] for c in comments))
     if hits:
-        raise SystemExit(f"private words in the review, not posted: {hits}")
+        raise SystemExit(f"the review holds {', '.join(hits)}: not posted")
     payload = {"commit_id": t["head_sha"], "event": "COMMENT", "body": body, "comments": comments}
     endpoint = f"repos/{pr['repo']}/pulls/{pr['number']}/reviews"
     p = subprocess.run(["gh", "api", endpoint, "--input", "-"], input=json.dumps(payload), capture_output=True, text=True)
@@ -335,7 +343,7 @@ def pr_state(repo, number):
     return state
 
 
-def check_blocks(pr, t, now, default):
+def check_blocks(t, now, default):
     blocks, warns = [], []
     if now["state"] != "OPEN":
         blocks.append(f"PR is {now['state']}")
@@ -382,7 +390,7 @@ def ready(run):
     pr, t = load(run, "pr.json"), load(run, "tally.json")
     now = pr_state(pr["repo"], pr["number"])
     default = gh_json("repo", "view", pr["repo"], "--json", "defaultBranchRef")["defaultBranchRef"]["name"]
-    blocks, warns = check_blocks(pr, t, now, default)
+    blocks, warns = check_blocks(t, now, default)
     warns += collisions(pr, now)
     save(run, "ready.json", {"blocks": blocks, "warns": warns, "head_sha": now["headRefOid"]})
     for b in blocks:
@@ -428,8 +436,9 @@ def selftest_twins(f, v):
     cons = lambda i, s, line: judge(f(i, s, line, "nit"), [v("grug", True)], True)
     taste = lambda i, s, line: judge(f(i, s, line, "nit"), [v("grug", False)], True)
     cases = [  # rows -> (kept id, its also) per kept row
-        ([taste("m3", "maintainability", 2), cons("o3", "ousterhout", 2)], [("o3", ["m3 (maintainability)"])]),
-        ([cons("m4", "maintainability", 82), cons("o4", "ousterhout", 84)], [("m4", ["o4 (Ousterhout, line 84)"])]),
+        ([taste("m3", "maintainability", 2), cons("o3", "ousterhout", 2)], [("o3", []), ("m3", [])]),
+        ([cons("m4", "maintainability", 82), cons("o4", "ousterhout", 84)], [("m4", ["o4 (Ousterhout, line 84): o4"])]),
+        ([cons("m7", "maintainability", 9), cons("g7", "grug", 9)], [("m7", ["g7 (grug): g7"])]),
         ([cons("m5", "maintainability", 82), taste("o5", "ousterhout", 84)], [("m5", []), ("o5", [])]),
         ([cons("m6", "maintainability", 82), cons("o6", "ousterhout", 86)], [("m6", []), ("o6", [])]),
     ]
