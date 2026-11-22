@@ -79,13 +79,16 @@ figure - molecules, proteins, cells, micrographs, mechanisms - is science-figure
 
 How the defaults look in common tools:
 ```python
-fig, ax = plt.subplots(layout="constrained")                     # matplotlib ≥ 3.7
+# matplotlib >= 3.7
+fig, ax = plt.subplots(layout="constrained")
 ax.set(xlabel="dose (µM)", ylabel="cells per well")
-fig.legend(loc="outside lower center", ncols=3, frameon=False)   # legend in its own band below
+# the legend gets its own band below the plot
+fig.legend(loc="outside lower center", ncols=3, frameon=False)
 ```
 ```python
+# plotly
 fig.update_layout(xaxis_title="dose (µM)", yaxis_title="cells per well", margin=dict(b=120),
-                  legend=dict(orientation="h", x=0, xanchor="left", y=-0.22, yanchor="top"))   # plotly
+                  legend=dict(orientation="h", x=0, xanchor="left", y=-0.22, yanchor="top"))
 ```
 In SVG or D3, size `margin = {top, right, bottom, left}` for the labels and the legend band, draw the plot in one `<g>`
 and the legend in its own `<g>` translated below it. Mermaid diagrams have no axes; edge labels carry the meaning

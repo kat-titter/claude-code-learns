@@ -88,7 +88,8 @@ curl -s "https://api.crossref.org/works/10.1158/0008-5472.CAN-10-3001"
 curl -s "https://pubchem.ncbi.nlm.nih.gov/rest/pug/compound/name/AMG%20900/property/SMILES,MolecularFormula,MolecularWeight,IUPACName/JSON"
 # potencies, with the paper each value came from
 curl -s "https://www.ebi.ac.uk/chembl/api/data/activity.json?molecule_chembl_id=CHEMBL2140408&standard_type__in=Ki,IC50&limit=200"
-curl -s "https://www.ebi.ac.uk/chembl/api/data/document/CHEMBL4265875.json"   # resolve the source
+# resolve the source behind a ChEMBL value
+curl -s "https://www.ebi.ac.uk/chembl/api/data/document/CHEMBL4265875.json"
 ```
 
 - **Cite ChEMBL's source, not ChEMBL.** A number in ChEMBL carries a `document_chembl_id`; resolve it and cite that

@@ -36,7 +36,7 @@ Wrapper: `${CLAUDE_SKILL_DIR}/scripts/caffeinate-render.sh -- <command>`. The wa
 
 ```
 workers   = min( floor((available - reserve) / (peak x 1.25)), cores - 2 )
-available = memory free % x RAM          kern.memorystatus_level, the number jetsam watches
+available = memory free % x RAM     kern.memorystatus_level, what jetsam sees
 reserve   = 15% of RAM + agents you may start x 0.34 GB
 peak      = "peak memory footprint" of the largest unit, from /usr/bin/time -l
 ```

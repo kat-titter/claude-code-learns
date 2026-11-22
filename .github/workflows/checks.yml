@@ -16,7 +16,7 @@ jobs:
     strategy:
       fail-fast: false
       matrix:
-        check: [python, audit, install, watch, check-repair, mermaid, privacy]
+        check: [python, audit, install, watch, check-repair, mermaid, privacy, formatting]
     steps:
       - uses: actions/checkout@v7
       - run: sh tests/checks.sh ${{ matrix.check }}
