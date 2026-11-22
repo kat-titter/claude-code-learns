@@ -19,7 +19,8 @@ one() {
   python)   # every script parses (Python compiles, shell passes bash -n); code_audit.py flags a seeded repo on
             # four rules and passes a clean one; and the router's skill pick fires only where no skill has loaded:
             # tool definitions and a quoted mention do not count as a load; review by three's tally, twin and status
-            # rules and its hook's command parser pass their self-tests
+            # rules, its merge gate (through a fake gh) and its hook's command parser and head rule pass their
+            # self-tests
     python3 -m py_compile skills/*/scripts/*.py
     python3 skills/code-practice/scripts/review3_test.py >/dev/null
     python3 skills/code-practice/scripts/review3-hook.py --test >/dev/null
@@ -82,9 +83,10 @@ one() {
     grep -q '"path": "capture-lesson/SKILL.md"' "$h/browser.html" || { say "skills-browser drew no capture-lesson"; return 1; }
     env -u CLAUDE_CONFIG_DIR HOME="$h" python3 "$S/practice-watch.py" --help >/dev/null
     env -u CLAUDE_CONFIG_DIR HOME="$h" python3 "$S/feed-trends.py" --help >/dev/null ;;
-  check-repair)   # the Workflow template, run against stub agents
+  check-repair)   # the Workflow template and the review-3 workflow, run against stub agents
     node --version
-    node tests/check-repair.test.mjs ;;
+    node tests/check-repair.test.mjs
+    node skills/code-practice/scripts/review-3.test.mjs ;;
   mermaid)  # every Mermaid block in README.md and AGENTS.md renders; a block that fails to parse fails here
     out=$(mktemp -d)
     for f in README.md AGENTS.md; do

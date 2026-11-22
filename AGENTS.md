@@ -78,22 +78,24 @@ skills/capture-lesson/        how a lesson is generalized, routed, written
 skills/prompt-practice/       a terse request becomes a brief; has a hook
 skills/workflow-design/       loops inside a graph; check-repair.js template
 skills/code-practice/         clean code and repo layout; code_audit.py reads
-                              page-design rules as code; review3.py (and
-                              its test), review-3.js and review3-hook.py run
-                              review by three
+                              page-design rules as code; review3.py and
+                              review-3.js (each with its test) and
+                              review3-hook.py run review by three
 skills/*/                     34 example skills, installed with --examples:
                               how work runs, code, pages and apps, figures,
                               measuring, writing and science, audio
 templates/, *.example*        starting files the installer copies
 assets/draw.py                draws the banner and figures: light, dark and
-                              phone layouts from one data list per figure
+                              phone layouts from one data list per figure;
+                              also the site's tab icon and share card
+assets/render_png.py          renders the icon and card PNGs (headless Chrome)
 index.html                    the explainer page (GitHub Pages)
 coding-skills.md              every skill, one line each
 tests/checks.sh               the eight checks CI runs on every pull request
 tests/privacy.py              emails, home paths and private words stay out
 tests/formatting.py           no column layout wraps on the rendered page
 tests/check-repair.test.mjs   runs the template against stub agents
-.github/workflows/            checks.yml, claude-review.yml
+.github/workflows/            checks.yml
 ```
 
 ## Invariants
@@ -107,7 +109,8 @@ tests/check-repair.test.mjs   runs the template against stub agents
 - **The weekly pass writes a report only.** Edits, installs, commits and messages wait for a person. Two lines in
   its prompt change that: `open lane: apply` lets open-lane wording edits apply themselves, one revertable commit
   each, and `evidence lane: apply on pass` lets a one-skill change apply when `refactor-gate.py` exits 0.
-- **Light repo.** Text only: binaries are ignored, figures are SVG text from `assets/draw.py`.
+- **Light repo.** Text only: binaries are ignored, figures are SVG text from `assets/draw.py`. The one exception is
+  the site's two PNGs (home-screen icon, share card), which `assets/render_png.py` remakes from their SVGs.
 - **One story.** A change to a script, a count or a number updates the README, `index.html` and this file in the
   same commit.
 
@@ -118,8 +121,12 @@ tests/check-repair.test.mjs   runs the template against stub agents
 # check-repair, mermaid, privacy, formatting
 sh tests/checks.sh
 
-# after a figure edit: exits 1 if a figure's text falls under WCAG AA contrast
+# after a figure or icon edit: exits 1 if text falls under WCAG AA contrast
+# or an icon mark under 3:1, and names any PNG source it changed
 python3 assets/draw.py
+
+# then remake the PNGs: exits 1 offline, on a size unlike the SVG's or at 300 KB
+python3 assets/render_png.py
 ```
 
 The privacy check looks for names only where it is given them: one per line in
@@ -145,11 +152,10 @@ last and only where a mistake is hard to undo.
    push leaves the new head with no status, so the merge button waits for a fresh review; the owner can still override
    on purpose. The code-practice hook starts it after `gh pr create`, `gh pr ready` or a push; without the hook, a
    fresh session, not the one that wrote the change, runs it by hand. `/code-review high --comment <PR#>` is a second
-   opinion, and `/code-review ultra` the deep cloud review, which only a person starts and which is billed.
-   `claude-review.yml` would add a hosted review once the repo has a `CLAUDE_CODE_OAUTH_TOKEN` secret; it has none, so
-   it has never run. The reviewer gets the diff, not the author's summary. A finding counts only once the author has
-   checked it: reproduced it, or read the line and agreed. A confirmed finding is fixed and pinned with a check; a
-   refuted one gets a reply that says why.
+   opinion, and `/code-review ultra` the deep cloud review, which only a person starts and which is billed. Reviews
+   run locally, so the repo needs no token secret. The reviewer gets the diff, not the author's summary. A finding
+   counts only once the author has checked it: reproduced it, or read the line and agreed. A confirmed finding is
+   fixed and pinned with a check; a refuted one gets a reply that says why.
 3. **A person, by lane.** The lane is set by what the change touches, never by a score.
 
 | lane | touches | merges when |

@@ -1,0 +1,11 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="1200" height="630" viewBox="0 0 1200 630" role="img" aria-label="claude-code-learns: Learns in one turn. Keeps it for good.">
+<title>claude-code-learns: Learns in one turn. Keeps it for good.</title>
+<defs><marker id="a" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M1 1L9 5L1 9" fill="none" stroke="#8f8d86" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"/></marker></defs>
+<rect width="1200" height="630" fill="#faf9f5"/>
+<style>@import url(https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500&display=swap);</style>
+<text x="80" y="128" font-family="'IBM Plex Mono',ui-monospace,'SF Mono',SFMono-Regular,Menlo,Consolas,'Liberation Mono',monospace" font-size="34" font-weight="500" fill="#141413" text-anchor="start">claude-code-learns</text>
+<text x="80" y="300" font-family="'IBM Plex Mono',ui-monospace,'SF Mono',SFMono-Regular,Menlo,Consolas,'Liberation Mono',monospace" font-size="60" font-weight="500" fill="#141413" text-anchor="start" letter-spacing="-1.2">Learns in one turn.</text>
+<text x="80" y="384" font-family="'IBM Plex Mono',ui-monospace,'SF Mono',SFMono-Regular,Menlo,Consolas,'Liberation Mono',monospace" font-size="60" font-weight="500" fill="#a8492a" text-anchor="start" letter-spacing="-1.2">Keeps it for good.</text>
+<text x="80" y="546" font-family="'IBM Plex Mono',ui-monospace,'SF Mono',SFMono-Regular,Menlo,Consolas,'Liberation Mono',monospace" font-size="24" font-weight="400" fill="#5e5d59" text-anchor="start">github.com/kat-titter/claude-code-learns</text>
+<path d="M892 163h152v38h-152zM892 201h190v38h-190zM892 239h228v38h-228zM892 277h228v38h-228zM892 315h38v38h-38zM1082 315h38v38h-38zM892 353h228v38h-228zM892 391h228v38h-228zM892 429h228v38h-228z" fill="#788c5d" shape-rendering="crispEdges"/>
+</svg>
