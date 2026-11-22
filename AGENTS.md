@@ -129,6 +129,10 @@ python3 assets/draw.py
 python3 tests/drift.py
 ```
 
+`loose-ends.py` runs `tests/drift.py --json` for every non-worktree checkout under its roots that has one, so the
+daily nudge carries the drift as a loose end and counts the days it has stood. That is the habit; the command above is
+for the moment of publishing.
+
 The privacy check looks for names only where it is given them: one per line in
 `~/.config/claude-code-learns/private-words` locally, and in the `PRIVATE_WORDS` repository secret in CI. Without
 them it checks emails, home paths and your login name, and says that names went unchecked. A line starting with `#`

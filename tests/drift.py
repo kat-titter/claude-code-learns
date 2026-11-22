@@ -6,13 +6,14 @@ other is a silent bug, and nothing else here would tell you.
   python3 tests/drift.py            per-file report, exit 0
   python3 tests/drift.py --strict   exit 1 if any script's code lines differ
   python3 tests/drift.py --test     self-test on a built fixture, then exit
+  python3 tests/drift.py --json     the same facts as JSON, for a nudge or a watch to read
   python3 tests/drift.py --live DIR compare against another skills/ folder (default $CLAUDE_CONFIG_DIR, else ~/.claude)
 Only skills/*/scripts/ is compared, and only lines that are not blank and not a whole-line comment; SKILL.md and the
 other prose is left alone. A trailing comment on a line of code still counts as part of that line, so an edit to one
 shows up as drift. The report names files, never their lines, but the names are your library's: keep it off a public
 page. Without an installed library (CI) it prints one line and passes.
 """
-import difflib, os, sys
+import difflib, json, os, sys
 from pathlib import Path
 
 HERE = Path(__file__).resolve().parent.parent
@@ -55,6 +56,12 @@ def compare(repo, live):
             v = sum(1 for l in diff if l.startswith('+') and not l.startswith('+++'))
             rows.append((f'{name}/{f}', r, v))
     return rows, only_repo, only_live
+
+
+def as_json(rows, only_repo, only_live):
+    return {'here_only': sum(r for _, r, _ in rows), 'yours_only': sum(v for _, _, v in rows),
+            'files': [{'file': f, 'here': r, 'yours': v} for f, r, v in rows],
+            'only_here': only_repo, 'only_yours': only_live}
 
 
 def report(rows, only_repo, only_live):
@@ -115,10 +122,16 @@ def main(argv):
         return self_test()
     live = Path(argv[argv.index('--live') + 1]) if '--live' in argv else live_root()
     if not live.is_dir():
-        print(f'no installed library at {live}: nothing to compare')
+        if '--json' in argv:
+            print(json.dumps(as_json([], [], [])))
+        else:
+            print(f'no installed library at {live}: nothing to compare')
         return 0
     rows, only_repo, only_live = compare(HERE / 'skills', live)
-    report(rows, only_repo, only_live)
+    if '--json' in argv:
+        print(json.dumps(as_json(rows, only_repo, only_live), indent=1))
+    else:
+        report(rows, only_repo, only_live)
     return 1 if (rows and '--strict' in argv) else 0
 
 
