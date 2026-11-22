@@ -92,6 +92,7 @@ one() {
       say "$f: $got Mermaid block(s) rendered"
     done ;;
   privacy)  # no email, home path or private word in a tracked file (the words live outside the repo: tests/privacy.py)
+    python3 tests/privacy.py --test
     python3 tests/privacy.py ;;
   *) say "unknown check: $1 (checks: $ALL)"; return 2 ;;
   esac

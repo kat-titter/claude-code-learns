@@ -118,7 +118,9 @@ python3 assets/draw.py      # after a figure edit: exits 1 if a figure's text fa
 
 The privacy check looks for names only where it is given them: one per line in
 `~/.config/claude-code-learns/private-words` locally, and in the `PRIVATE_WORDS` repository secret in CI. Without
-them it checks emails, home paths and your login name, and says that names went unchecked.
+them it checks emails, home paths and your login name, and says that names went unchecked. A line starting with `#`
+is a note, so the list can explain itself; `privacy.py --test` proves a note never becomes a word to hunt for. Add a
+word only after `git grep` shows it has no honest use in the repo, or every run fails on innocent text.
 
 `sh tests/checks.sh audit install` runs some of them; the mermaid check fetches mermaid-cli and a headless Chrome
 through `npx` the first time (about 200 MB). After editing a figure, redraw both its layouts and open each light, dark
