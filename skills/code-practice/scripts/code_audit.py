@@ -4,7 +4,7 @@
 Each check is a page-design rule read as a code rule:
   focus   one focal point per view      -> one job per function, files a reader can hold
   once    each fact once                -> no block of code living in two places
-  front   the page opens with its point -> a README that names files which exist (or git ignores), and the entry points
+  front   the page opens with its point -> a README naming files that exist (or .gitignore covers) and the entry points
   clutter erase chartjunk               -> no v2/_old/final files, no commented-out code
   space   negative space groups things  -> a top level short enough to read at a glance
   legend  every figure has a caption    -> every script opens with a line saying what it does
@@ -35,7 +35,7 @@ PROSE_RUN = re.compile(r"\b[a-zA-Z]+(?: [a-zA-Z]+){3}\b")  # four bare words in 
 WRITES = re.compile(r"write_text\(|\.write\(|open\([^)]*['\"]w|>\s*\S+\.html")
 BUILT_README = re.compile(r"built pages|generated|do not edit|written by", re.I)
 GENERATED_HEAD = re.compile(r"generated|do not edit", re.I)
-LOCAL_ONLY = re.compile(r"local only|not in git|out of git|gitignored|ignored by git", re.I)
+LOCAL_ONLY = re.compile(r"local only|not in git|out of git", re.I)
 SCRIPT_RE = re.compile(r"<script(?![^>]*\bsrc=)[^>]*>(.*?)</script>", re.S | re.I)
 STYLE_RE = re.compile(r"<style[^>]*>(.*?)</style>", re.S | re.I)
 JS_FN_START = re.compile(r"(?:function\s+(\w+)\s*\(|(?:const|let|var)\s+(\w+)\s*=\s*(?:async\s*)?(?:function\b|\([^)]*\)\s*=>|\w+\s*=>))")
@@ -179,13 +179,18 @@ def check_once(units, min_lines):
     return hits
 
 
-def git_ignores(repo, path):
-    """True if git ignores path, as a file or as a folder: a README may name what a script writes into an ignored
-    folder (data/, build/), which need not exist yet. The folder form matters because a pattern like `build/` matches
-    only a directory, and on a fresh clone there is none. False when git cannot answer (exit 128, e.g. a path behind
-    a symlink), so the path still counts as missing; git's message for that is not shown."""
-    return any(subprocess.run(["git", "-C", repo, "check-ignore", "-q", "--", p],
-                              stderr=subprocess.DEVNULL).returncode == 0 for p in (path, path + "/"))
+def git_ignores(repo, path, files):
+    """True if a .gitignore tracked in the repo ignores path, as a file or as a folder: a README may name what a script
+    writes into an ignored folder (data/, build/), which need not exist yet, and a pattern like `build/` matches only a
+    directory, hence the folder form. Rules outside the commit (.git/info/exclude, a global excludes file) do not
+    count, so every clone gets the same answer. False when git cannot answer (exit 128, e.g. a path behind a symlink),
+    so the path still counts as missing."""
+    for p in (path, path + "/"):
+        r = subprocess.run(["git", "-C", repo, "check-ignore", "-v", "--", p], capture_output=True, text=True)
+        source, _, rest = r.stdout.partition(":")  # .gitignore:3:build/<TAB>build/out.html
+        if r.returncode == 0 and source in files and not rest.partition(":")[2].startswith("!"):
+            return True
+    return False
 
 
 def check_front(repo, files):
@@ -202,12 +207,13 @@ def check_front(repo, files):
         if LOCAL_ONLY.search(line):
             continue
         # a link, or a backticked path with a folder in it; a bare `CLAUDE.md` in prose may name a file elsewhere
-        for ref in re.findall(r"`([\w.-]+/[\w./-]+)`|\]\((?!https?:|#|mailto:)([\w./%-]+)\)", line):
-            ref = (ref[0] or ref[1]).split("#")[0].replace("%20", " ").rstrip("/")
+        for ticked, linked in re.findall(r"`([\w.-]+/[\w./-]+)`|\]\((?!https?:|#|mailto:)([\w./%-]+)\)", line):
+            ref = (ticked or linked).split("#")[0].replace("%20", " ").rstrip("/")
             ref = ref[2:] if ref.startswith("./") else ref
             # `results/e16` may name a family of files (e16-*.json), so a prefix match counts
+            # a backticked path may name what a script writes into a folder git ignores; a link must resolve
             if ref and ref not in tracked and not any(f.startswith(ref) or f.endswith("/" + ref) for f in files) \
-                    and not git_ignores(repo, ref):
+                    and not (ticked and git_ignores(repo, ref, files)):
                 hits.append((readme, n, f"names {ref}, which is not in the repo"))
     top_code = [f for f in files if "/" not in f and os.path.splitext(f)[1] in CODE_EXT]
     hits += [(readme, 1, f"top-level {f} not mentioned") for f in top_code if f not in text]
