@@ -4,7 +4,7 @@
 #   sh tests/checks.sh audit install    run some: python audit install watch check-repair mermaid privacy
 # Each check is a command that exits non-zero when something broke; nothing here asks a model. The mermaid check
 # fetches @mermaid-js/mermaid-cli and a headless Chrome through npx the first time (about 200 MB).
-ALL="python audit install watch check-repair mermaid privacy"
+ALL="python audit install watch check-repair mermaid privacy formatting"
 S=skills/capture-lesson/scripts
 MMDC=@mermaid-js/mermaid-cli@11.17.1
 say() { printf '%s\n' "$*"; }
@@ -94,6 +94,9 @@ one() {
   privacy)  # no email, home path or private word in a tracked file (the words live outside the repo: tests/privacy.py)
     python3 tests/privacy.py --test
     python3 tests/privacy.py ;;
+  formatting)  # nothing public wraps where wrapping breaks a column layout
+    python3 tests/formatting.py --test
+    python3 tests/formatting.py ;;
   *) say "unknown check: $1 (checks: $ALL)"; return 2 ;;
   esac
 }

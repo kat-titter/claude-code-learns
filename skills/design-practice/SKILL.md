@@ -39,6 +39,15 @@ a person with a style profile, read it too (`<name>-style`).
 
 - Passing every check is not a design: legibility checks fail only on contrast, overlap and size, so a page can pass for five builds while each fix adds a device (a hint pill, a linked key, a rail, a boxed lede). Set a budget before building (two faces, five or six sizes, ink plus one highlight plus the data hues, a few component kinds, one drawing style for every figure, no shadows or gradients), subtract until it holds, and run `design_budget.py` (a peptide explainer, 2026-11-05: 55 colours, 9 sizes, 132 classes, 17 shadows rebuilt to 21, 6, 17, 0; then "still a mess ... lots of great AI-designed front ends").
 - Fine at 1280 px, broken at 400 px: measure both widths with page-legibility-check before calling a page done.
+- **Anything public gets read at its rendered width before it ships.** A checker measures contrast, overlap and
+  size; it does not see a two-column block fold its second column under its first, a name break as "html-slide-" /
+  "deck", or a row of twelve links turn into a wall. Those are the failures a stranger notices first, and on a
+  public page they are embarrassing rather than merely untidy. So open the rendered thing, read it at the width
+  people get, and fix what wraps: shorten the line, split the row, or change the form. Where the medium has a fixed
+  width, make it a check rather than a habit (`tests/formatting.py` in this repo flags an aligned line over 78
+  characters inside a fenced block, and leaves a plain long command alone). (2026-11-21: a README's file map and
+  sample report, and the same map in AGENTS.md, all wrapped on GitHub; "for any public content, avoid embarassment,
+  check for weird formatting failures, design should be consistent and easy to read".)
 - One fact told by a chip, a pressed button and a letter reads as polish to the builder and clutter to the reader: keep the one or two the reader acts on (Text).
 - Invented symbols collide with chemistry or a nearby key (Ck, Cc, Pu): run check_symbols.py where they are generated (Text).
 - One outline colour doing two jobs (orange for a moodboard pick and for dream B): one style per role (Text).

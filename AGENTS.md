@@ -56,9 +56,9 @@ keeps, grey pages are files, and you are the one dark node.
 
 ```bash
 ./install.sh --name yourname --dry-run    # every change, nothing written
-./install.sh --name yourname              # skills, a style skill, a CLAUDE.md section, five hooks; backups first
+./install.sh --name yourname              # skills, a style skill, hooks
 ./install.sh --name yourname --examples   # also the example skills
-./install.sh --uninstall                  # remove hooks, the two skills and the CLAUDE.md section; notes stay
+./install.sh --uninstall                  # remove them again; your notes stay
 ```
 
 Set `CLAUDE_CONFIG_DIR` to a temporary folder to try it without touching `~/.claude`. Re-running is safe. The weekly
@@ -68,30 +68,30 @@ beside it, pasted into a daily one.
 ## Files
 
 ```
-install.sh                         set up or undo; merges hooks into settings.json after a backup
-skills/capture-lesson/SKILL.md     how a lesson is generalized, routed and written (one line, an example, the date)
-skills/capture-lesson/scripts/     hooks (feedback-nudge, skill-router, scan-corrections, skill-usage-log) and the
-                                   weekly scripts (skills-watch, trigger-misses, practice-watch, audit-skills,
-                                   trigger-evals, refactor-gate), the daily scanner (loose-ends), the library page
-                                   (skills-browser); lessonlib.py is shared
-skills/capture-lesson/weekly-watch.md   the weekly agent's prompt: steps, lanes, scope
-skills/capture-lesson/daily-nudge.md    the daily agent's prompt: read only, one pick, at most 8 loose ends, one push line
-skills/prompt-practice/            turns a terse request into a brief; prompt-nudge.py is its hook
-skills/workflow-design/            loops inside a graph; references/check-repair.js is a working Workflow template
-skills/code-practice/              clean code and repo layout (--examples); scripts/code_audit.py checks a repo
-                                   against page-design rules read as code (focus, once, front, clutter, space,
-                                   legend, light)
-skills/*/                          34 example skills, installed with --examples: how work runs, code, pages and
-                                   figures (design-practice, app-design, figure-design, science-figures,
-                                   pitch-deck-story), writing and science (moa-explainer among them), audio
-templates/, *.example*, memory.example/       starting files the installer copies
-assets/draw.py                     draws the README banner and figures: *-light.svg, *-dark.svg, and *-phone-*.svg
-                                   for screens under 600 px; one data list per figure feeds both layouts
-index.html                         the explainer page (GitHub Pages)
-tests/checks.sh                    the seven program checks, run by .github/workflows/checks.yml on every pull request
-tests/privacy.py                   the privacy check: emails, home paths and private words kept outside the repo
-tests/check-repair.test.mjs        runs the check-repair.js template against stub agents
-.github/workflows/                 checks.yml (the checks), claude-review.yml (the agent review, once its secret is set)
+install.sh                    set up or undo; merges hooks after a backup
+skills/capture-lesson/        how a lesson is generalized, routed, written
+  SKILL.md                    one line, an example, the date
+  scripts/                    the five hooks, the weekly and daily scripts,
+                              the audit, the library page; lessonlib shared
+  weekly-watch.md             the weekly agent's prompt: steps, lanes, scope
+  daily-nudge.md              the daily agent's prompt: one pick, 8 loose ends
+skills/prompt-practice/       a terse request becomes a brief; has a hook
+skills/workflow-design/       loops inside a graph; check-repair.js template
+skills/code-practice/         clean code and repo layout; code_audit.py reads
+                              page-design rules as code
+skills/*/                     34 example skills, installed with --examples:
+                              how work runs, code, pages and apps, figures,
+                              measuring, writing and science, audio
+templates/, *.example*        starting files the installer copies
+assets/draw.py                draws the banner and figures: light, dark and
+                              phone layouts from one data list per figure
+index.html                    the explainer page (GitHub Pages)
+coding-skills.md              every skill, one line each
+tests/checks.sh               the eight checks CI runs on every pull request
+tests/privacy.py              emails, home paths and private words stay out
+tests/formatting.py           no column layout wraps on the rendered page
+tests/check-repair.test.mjs   runs the template against stub agents
+.github/workflows/            checks.yml, claude-review.yml
 ```
 
 ## Invariants
@@ -112,8 +112,12 @@ tests/check-repair.test.mjs        runs the check-repair.js template against stu
 ## Checks before a push
 
 ```bash
-sh tests/checks.sh          # the seven checks CI runs: python, audit, install, watch, check-repair, mermaid, privacy
-python3 assets/draw.py      # after a figure edit: exits 1 if a figure's text falls under WCAG AA contrast
+# the eight checks CI runs: python, audit, install, watch,
+# check-repair, mermaid, privacy, formatting
+sh tests/checks.sh
+
+# after a figure edit: exits 1 if a figure's text falls under WCAG AA contrast
+python3 assets/draw.py
 ```
 
 The privacy check looks for names only where it is given them: one per line in
@@ -131,7 +135,7 @@ and phone file to check that no label overlaps another.
 Three gates, in the order their evidence is strong. A program's exit code first, an agent's review second, a person
 last and only where a mistake is hard to undo.
 
-1. **Checks.** `.github/workflows/checks.yml` runs the seven checks above on every pull request, one job each. All seven
+1. **Checks.** `.github/workflows/checks.yml` runs the eight checks above on every pull request, one job each. All eight
    green, or nothing merges. A red check is fixed on the branch, never skipped.
 2. **Agent review.** `.github/workflows/claude-review.yml` has Claude review the diff with the `code-review` plugin and
    leave inline comments, once the repo has a `CLAUDE_CODE_OAUTH_TOKEN` secret. The plugin reviews a pull request once,

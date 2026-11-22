@@ -31,7 +31,9 @@ A correction becomes a habit:
 
 > **You:** no, the legend covers the data. legends go outside the plot.
 >
-> **Claude:** Moved the legend below the chart. *Skill updated: figure-design, legend outside the plot.*
+> **Claude:** Moved the legend below the chart.
+>
+> *Skill updated: figure-design, legend outside the plot.*
 
 Two weeks later, in a new session, you ask for a different chart. The legend is outside the plot and nobody had to say
 so. One line went in, carrying four things: what to do, an example, the reason, the date. That reason is what lets the
@@ -42,8 +44,9 @@ Not every lesson belongs in the same place, so each one is routed:
 | you say | goes to | why |
 |---|---|---|
 | "legends go outside the plot" | a general skill | good practice for anyone |
-| "no dots between words, I find them fussy" | your own `yourname-style` | your taste, not everyone's rule |
+| "no emoji in commit messages, I find them noisy" | your `yourname-style` | your taste, not everyone's rule |
 | "staging is on port 8080, not 3000" | that project's memory | true for one project |
+| "always run the tests before saying it works" | `CLAUDE.md` | true in every session |
 
 Pushback you make in passing is caught too. Say "why is this taking so long?" halfway through a busy task, and Claude,
 busy, may answer nothing. After the reply, though, a hook files the line in `lessons-inbox.md`. There it sits. Say
@@ -117,7 +120,7 @@ across every figure here and on the explainer page. [`AGENTS.md`](AGENTS.md#map)
 
 1. **Notice.** Hooks spot feedback ("no", "from now on", "too much text") and add one line to route it.
 2. **Generalize.** Claude asks which family of problems the correction belongs to, and writes for the whole family.
-3. **Route.** Each lesson climbs as high as its reason holds, and no higher — the three rows above.
+3. **Route.** Each lesson climbs as high as its reason holds, and no higher — the four rows above.
 4. **Write the gist.** One line: what to do, an example, the reason, the date. A second case folds into that same line.
 5. **Check it loads.** A lesson nothing ever loads may as well not exist. So the setup tests loading twice over, in
    trigger tests and in your real sessions.
@@ -134,13 +137,13 @@ links you pasted into Claude Code that week, plus any accounts you list in `~/.c
 proposes a practice from them only when a measurement on your own sessions shows you don't follow it yet.
 
 ```
-Stalled      1 of last week's 4 proposals landed; the other 3 get one more week, then drop
-Upstream     1 new skill (pdf-forms): overlaps nothing you have
-Practice     a post you pasted: "gate on the exit code"; 0 of 103 workflows do, so proposed
-Gaps         2 notes in the inbox that no skill covers, e.g. "the numbers don't match the sources"
-Misses       github-practice loaded for 3 of 9 requests that matched it: add "pages, publish" to its description?
-Health       one skill is 540 lines: split by task
-Proposed     at most five changes, grouped by what a mistake would cost to undo
+Stalled    1 of last week's 4 proposals landed; 3 get one more week
+Upstream   1 new skill (pdf-forms): overlaps nothing you have
+Practice   a post you pasted, "gate on the exit code": 0 of 103 do it
+Gaps       2 inbox notes no skill covers, e.g. numbers missing sources
+Misses     github-practice loaded for 3 of 9 matching requests
+Health     one skill is 540 lines: split by task
+Proposed   at most five changes, grouped by undo cost
 ```
 
 That last line is the whole design of the thing. Proposals are sorted by how hard a mistake would be to undo, and you
@@ -175,9 +178,11 @@ like. [`coding-skills.md`](coding-skills.md) describes all 36 in a line each.
 |---|---|
 | **how work runs** | [work-practice](skills/work-practice/SKILL.md), [judgement-calls](skills/judgement-calls/SKILL.md), [sanity](skills/sanity/SKILL.md), [metacognition](skills/metacognition/SKILL.md), [token-budget](skills/token-budget/SKILL.md), [workflow-design](skills/workflow-design/SKILL.md) |
 | **code** | [grug-brain](skills/grug-brain/SKILL.md), [deep-modules](skills/deep-modules/SKILL.md), [code-practice](skills/code-practice/SKILL.md), [debug-practice](skills/debug-practice/SKILL.md), [github-practice](skills/github-practice/SKILL.md), [systems-practice](skills/systems-practice/SKILL.md), [macos-long-render](skills/macos-long-render/SKILL.md) |
-| **pages and figures** | [design-practice](skills/design-practice/SKILL.md), [app-design](skills/app-design/SKILL.md), [figure-design](skills/figure-design/SKILL.md), [science-figures](skills/science-figures/SKILL.md), [tufte-principles](skills/tufte-principles/SKILL.md), [hci-principles](skills/hci-principles/SKILL.md), [interactive-figures](skills/interactive-figures/SKILL.md), [page-legibility-check](skills/page-legibility-check/SKILL.md), [verify-animated-page](skills/verify-animated-page/SKILL.md), [html-docs](skills/html-docs/SKILL.md), [html-slide-deck](skills/html-slide-deck/SKILL.md), [pitch-deck-story](skills/pitch-deck-story/SKILL.md) |
+| **pages and apps** | [design-practice](skills/design-practice/SKILL.md), [app-design](skills/app-design/SKILL.md), [hci-principles](skills/hci-principles/SKILL.md), [html-docs](skills/html-docs/SKILL.md), [html-slide-deck](skills/html-slide-deck/SKILL.md), [pitch-deck-story](skills/pitch-deck-story/SKILL.md) |
+| **figures** | [figure-design](skills/figure-design/SKILL.md), [science-figures](skills/science-figures/SKILL.md), [tufte-principles](skills/tufte-principles/SKILL.md), [interactive-figures](skills/interactive-figures/SKILL.md) |
+| **measuring** | [page-legibility-check](skills/page-legibility-check/SKILL.md), [verify-animated-page](skills/verify-animated-page/SKILL.md) |
 | **writing and science** | [storytelling](skills/storytelling/SKILL.md), [prose-voice](skills/prose-voice/SKILL.md), [humanize-science-writing](skills/humanize-science-writing/SKILL.md), [field-vocabulary](skills/field-vocabulary/SKILL.md), [citations](skills/citations/SKILL.md), [controlled-comparisons](skills/controlled-comparisons/SKILL.md), [moa-explainer](skills/moa-explainer/SKILL.md), [viral-tweet](skills/viral-tweet/SKILL.md) |
-| **audio** | [beat-align-audio](skills/beat-align-audio/SKILL.md), for when two songs must overlap without the kicks flamming |
+| **audio** | [beat-align-audio](skills/beat-align-audio/SKILL.md) |
 
 ## When rules disagree
 
@@ -225,19 +230,19 @@ Everything stays on your machine, in `~/.claude`:
 ## Files
 
 ```
-install.sh                set up, or undo, in one command
-skills/capture-lesson/    the skill that writes skills, its hooks, checks, prompts and library browser
-skills/prompt-practice/   turns a short or dictated request into a clear brief, with its hook
-skills/workflow-design/   loops inside a graph, with a check-repair workflow template
-skills/code-practice/     clean code and a tidy repo, with code_audit.py: page-design rules read as code
-skills/judgement-calls/   what to do when two lessons disagree: rules as guidelines, which source wins
-skills/html-*/, ...       34 example general skills, installed with --examples
-templates/, *.example*    starting points: style skill, CLAUDE.md, hooks, memory, inbox, X watch list
-coding-skills.md          every skill, one line each: a library after a few months of use
-index.html                the explainer page, which carries the design and the research behind it
-AGENTS.md                 the map, commands, invariants, checks and merge lanes, for coding agents
-tests/, .github/          the program checks every pull request runs, then Claude's review
-assets/                   the banner and figures as SVG text, drawn by assets/draw.py
+install.sh               set up, or undo, in one command
+skills/capture-lesson/   the skill that writes skills, with its hooks
+skills/prompt-practice/  turns a terse or dictated request into a brief
+skills/workflow-design/  loops inside a graph, with a working template
+skills/code-practice/    clean code and a tidy repo, with code_audit.py
+skills/judgement-calls/  what to do when two lessons disagree
+skills/*/                34 example skills, installed with --examples
+templates/, *.example*   starting points the installer copies
+coding-skills.md         every skill, one line each
+index.html               the explainer page: the design and the research
+AGENTS.md                the map, invariants, checks and merge lanes
+tests/, .github/         the eight checks every pull request runs
+assets/                  the banner and figures as SVG text, from draw.py
 ```
 
 <details>

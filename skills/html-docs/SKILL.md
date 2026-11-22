@@ -92,7 +92,8 @@ behind one. When the reader should push a system and watch it answer, that is an
 ## 5 · Check before sharing
 
 ```bash
-python3 ${CLAUDE_SKILL_DIR}/scripts/light-audit.py page.html        # add --deck for a deck, --json for tooling
+# --deck for a deck, --json for tooling
+python3 ${CLAUDE_SKILL_DIR}/scripts/light-audit.py page.html
 ```
 
 It reads the file without a browser and reports weight (file, script, style, embedded images, outside hosts),
