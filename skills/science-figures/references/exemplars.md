@@ -10,7 +10,7 @@ adopt, what not to copy. Take the form and check the claims separately: a well-d
 <https://www.cerebrolysin.com/wp-content/uploads/2022/06/MoA_booklet_CEREINT092021-21.pdf>
 
 52 landscape pages (16:9, 918 × 522 pt), set in InDesign, code CEREINT092021-21. It is the print companion to a
-mode-of-action animation; the cover reads "Mode of Action / Booklet to video". Read 2026-11-22: the text layer, every
+mode-of-action animation; the cover reads "Mode of Action / Booklet to video". Read 2026-11-21: the text layer, every
 page at 40 dpi, four pages at 90 dpi.
 
 **Adopt**
