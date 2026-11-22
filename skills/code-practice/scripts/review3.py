@@ -4,7 +4,8 @@
 The judgement comes from three agents (the review-3 workflow); everything with one right answer lives here:
 the PR's facts, the audit delta, the 2-of-3 tally, the one GitHub review and the merge gate.
 
-  prep  OWNER/REPO N --repo-dir DIR   snapshot head and base, save the diff and the audit delta; prints the run folder
+  prep  OWNER/REPO N --repo-dir DIR   snapshot head and base, save the diff and the audit delta; prints the run
+                                      folder and the next two steps: the exact Workflow call, then ready
   tally RUN                           RUN/raw.json (findings + votes) -> tally.json, review.md, comments.json
   post  RUN [--again]                 one COMMENT review: the body, plus inline comments on consensus lines only
   ready RUN                           merge gate; exit 0 only when nothing blocks, and print the merge command
@@ -20,7 +21,9 @@ pins the rules above on fixed cases (exit 1 if they drift).
 import argparse
 import importlib.util
 import json
+import os
 import re
+import shlex
 import subprocess
 import sys
 import time
@@ -32,7 +35,7 @@ SCHOOL_NAME = {"grug": "grug", "ousterhout": "Ousterhout", "maintainability": "m
 MARK = {"important": "🔴", "nit": "🟡"}
 STATUS = "review-3"  # the commit status context; branch protection requires it by this name
 NEAR = 3  # lines: two consensus findings this close in one file are one problem (a run had twins at :82 and :84)
-RUNS = Path.home() / ".claude" / "review3"
+RUNS = Path(os.environ.get("CLAUDE_CONFIG_DIR") or Path.home() / ".claude") / "review3"
 AUDIT = Path(__file__).with_name("code_audit.py")
 PASSING = {"SUCCESS", "NEUTRAL", "SKIPPED"}
 EMAIL = re.compile(r"[\w.%+-]+@([\w-]+\.)+[a-z]{2,}", re.I)  # the patterns claude-code-learns' tests/privacy.py uses
@@ -73,7 +76,7 @@ def prep(repo, pr, repo_dir):
         posted = load(run, "posted.json")
         set_status(repo, sha, *final_status(load(run, "tally.json")), posted["url"])
         print(f"already reviewed at {sha[:7]}: {posted['url']}; skip the workflow and run ready", file=sys.stderr)
-        print(run)
+        print(f"{run}\nnext: {ready_command(run)}")
         return
     set_status(repo, sha, "pending", "three reviewers are reading this head", info["url"])
     sh("git", "-C", repo_dir, "fetch", "-q", "origin", f"pull/{pr}/head", info["baseRefName"])
@@ -88,7 +91,18 @@ def prep(repo, pr, repo_dir):
     info.update(repo=repo, repo_dir=str(Path(repo_dir).resolve()), base_sha=base_sha, run=str(run),
                 files=[f["path"] for f in info["files"]], author=info["author"]["login"])
     save(run, "pr.json", info)
-    print(run)
+    print(f"{run}\n{next_steps(run, repo, pr)}")
+
+
+def ready_command(run):
+    return f"python3 {shlex.quote(str(Path(__file__).resolve()))} ready {shlex.quote(str(run))}"
+
+
+def next_steps(run, repo, pr):
+    """The two calls after prep, ready to paste. The workflow gets this file's own path, so wherever the skill is
+    installed (CLAUDE_CONFIG_DIR, a clone), review-3.js runs the review3.py that prepared the run."""
+    args = {"run": str(run), "repo": repo, "pr": pr, "script": str(Path(__file__).resolve())}
+    return f"next: Workflow({{name: 'review-3', args: {json.dumps(args)}}})\nthen: {ready_command(run)}"
 
 
 def snapshot(repo_dir, sha, dest):
@@ -235,7 +249,7 @@ def consensus_table(rows):
     for r in rows:
         dissent = "; ".join(f"{SCHOOL_NAME[v['school']]}: {v['reason']}" for v in r["dissent"]) or "none"
         where = f"`{r['file']}:{r['line']}`" + ("" if r["in_diff"] else " (outside the diff)")
-        also = f" Also raised as {'; '.join(r['also'])}." if r["also"] else ""
+        also = f" Also raised as {cell('; '.join(r['also']))}." if r["also"] else ""  # agent text, as title is
         out.append(f"| {MARK[r['severity']]} | **{cell(r['title'])}** {cell(r['fix'])}{also} | {where} "
                    f"| {len(r['agree'])}/3 {names(r['agree'])} | {cell(dissent)} |")
     return out
@@ -375,6 +389,19 @@ def pr_state(repo, number):
     return state
 
 
+def ci_state(check):
+    """One statusCheckRollup row -> "passing", "failing" or "running". gh mixes two shapes: a CheckRun has a status,
+    and a conclusion once that status is COMPLETED; a StatusContext (a commit status) has a state alone."""
+    if check.get("__typename") == "StatusContext":
+        state = check.get("state")
+        if state in ("PENDING", "EXPECTED"):
+            return "running"
+        return "passing" if state in PASSING else "failing"
+    if check.get("status") != "COMPLETED":
+        return "running"
+    return "passing" if check.get("conclusion") in PASSING else "failing"
+
+
 def check_blocks(t, now, default):
     blocks, warns = [], []
     if now["state"] != "OPEN":
@@ -387,12 +414,10 @@ def check_blocks(t, now, default):
         blocks.append(f"review covers {t['head_sha'][:7]}, head is now {now['headRefOid'][:7]}: review again")
     blocks += [f"blocking finding: {r['title']} ({r['file']}:{r['line']})" for r in t["rows"] if r["blocking"]]
     # review-3 is this script's own status, and its verdict is already in the blocking findings above
-    checks = [c for c in now["statusCheckRollup"] or [] if c.get("context") != STATUS]
-    failing = [c.get("name") or c.get("context") for c in checks
-               if (c.get("conclusion") or c.get("state")) not in PASSING | {None, "PENDING", "EXPECTED"}]
-    pending = [c.get("name") or c.get("context") for c in checks
-               if c.get("status") not in (None, "COMPLETED") or c.get("state") in ("PENDING", "EXPECTED")]
-    blocks += [f"CI failing: {n}" for n in failing] + [f"CI still running: {n}" for n in pending]
+    checks = [(c.get("name") or c.get("context"), ci_state(c)) for c in now["statusCheckRollup"] or []
+              if c.get("context") != STATUS]
+    blocks += [f"CI failing: {n}" for n, s in checks if s == "failing"]
+    blocks += [f"CI still running: {n}" for n, s in checks if s == "running"]
     if not checks:
         warns.append("no CI checks on this PR: nothing but the review and the audit has run")
     return blocks, warns

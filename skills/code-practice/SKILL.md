@@ -89,17 +89,20 @@ Three reviewers with different opinions review each pull request apart, their co
 review, and only the taste calls reach the person. Agents judge; `scripts/review3.py` holds everything with one right
 answer: the PR's facts, the 2-of-3 tally, the one GitHub review, the commit status and the merge gate.
 
-- **Run it**: `review3.py prep OWNER/REPO N --repo-dir CLONE` (prints RUN), then
-  `Workflow({name: 'review-3', args: {run: RUN, repo: 'OWNER/REPO', pr: N}})`, then `review3.py ready RUN`. The
-  workflow is `scripts/review-3.js`; link it into `~/.claude/workflows/` to call it by name. If prep says the head was
-  already reviewed, skip the workflow.
+- **Run it**: `review3.py prep OWNER/REPO N --repo-dir CLONE`, then do what it prints: the exact `Workflow` call,
+  whose args carry review3.py's own path as `script` (one install path, `CLAUDE_CONFIG_DIR` included), then
+  `review3.py ready RUN`. If the head was already reviewed, prep prints only the ready command. The workflow is
+  `scripts/review-3.js`; link it into `~/.claude/workflows/` to call it by name.
 - **Three schools, separate contexts**: grug (no to abstraction, the 80/20, integration tests), Ousterhout (deep
   modules, leakage, design it twice) and maintainability (the table above, starting from the audit delta). They
   disagree on purpose, on function length most of all. Each finds alone, at most 8 findings, then votes blind on the
   other two schools' findings without knowing who raised them.
-- **Consensus is counted in code** (`review3_test.py` pins it): 2 of 3 agreeing is a finding to act on; 2 of 3
-  calling it important blocks; 1 of 3 is a taste call, listed and never blocking. Rows on the same file:line merge,
-  and so do consensus rows within 3 lines (one run cited one bug at `:82` and `:84`); a taste call stays its own row.
+- **Consensus is counted in code** (`review3_test.py` pins it, and runs the gate through a fake `gh`;
+  `review-3.test.mjs` runs the workflow on stub agents): 2 of 3 agreeing is a finding to act on; 2 of 3 calling it
+  important blocks; 1 of 3 is a taste call, listed and never blocking. Consensus rows from different reviewers in one
+  file within 3 lines of each other, the same line included, merge into one row that names the others under "Also
+  raised as" (one run cited one bug at `:82` and `:84`); one reviewer's own rows never merge, and a taste call stays
+  its own row.
   A finding outside the diff, such as a doc the PR left stale, goes in the review body, not inline.
 - **Built pages are judged at their script**: prep lists the pages `code_audit.py` traces to a builder in
   `generated.txt` and drops them from the diff the reviewers read. On a first run a 5k-line built page was most of
@@ -113,8 +116,9 @@ answer: the PR's facts, the 2-of-3 tally, the one GitHub review, the commit stat
   PR was merged from the web page while its second review ran, and that review found 5 blockers; a gate only
   protects a merge that waits for it.
 - **It starts itself**: `scripts/review3-hook.py` is a PostToolUse hook on Bash. After `gh pr create`, `gh pr ready`
-  or a push that gives an open, non-draft PR the gh user owns a new head, it adds one line telling the session to
-  review it, and prints nothing on every other command (about 45 ms). Keep a PR in draft while pushing fixes;
+  or a push, when the PR is open, not a draft, in a repo the gh user owns, and its head has no `review-3` status yet,
+  it adds one line telling the session to review it; it reads that status, never the push output (`git push -q`
+  prints nothing). On every other command it prints nothing (about 45 ms). Keep a PR in draft while pushing fixes;
   `gh pr ready` starts the review. The installer does not add it, because each review costs real tokens:
 
   ```json

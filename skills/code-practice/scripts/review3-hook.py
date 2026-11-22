@@ -1,33 +1,37 @@
 #!/usr/bin/env python3
 """PostToolUse hook on Bash: when a command opens, readies or pushes to a pull request, ask for a review by three.
 
-It prints one line of context, and only for an open, non-draft PR the gh user owns that just got a new head; on every
-other command it prints nothing (about 45 ms). It never blocks and always exits 0. Keep a PR in draft while pushing
+It prints one line of context, and only for an open, non-draft PR in a repo the gh user owns whose head has no
+review-3 status yet; on every other command it prints nothing (about 45 ms). GitHub's status is the record of a
+reviewed head, so the hook never reads push output: a push that changed nothing, was refused or printed nothing (-q)
+leaves a head that has its status or does not. It never blocks and always exits 0. Keep a PR in draft while pushing
 fixes and it stays quiet; `gh pr ready` starts the review. The review itself is review3.py and the review-3 workflow.
 
   settings.json: "PostToolUse": [{"matcher": "Bash", "hooks": [{"type": "command", "timeout": 15,
                   "command": "python3 \"$HOME/.claude/skills/code-practice/scripts/review3-hook.py\""}]}]
-  python3 review3-hook.py --test     the command parser on fixed cases; exit 1 if it drifts
+  python3 review3-hook.py --test     the command parser and the PR-head rule on fixed cases; exit 1 if they drift
 """
 import json
 import os
 import re
+import shlex
 import subprocess
 import sys
 from pathlib import Path
 
-REVIEW3 = Path(__file__).resolve().with_name("review3.py")
+HERE = Path(__file__).resolve().parent
+REVIEW3 = HERE / "review3.py"
+sys.path.insert(0, str(HERE))
 PR_URL = re.compile(r"https://github\.com/[\w.-]+/[\w.-]+/pull/\d+")
 # a command starts a line or follows ; & | or (, so a push on the last line of a multi-line command counts
 CREATE = re.compile(r"(?:^|[;&|(]\s*)gh\s+pr\s+create\b", re.M)
 READY = re.compile(r"(?:^|[;&|(]\s*)gh\s+pr\s+ready\b([^;&|)\n]*)", re.M)
 PUSH = re.compile(r"(?:^|[;&|(]\s*)git((?:\s+-C\s+\S+)?)\s+push\b([^;&|)\n]*)", re.M)
 CD = re.compile(r"(?:^|[;&|]\s*)cd\s+(\S+)\s*&&", re.M)
-NO_NEW_HEAD = re.compile(r"Everything up-to-date|\[rejected\]|^error:|^fatal:", re.M)
 
 
 def target(command, output):
-    """Which PR a Bash command opened, readied or gave a new head, as (what `gh pr view` takes: a URL, number,
+    """Which PR a Bash command opened, readied or pushed to, as (what `gh pr view` takes: a URL, number,
     branch or "" for the current branch; the folder to ask in, or None for the session's). None when it did none."""
     if CREATE.search(command):
         url = PR_URL.search(output)
@@ -37,7 +41,7 @@ def target(command, output):
         args = ready.group(1).split()
         return None if "--undo" in args else (next((a for a in args if not a.startswith("-")), ""), None)
     push = PUSH.search(command)
-    if push is None or NO_NEW_HEAD.search(output):
+    if push is None:
         return None
     args = push.group(2).split()
     if any(a in ("--delete", "-d", "--tags", "--dry-run", "-n") or a.startswith(":") for a in args):
@@ -47,6 +51,14 @@ def target(command, output):
     cd = CD.search(command)
     where = push.group(1).split()[-1] if push.group(1) else (cd.group(1) if cd else None)
     return ("" if branch == "HEAD" else branch, where)
+
+
+def needs_review(pr, owner):
+    """True for an open, non-draft PR in a repo the gh user owns whose head has no review-3 status: not reviewed,
+    and no review running (prep sets pending first)."""
+    from review3 import STATUS  # here, not at the top: most Bash calls never get this far
+    contexts = {c.get("context") for c in pr.get("statusCheckRollup") or []}
+    return pr["state"] == "OPEN" and not pr["isDraft"] and pr["url"].split("/")[3] == owner and STATUS not in contexts
 
 
 def nudge(d):
@@ -60,19 +72,19 @@ def nudge(d):
     where = os.path.abspath(os.path.expanduser((where or d.get("cwd") or ".").strip("'\"")))
     # three calls at most, each well inside the 15 s hook timeout
     run = lambda *cmd: subprocess.run(cmd, cwd=where, capture_output=True, text=True, timeout=4)
-    view = run("gh", "pr", "view", *([selector] if selector else []), "--json", "number,url,isDraft,state")
+    view = run("gh", "pr", "view", *([selector] if selector else []), "--json",
+               "number,url,isDraft,state,headRefOid,statusCheckRollup")
     if view.returncode:
         return None
     pr = json.loads(view.stdout)
-    repo, n = "/".join(pr["url"].split("/")[3:5]), pr["number"]
     owner = run("gh", "config", "get", "user", "-h", "github.com").stdout.strip()
-    if pr["state"] != "OPEN" or pr["isDraft"] or repo.split("/")[0] != owner:
+    if not needs_review(pr, owner):
         return None
-    top = run("git", "rev-parse", "--show-toplevel").stdout.strip() or where
-    return (f"review-3: {pr['url']} has a new head to review (code-practice, Review by three). Run "
-            f"`python3 {REVIEW3} prep {repo} {n} --repo-dir {top}`, then Workflow({{name: 'review-3', args: "
-            f"{{run: <the folder prep printed>, repo: '{repo}', pr: {n}}}}}), then `review3.py ready RUN`. Pushing "
-            f"again soon? Review after the last push: the merge waits for the review-3 check on the head either way.")
+    repo, top = "/".join(pr["url"].split("/")[3:5]), run("git", "rev-parse", "--show-toplevel").stdout.strip() or where
+    return (f"review-3: {pr['url']} head {pr['headRefOid'][:7]} has no review-3 status (code-practice, Review by "
+            f"three). Run `python3 {shlex.quote(str(REVIEW3))} prep {repo} {pr['number']} --repo-dir "
+            f"{shlex.quote(top)}` and do what it prints. Pushing again soon? Review after the last push: the merge "
+            f"waits for the review-3 check on the head either way.")
 
 
 def selftest():
@@ -86,13 +98,28 @@ def selftest():
         ("gh pr ready 12", "", ("12", None)),
         ("gh pr ready --undo 12", "", None),
         ("git push origin --delete feat", "", None),
-        ("git push", "Everything up-to-date", None),
-        ("git push origin feat", " ! [rejected]        feat -> feat (fetch first)", None),
+        ("git push", "Everything up-to-date", ("", None)),  # the head's own review-3 status decides, not the output
+        ("git push origin feat", " ! [rejected]        feat -> feat (fetch first)", ("feat", None)),
         ("git status && echo 'gh pr view'", "", None),
         ("git commit -q -F - <<'EOF'\nmsg\nEOF\ngit push -q origin feat; git rev-parse HEAD", "", ("feat", None)),
     ]
     bad = [f"target({c!r}): got {target(c, o)}, want {w}" for c, o, w in cases if target(c, o) != w]
-    print("\n".join(bad) or f"selftest: {len(cases)} commands parse as expected")
+    pr = lambda rollup=(), state="OPEN", draft=False, owner="o": {"url": f"https://github.com/{owner}/r/pull/7",
+                                                                  "state": state, "isDraft": draft,
+                                                                  "statusCheckRollup": list(rollup)}
+    ctx = lambda name, state: {"__typename": "StatusContext", "context": name, "state": state}
+    check = {"__typename": "CheckRun", "name": "python", "status": "COMPLETED", "conclusion": "SUCCESS"}
+    prs = [
+        (pr(), True),
+        (pr([check]), True),
+        (pr([check, ctx("review-3", "PENDING")]), False),
+        (pr([ctx("review-3", "SUCCESS")]), False),
+        (pr(draft=True), False),
+        (pr(state="MERGED"), False),
+        (pr(owner="someone-else"), False),
+    ]
+    bad += [f"needs_review({p}): got {needs_review(p, 'o')}, want {w}" for p, w in prs if needs_review(p, "o") != w]
+    print("\n".join(bad) or f"selftest: {len(cases)} commands parse and {len(prs)} PR heads judge as expected")
     sys.exit(1 if bad else 0)
 
 
