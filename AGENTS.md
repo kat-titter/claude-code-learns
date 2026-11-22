@@ -84,7 +84,9 @@ skills/*/                     34 example skills, installed with --examples:
                               measuring, writing and science, audio
 templates/, *.example*        starting files the installer copies
 assets/draw.py                draws the banner and figures: light, dark and
-                              phone layouts from one data list per figure
+                              phone layouts from one data list per figure;
+                              also the site's tab icon and share card
+assets/render_png.py          renders the icon and card PNGs (headless Chrome)
 index.html                    the explainer page (GitHub Pages)
 coding-skills.md              every skill, one line each
 tests/checks.sh               the eight checks CI runs on every pull request
@@ -105,7 +107,8 @@ tests/check-repair.test.mjs   runs the template against stub agents
 - **The weekly pass writes a report only.** Edits, installs, commits and messages wait for a person. Two lines in
   its prompt change that: `open lane: apply` lets open-lane wording edits apply themselves, one revertable commit
   each, and `evidence lane: apply on pass` lets a one-skill change apply when `refactor-gate.py` exits 0.
-- **Light repo.** Text only: binaries are ignored, figures are SVG text from `assets/draw.py`.
+- **Light repo.** Text only: binaries are ignored, figures are SVG text from `assets/draw.py`. The one exception is
+  the site's two PNGs (home-screen icon, share card), which `assets/render_png.py` remakes from their SVGs.
 - **One story.** A change to a script, a count or a number updates the README, `index.html` and this file in the
   same commit.
 
@@ -118,6 +121,9 @@ sh tests/checks.sh
 
 # after a figure edit: exits 1 if a figure's text falls under WCAG AA contrast
 python3 assets/draw.py
+
+# after an icon or share-card edit: remakes both PNGs, exits 1 on a wrong size
+python3 assets/render_png.py
 ```
 
 The privacy check looks for names only where it is given them: one per line in

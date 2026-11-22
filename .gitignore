@@ -7,6 +7,9 @@
 *.mp4
 *.webp
 .DS_Store
+# but the site's icon and share card, which a page can only link as PNG (made by assets/render_png.py)
+!assets/apple-touch-icon.png
+!assets/share-card.png
 .claude/worktrees/
 # local state the scripts write when run from a clone
 .skill-index.json
