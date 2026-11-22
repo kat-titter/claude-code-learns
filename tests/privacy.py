@@ -26,22 +26,6 @@ def private_words():
     return words
 
 
-def word_rx(words):
-    """One pattern for every private word, matched whole and in any case; None when there are none."""
-    return re.compile(r'(?<![a-z0-9])(' + '|'.join(map(re.escape, sorted(words))) + r')(?![a-z0-9])', re.I) if words else None
-
-
-def own_address_rx(owner):
-    """The owner's own GitHub addresses, which a public repo may name."""
-    return re.compile(rf'github\.com/{re.escape(owner)}/|{re.escape(owner)}\.github\.io', re.I)
-
-
-def leaks(line, own_address, word):
-    """The kinds of leak on one line: an email, a home path, a private word. review3.py checks reviews with this."""
-    line = own_address.sub('OWNER', line)
-    return [kind for kind, rx in (('email', EMAIL), ('home path', HOME_PATH), ('private word', word)) if rx and rx.search(line)]
-
-
 def git(*args):
     return subprocess.run(['git', *args], capture_output=True, text=True, check=True).stdout
 
@@ -78,9 +62,9 @@ def main():
     os.chdir(Path(__file__).resolve().parent.parent)
     origin = git('remote', 'get-url', 'origin').strip()
     owner = re.search(r'[:/]([^/:]+)/[^/]+?(\.git)?$', origin).group(1)
-    own_address = own_address_rx(owner)
+    own_address = re.compile(rf'github\.com/{re.escape(owner)}/|{re.escape(owner)}\.github\.io', re.I)
     words = private_words()
-    word = word_rx(words)
+    word = re.compile(r'(?<![a-z0-9])(' + '|'.join(map(re.escape, sorted(words))) + r')(?![a-z0-9])', re.I) if words else None
     hits = []
     for path in git('ls-files').splitlines():
         if path == 'LICENSE':
@@ -90,7 +74,10 @@ def main():
         except (UnicodeDecodeError, FileNotFoundError):
             continue
         for n, line in enumerate(lines, 1):
-            hits += [f'{path}:{n}: {kind}' for kind in leaks(line, own_address, word)]
+            line = own_address.sub('OWNER', line)
+            for kind, rx in (('email', EMAIL), ('home path', HOME_PATH), ('private word', word)):
+                if rx and rx.search(line):
+                    hits.append(f'{path}:{n}: {kind}')
     print('\n'.join(hits) or 'no emails, home paths or private words')
     if not words:
         print(f'no private words set (PRIVATE_WORDS, or {WORDS_FILE}): names were not checked')

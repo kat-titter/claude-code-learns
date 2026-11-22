@@ -11,8 +11,8 @@ the PR's facts, the audit delta, the 2-of-3 tally, the one GitHub review and the
   selftest                            the tally rules on a fixed case; exit 1 if they drift
 
 Rules: 2 of 3 schools agreeing is a consensus finding (act on it); 2 of 3 calling it important blocks the merge;
-1 of 3 is a taste call, listed and never blocking. Findings on the same file:line merge into one row, as do
-consensus findings within NEAR lines of each other; a finding on a line outside the diff (a doc the PR left stale)
+1 of 3 is a taste call, listed and never blocking. Consensus findings in one file within NEAR lines of each other
+(the same line included) merge into one row; a finding on a line outside the diff (a doc the PR left stale)
 goes in the review body instead of inline. The verdict is also the `review-3` commit status on the head: pending from
 prep, success at 0 blocking after post, failure otherwise. Make it a required check and GitHub's merge button waits.
 review3-hook.py, beside this file, tells a session to start a review when a PR gets a new head.
@@ -279,19 +279,26 @@ def inline_comments(rows):
 # ---------- post: one review on GitHub ----------
 
 def private_hits(run, repo, text):
-    """What the PR head's own tests/privacy.py finds in the review (emails, home paths, private words), so the word
-    list has one parser. Only claude-code-learns has that check; there, a missing one refuses the post."""
+    """Emails, home paths and private words in a review of claude-code-learns, the repo that keeps such a list. The
+    list and its patterns come from tests/privacy.py on the PR's base, code the owner already merged: the PR head's
+    copy never runs here. A base without the check refuses the post."""
     if not repo.endswith("/claude-code-learns"):
         return []
-    checker = Path(run) / "head" / "tests" / "privacy.py"
+    checker = Path(run) / "base" / "tests" / "privacy.py"
     spec = importlib.util.spec_from_file_location("privacy", checker)
     privacy = importlib.util.module_from_spec(spec)
     try:
         spec.loader.exec_module(privacy)
-        own, word = privacy.own_address_rx(repo.split("/")[0]), privacy.word_rx(privacy.private_words())
+        words, rules = privacy.private_words(), [("email", privacy.EMAIL), ("home path", privacy.HOME_PATH)]
     except (OSError, AttributeError) as e:
         raise SystemExit(f"cannot run {checker} ({e}): the review was not checked for private words, not posted")
-    return sorted({kind for line in text.splitlines() for kind in privacy.leaks(line, own, word)})
+    if words:  # whole words in any case, as privacy.py matches them
+        rules.append(("private word", re.compile(r"(?<![a-z0-9])(" + "|".join(map(re.escape, sorted(words)))
+                                                 + r")(?![a-z0-9])", re.I)))
+    owner = repo.split("/")[0]  # the PR page names its own repo and owner in its header
+    text = re.sub(rf"{re.escape(repo)}|github\.com/{re.escape(owner)}/|{re.escape(owner)}\.github\.io", "OWNER",
+                  text, flags=re.I)
+    return sorted({kind for kind, rx in rules if rx.search(text)})
 
 
 def post(run, again=False):
@@ -391,6 +398,8 @@ def ready(run):
     now = pr_state(pr["repo"], pr["number"])
     default = gh_json("repo", "view", pr["repo"], "--json", "defaultBranchRef")["defaultBranchRef"]["name"]
     blocks, warns = check_blocks(t, now, default)
+    if not (Path(run) / "posted.json").exists():  # a tally nobody can read on GitHub is not a review
+        blocks.insert(0, f"the review was never posted: run review3.py post {run}")
     warns += collisions(pr, now)
     save(run, "ready.json", {"blocks": blocks, "warns": warns, "head_sha": now["headRefOid"]})
     for b in blocks:

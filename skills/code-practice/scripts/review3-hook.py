@@ -57,7 +57,8 @@ def nudge(d):
         return None
     selector, where = hit
     where = os.path.abspath(os.path.expanduser((where or d.get("cwd") or ".").strip("'\"")))
-    run = lambda *cmd: subprocess.run(cmd, cwd=where, capture_output=True, text=True, timeout=8)
+    # three calls at most, each well inside the 15 s hook timeout
+    run = lambda *cmd: subprocess.run(cmd, cwd=where, capture_output=True, text=True, timeout=4)
     view = run("gh", "pr", "view", *([selector] if selector else []), "--json", "number,url,isDraft,state")
     if view.returncode:
         return None
