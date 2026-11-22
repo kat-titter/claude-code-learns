@@ -1,7 +1,7 @@
 export const meta = {
   name: 'review-3',
   description: 'Three reviewers of different schools review one PR apart, vote blind on each other, and review3.py tallies 2 of 3 and posts one review',
-  whenToUse: 'A PR needs a review the person does not have to do. First run review3.py prep; pass {run, repo, pr}. Then review3.py ready RUN.',
+  whenToUse: 'A PR needs a review the person does not have to do. Run review3.py prep and make the Workflow call it prints, then the ready command it prints.',
   phases: [
     { title: 'Find', detail: 'grug, Ousterhout and maintainability each review the PR alone' },
     { title: 'Vote', detail: 'each votes blind on the findings the other two raised' },
@@ -11,9 +11,9 @@ export const meta = {
 
 // Judgement here, rules in code: agents find and vote; review3.py counts the votes, renders and posts.
 // Node map: Find (3 agents, apart) -> candidates (code) -> Vote (3 agents, blind) -> Post (1 agent runs the script).
-const { run: RUN, repo: REPO, pr: PR } = args || {}
-if (!RUN || !REPO || !PR) throw new Error('args needs {run, repo, pr}; run is the folder review3.py prep printed')
-const SCRIPT = '"$HOME/.claude/skills/code-practice/scripts/review3.py"'
+// script is review3.py's own path, as prep prints it: one install location, wherever the skill lives
+const { run: RUN, repo: REPO, pr: PR, script: SCRIPT } = args || {}
+if (!RUN || !REPO || !PR || !SCRIPT) throw new Error('args needs {run, repo, pr, script}: make the Workflow call review3.py prep printed')
 const MAX_FINDINGS = 8 // per reviewer: noise is what makes people stop reading reviews
 
 const SCHOOLS = [
@@ -131,20 +131,19 @@ const raw = { repo: REPO, pr: PR, findings: candidates, votes, missing_reviewers
     important: [...candidates, ...Object.values(votes).flat()].filter(x => x.severity === 'important').length } }
 const posted = await agent(`Do exactly this and nothing else.
 1. Write the JSON below to ${RUN}/raw.json, byte for byte, with the Write tool.
-2. Run: python3 ${SCRIPT} tally "${RUN}"
+2. Run: python3 "${SCRIPT}" tally "${RUN}"
    If it exits 1 saying raw.json "was not copied whole" or "lost keys", write the file again from the JSON below
    and run step 2 once more. Never edit the JSON to make it pass.
-3. Only if step 2 exited 0, run: python3 ${SCRIPT} post "${RUN}"
+3. Only if step 2 exited 0, run: python3 "${SCRIPT}" post "${RUN}"
 Return each exit code (post_exit -1 if skipped), the review URL the post printed (empty if none), and the last lines
 both commands printed.
 
 ${JSON.stringify(raw)}`, { label: 'post', phase: 'Post', schema: POSTED, model: 'sonnet', effort: 'low' })
 
-if (!posted || posted.tally_exit !== 0 || posted.post_exit !== 0) {
-  log(`post step failed: ${posted ? posted.output : 'agent died'}`)
-}
-// raw rides back to the session too: if the copy failed twice, it can write raw.json from this and rerun tally
-// without paying for Find and Vote again
+const failed = !posted || posted.tally_exit !== 0 || posted.post_exit !== 0
+if (failed) log(`post step failed: ${posted ? posted.output : 'agent died'}`)
+// raw rides back only when the post failed: the session writes raw.json from it and reruns tally without paying for
+// Find and Vote again. After a good post it would only add ~20k characters to the session's context.
 return { review_url: posted ? posted.review_url : '', tally_exit: posted ? posted.tally_exit : null,
   post_exit: posted ? posted.post_exit : null, output: posted ? posted.output : '', counts: raw.counts,
-  missing_reviewers: missing, next: `python3 ${SCRIPT} ready "${RUN}"`, raw }
+  missing_reviewers: missing, ...(failed ? { raw } : {}) } // the ready command is review3.py's to print (prep, post)
