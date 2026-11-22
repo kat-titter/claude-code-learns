@@ -49,8 +49,8 @@ def target(command, output):
         return None
     named = [a for a in args if not a.startswith("-")]  # remote, then refspec (local:remote, or one name for both)
     sent, branch = (named[1].split(":")[0], named[1].split(":")[-1]) if len(named) > 1 else ("HEAD", "")
-    cd = CD.search(command)
-    where = push.group(1).split()[-1] if push.group(1) else (cd.group(1) if cd else None)
+    cds = [m.group(1) for m in CD.finditer(command) if m.start() < push.start()]  # the last cd before the push
+    where = push.group(1).split()[-1] if push.group(1) else (cds[-1] if cds else None)
     return ("" if branch == "HEAD" else branch, where, sent)
 
 
@@ -99,6 +99,7 @@ def selftest():
         ("gh pr create --fill", f"Creating pull request\n{url}\n", (url, None, None)),
         ("git add -A && git commit -m 'x' && git push -u origin feat", "To github.com:o/r.git", ("feat", None, "feat")),
         ("cd /tmp/r && git push origin HEAD:feat", "", ("feat", "/tmp/r", "HEAD")),
+        ("cd /lib && git commit -qm x\ncd /tmp/r && git push -q origin feat", "", ("feat", "/tmp/r", "feat")),
         ("git -C /tmp/r push", "", ("", "/tmp/r", "HEAD")),
         ("git push origin HEAD", "", ("", None, "HEAD")),
         ("git push origin wip:feat", "", ("feat", None, "wip")),
