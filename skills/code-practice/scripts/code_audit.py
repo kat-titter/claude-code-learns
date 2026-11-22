@@ -179,7 +179,7 @@ def check_once(units, min_lines):
     return hits
 
 
-def git_ignores(repo, path, files):
+def git_ignores(repo, path, tracked):
     """True if a .gitignore tracked in the repo ignores path, as a file or as a folder: a README may name what a script
     writes into an ignored folder (data/, build/), which need not exist yet, and a pattern like `build/` matches only a
     directory, hence the folder form. Rules outside the commit (.git/info/exclude, a global excludes file) do not
@@ -188,7 +188,8 @@ def git_ignores(repo, path, files):
     for p in (path, path + "/"):
         r = subprocess.run(["git", "-C", repo, "check-ignore", "-v", "--", p], capture_output=True, text=True)
         source, _, rest = r.stdout.partition(":")  # .gitignore:3:build/<TAB>build/out.html
-        if r.returncode == 0 and source in files and not rest.partition(":")[2].startswith("!"):
+        _line, _, pattern = rest.partition(":")
+        if r.returncode == 0 and source in tracked and not pattern.startswith("!"):
             return True
     return False
 
@@ -211,9 +212,10 @@ def check_front(repo, files):
             ref = (ticked or linked).split("#")[0].replace("%20", " ").rstrip("/")
             ref = ref[2:] if ref.startswith("./") else ref
             # `results/e16` may name a family of files (e16-*.json), so a prefix match counts
+            in_git = ref in tracked or any(f.startswith(ref) or f.endswith("/" + ref) for f in files)
             # a backticked path may name what a script writes into a folder git ignores; a link must resolve
-            if ref and ref not in tracked and not any(f.startswith(ref) or f.endswith("/" + ref) for f in files) \
-                    and not (ticked and git_ignores(repo, ref, files)):
+            excused = bool(ticked) and git_ignores(repo, ref, tracked)
+            if ref and not in_git and not excused:
                 hits.append((readme, n, f"names {ref}, which is not in the repo"))
     top_code = [f for f in files if "/" not in f and os.path.splitext(f)[1] in CODE_EXT]
     hits += [(readme, 1, f"top-level {f} not mentioned") for f in top_code if f not in text]
