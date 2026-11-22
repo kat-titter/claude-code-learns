@@ -15,6 +15,10 @@ first, then the graph, then the step that writes each failure down as a rule. (A
 
 - An agent's `pass: true` is an opinion. Put the command and its exit code in the schema and gate on the number in
   code: `checks.every(c => c.exit_code === 0)`.
+- Say what a check scores before choosing it: the answer, the steps, the tool calls, the path taken, the conversation
+  or the cost. An exit code scores the answer only; a run that reaches the right file by a wasteful path passes it.
+  Gate on the cheapest level that catches the failure you fear (an X overview of 16 eval frameworks sorted them by
+  these levels, 2026-11-20, weekly X intake; only its summary line read).
 - verify, fix, verify again, once, is not a loop. Bound it and say what happens after the last round.
 - `parallel()` turns a dead agent into `null`. Count a null as a failure; "no errors" means nothing was reported.
 - Rerunning a whole workflow rewrites the units that passed. Resume (`resumeFromRunId`) or send back the failing unit.

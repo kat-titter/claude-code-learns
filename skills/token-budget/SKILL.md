@@ -74,7 +74,10 @@ Ranked by measured saving, on the sessions in the Gotchas:
    package and per human-judging round. A UserPromptSubmit hook, `scripts/context-nudge.py`, says so once at
    150k and again at each further 150k (`CONTEXT_NUDGE_AT` moves it).
 2. **Trim the fixed load.** A session starts at a median 80k (tools, MCP servers, skills, system prompt), re-read on
-   every call: turn off the plugins and connectors the work does not use.
+   every call: turn off the plugins and connectors the work does not use. For a job that calls many tools, let the
+   agent write a short script that calls them (tools as files it imports) instead of loading every tool definition
+   into context: a reported cut from 150,000 to 2,000 tokens for the same task (X post on Anthropic's MCP write-up,
+   2026-11-21, weekly X intake; the write-up itself not yet read here).
 3. **Delegate the reading.** A subagent or workflow agent starts small and returns the conclusion (the DJ run's
    8 agents averaged 97k tokens each); briefs carry paths, not pasted contents.
 4. **Fewer, fuller calls.** Independent tool calls in one message; long runs in the background, waited on once at
