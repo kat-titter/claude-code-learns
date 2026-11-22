@@ -1,0 +1,183 @@
+<!doctype html><html lang="en" data-theme="light"><meta charset="utf-8">
+<title>figure-lint fixture</title>
+<!-- One known case per rule, each in its own figure, plus a clean figure as the negative control.
+     Every <figure> carries data-expect listing the rules it should trip; nothing else should fire.
+     Run: node figure-lint.cjs fixtures/figure-lint-fixture.html --widths 360:1000:320 -->
+<style>
+ :root{--paper:#fff;--ink:#17181c;--muted:#6b6f76;--rose:#ec3c6e;--line:#d8dadf}
+ :root[data-theme=dark]{--paper:#12131a;--ink:#f2f3f6;--muted:#9aa0aa;--line:#2c2f38}
+ @media (prefers-color-scheme:dark){:root:not([data-theme=light]){--paper:#12131a;--ink:#f2f3f6;--muted:#9aa0aa;--line:#2c2f38}}
+ body{background:var(--paper);color:var(--ink);font:15px/1.5 "DM Mono",ui-monospace,monospace;margin:0;padding:24px;max-width:960px}
+ h1{font-size:19px;margin:0 0 18px}
+ figure.fig{margin:0 0 34px;border-top:1px solid var(--line);padding-top:10px}
+ .scroll{overflow-x:auto}
+ figure.fig svg{display:block;width:100%;height:auto}
+ .fkey{margin:8px 0 6px;font-size:12px;color:var(--muted)}
+ .fkey .key{margin-right:14px}
+ .sw{display:inline-block;width:11px;height:11px;background:var(--c);vertical-align:-1px;margin-right:4px}
+ figcaption{font-size:13px;color:var(--muted)}
+ figcaption .k{color:var(--ink);font-weight:600;margin-right:8px}
+ figcaption b{color:var(--ink);font-weight:600}
+ text{font-family:"DM Mono",ui-monospace,monospace}
+ .ink{fill:var(--ink)}.mu{fill:var(--muted)}
+ /* clipping cases */
+ .boxed{width:130px;overflow:hidden;white-space:nowrap;border:1px solid var(--line);padding:3px}
+ .cut{width:130px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;border:1px solid var(--line);padding:3px}
+ .stage{position:relative;height:46px}
+ .stage div{position:absolute;font-size:13px}
+ .offscreen{position:absolute;left:1560px;top:0;white-space:nowrap}
+</style>
+<h1>figure-lint fixture</h1>
+
+<figure class="fig" id="f-floater" data-expect="floater">
+ <div class="scroll"><svg viewBox="0 0 600 150" role="img" aria-label="one bar, in grams">
+  <rect x="20" y="96" width="120" height="30" fill="var(--rose)"/>
+  <text x="20" y="88" class="ink" font-size="12">kidney</text>
+  <text x="470" y="26" class="mu" font-size="12">plasma</text>
+ </svg></div>
+ <figcaption><span class="k">Figure 1</span><b>Uptake rises with dose.</b> n = 3 wells per point, SD error bars.</figcaption>
+</figure>
+
+<figure class="fig" id="f-sentence" data-expect="sentence">
+ <div class="scroll"><svg viewBox="0 0 600 120" role="img" aria-label="one bar, in grams">
+  <rect x="20" y="60" width="150" height="30" fill="var(--rose)"/>
+  <text x="20" y="52" class="ink" font-size="12">kidney</text>
+  <text x="20" y="110" class="mu" font-size="12">The kidney clears most of the dose within the first hour.</text>
+ </svg></div>
+ <figcaption><span class="k">Figure 2</span><b>Clearance rises with dose.</b> n = 4 animals, SEM error bars.</figcaption>
+</figure>
+
+<figure class="fig" id="f-meta" data-expect="meta">
+ <div class="scroll"><svg viewBox="0 0 600 120" role="img" aria-label="one bar, in grams">
+  <rect x="20" y="60" width="150" height="30" fill="var(--rose)"/>
+  <text x="20" y="52" class="ink" font-size="12">kidney</text>
+  <text x="180" y="80" class="mu" font-size="12">point at a bar</text>
+ </svg></div>
+ <figcaption><span class="k">Figure 3</span><b>Clearance rises with dose.</b> n = 4 animals, SEM error bars.</figcaption>
+</figure>
+
+<figure class="fig" id="f-echo" data-expect="echo">
+ <div class="scroll"><svg viewBox="0 0 600 120" role="img" aria-label="one bar, in grams">
+  <rect x="20" y="60" width="150" height="30" fill="var(--rose)"/>
+  <text x="20" y="52" class="ink" font-size="12">kidney clearance falls with dose</text>
+ </svg></div>
+ <figcaption><span class="k">Figure 4</span><b>Kidney clearance falls with dose.</b> n = 4 animals, SEM error bars.</figcaption>
+</figure>
+
+<figure class="fig" id="f-title" data-expect="title-not-finding">
+ <div class="scroll"><svg viewBox="0 0 600 120" role="img" aria-label="one bar, in grams">
+  <rect x="20" y="60" width="150" height="30" fill="var(--rose)"/>
+  <text x="20" y="52" class="ink" font-size="12">kidney</text>
+ </svg></div>
+ <figcaption><span class="k">Figure 5</span><b>What crossed human skin in the lab?</b> n = 3 samples, SD error bars.</figcaption>
+</figure>
+
+<figure class="fig" id="f-panel" data-expect="panel-title">
+ <div class="scroll"><svg viewBox="0 0 600 120" role="img" aria-label="one bar, in grams">
+  <rect x="20" y="60" width="150" height="30" fill="var(--rose)"/>
+  <text x="20" y="52" class="ink" font-size="13" font-weight="600">joining two residues</text>
+ </svg></div>
+ <figcaption><span class="k">Figure 6</span><b>Bond formation needs one water out.</b> n = 2 runs, range shown.</figcaption>
+</figure>
+
+<figure class="fig" id="f-sizes" data-expect="sizes">
+ <div class="scroll"><svg viewBox="0 0 600 150" role="img" aria-label="one bar, in grams">
+  <g text-anchor="end">
+   <text x="140" y="30" class="ink" font-size="16">kidney</text>
+   <text x="140" y="54" class="ink" font-size="14">liver</text>
+   <text x="140" y="78" class="mu" font-size="12">plasma</text>
+   <text x="140" y="100" class="mu" font-size="11">muscle</text>
+  </g>
+  <rect x="150" y="18" width="180" height="14" fill="var(--rose)"/>
+  <rect x="150" y="43" width="130" height="14" fill="var(--rose)"/>
+  <rect x="150" y="68" width="90" height="14" fill="var(--rose)"/>
+  <rect x="150" y="90" width="50" height="14" fill="var(--rose)"/>
+ </svg></div>
+ <figcaption><span class="k">Figure 7</span><b>Uptake splits by tissue.</b> n = 5 animals, SD error bars.</figcaption>
+</figure>
+
+<figure class="fig" id="f-keydup" data-expect="key-dup">
+ <div class="scroll"><svg viewBox="0 0 600 120" role="img" aria-label="one bar, in grams">
+  <rect x="20" y="60" width="150" height="30" fill="var(--rose)"/>
+  <text x="20" y="52" class="ink" font-size="12">copper</text>
+ </svg></div>
+ <div class="fkey"><span class="key"><i class="sw" style="--c:var(--rose)"></i>copper</span></div>
+ <figcaption><span class="k">Figure 8</span><b>Copper crosses first.</b> n = 3 samples, SD error bars.</figcaption>
+</figure>
+
+<figure class="fig" id="f-nametwice" data-expect="name-twice">
+ <div class="scroll"><svg viewBox="0 0 600 120" role="img" aria-label="one bar, in grams">
+  <rect x="20" y="60" width="150" height="30" fill="var(--rose)"/>
+  <text x="20" y="52" class="ink" font-size="12">GHK-Cu</text>
+  <text x="100" y="80" class="ink" font-size="12">GHK-Cu</text>
+ </svg></div>
+ <figcaption><span class="k">Figure 9</span><b>Intact skin keeps the complex out.</b> GHK-Cu was measured at 9 hours. n = 3 samples, SD error bars.</figcaption>
+</figure>
+
+<figure class="fig" id="f-axis" data-expect="axis-unlabelled">
+ <div class="scroll"><svg viewBox="0 0 600 170" role="img" aria-label="dose against uptake">
+  <line x1="60" y1="130" x2="560" y2="130" stroke="var(--ink)" stroke-width="1.4"/>
+  <line x1="120" y1="130" x2="120" y2="136" stroke="var(--ink)" stroke-width="1.4"/>
+  <line x1="240" y1="130" x2="240" y2="136" stroke="var(--ink)" stroke-width="1.4"/>
+  <line x1="360" y1="130" x2="360" y2="136" stroke="var(--ink)" stroke-width="1.4"/>
+  <line x1="480" y1="130" x2="480" y2="136" stroke="var(--ink)" stroke-width="1.4"/>
+  <circle cx="240" cy="90" r="4" fill="var(--rose)"/><circle cx="360" cy="70" r="4" fill="var(--rose)"/>
+  <text x="300" y="158" class="mu" font-size="12" text-anchor="middle">dose</text>
+ </svg></div>
+ <figcaption><span class="k">Figure 10</span><b>Uptake climbs with dose.</b> n = 6 wells per point, SD error bars.</figcaption>
+</figure>
+
+<figure class="fig" id="f-non" data-expect="no-n">
+ <div class="scroll"><svg viewBox="0 0 600 170" role="img" aria-label="three bars, in micrograms">
+  <rect x="60" y="60" width="60" height="70" fill="var(--rose)"/>
+  <rect x="160" y="40" width="60" height="90" fill="var(--rose)"/>
+  <rect x="260" y="80" width="60" height="50" fill="var(--rose)"/>
+  <text x="60" y="150" class="mu" font-size="12">1 &#181;g</text>
+ </svg></div>
+ <figcaption><span class="k">Figure 11</span><b>Uptake differs by tissue.</b> Measured in three tissues.</figcaption>
+</figure>
+
+<figure class="fig" id="f-clip" data-expect="clip-ancestor clip-ellipsis clip-viewbox clip-viewport text-overlap">
+ <div class="scroll"><svg viewBox="0 0 600 120" role="img" aria-label="one bar, in grams">
+  <rect x="20" y="60" width="150" height="58" fill="var(--rose)"/>
+  <text x="20" y="52" class="ink" font-size="12">kidney</text>
+  <text x="20" y="138" class="mu" font-size="12">below the box</text>
+ </svg></div>
+ <div class="boxed"><span>a label wider than the box it sits in</span></div>
+ <div class="cut">a label the ellipsis cuts off here</div>
+ <div class="stage"><div style="left:0;top:4px">first reading</div><div style="left:14px;top:9px">second reading</div></div>
+ <div class="offscreen">far past the right edge</div>
+ <figcaption><span class="k">Figure 12</span><b>Clipping shows up between the widths we test.</b> n = 1 page, every width swept.</figcaption>
+</figure>
+
+<figure class="fig" id="f-arrow" data-expect="mark-on-text">
+ <div class="scroll"><svg viewBox="0 0 600 190" role="img" aria-label="an arrow through a label, in grams">
+  <!-- fires: a stroke runs through the label, and a filled blob covers part of another -->
+  <path d="M40 30 L520 150" fill="none" stroke="var(--ink)" stroke-width="1.6"/>
+  <text x="300" y="96" class="ink" font-size="12" text-anchor="middle">kidney uptake</text>
+  <circle cx="120" cy="170" r="13" fill="var(--rose)"/>
+  <text x="120" y="174" class="ink" font-size="12" text-anchor="middle">R label</text>
+  <!-- must NOT fire: a name inside its own glyph, and a label with a paper halo over a line -->
+  <path d="M380 150 a44 26 0 1 0 88 0 a44 26 0 1 0 -88 0" fill="var(--xna)" stroke="var(--muted)" stroke-width="1.4"/>
+  <text x="424" y="155" class="ink" font-size="12" text-anchor="middle">EPAC2</text>
+  <line x1="150" y1="60" x2="300" y2="60" stroke="var(--muted)" stroke-width="1.4"/>
+  <text x="225" y="64" class="ink" font-size="12" text-anchor="middle" style="paint-order:stroke" stroke="var(--paper)" stroke-width="3">haloed</text>
+ </svg></div>
+ <figcaption><span class="k">Figure 14</span><b>Uptake rises with dose.</b> n = 3 wells per point, SD error bars.</figcaption>
+</figure>
+
+<figure class="fig" id="f-clean" data-expect="">
+ <div class="scroll"><svg viewBox="0 0 600 170" role="img" aria-label="dose against uptake, in micrograms per gram">
+  <line x1="60" y1="130" x2="560" y2="130" stroke="var(--ink)" stroke-width="1.4"/>
+  <line x1="120" y1="130" x2="120" y2="136" stroke="var(--ink)" stroke-width="1.4"/>
+  <line x1="240" y1="130" x2="240" y2="136" stroke="var(--ink)" stroke-width="1.4"/>
+  <line x1="360" y1="130" x2="360" y2="136" stroke="var(--ink)" stroke-width="1.4"/>
+  <line x1="480" y1="130" x2="480" y2="136" stroke="var(--ink)" stroke-width="1.4"/>
+  <circle cx="240" cy="90" r="4" fill="var(--rose)"/><circle cx="360" cy="70" r="4" fill="var(--rose)"/>
+  <text x="252" y="86" class="ink" font-size="12">low</text>
+  <text x="372" y="66" class="ink" font-size="12">high</text>
+  <text x="300" y="158" class="mu" font-size="12" text-anchor="middle">dose, &#181;g per gram</text>
+ </svg></div>
+ <figcaption><span class="k">Figure 13</span><b>Uptake climbs with dose.</b> Each dot is one plate mean; n = 6 wells per plate, SD error bars.</figcaption>
+</figure>
+</html>

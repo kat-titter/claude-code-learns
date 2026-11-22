@@ -15,21 +15,8 @@ ${CLAUDE_SKILL_DIR}/scripts/check-page.sh <page.html> [query] [delay-ms] [screen
 - `query` is appended to the URL (e.g. `solo=5` for one slide); `theme=light|dark` is added for you and sets `<html data-theme>`.
 - `delay-ms` (default 1500) is how long after load to measure; raise it for pages that fetch or animate in.
 - `screenshot-dir` also writes `desk-<theme>.png` and `phone-<theme>.png` to look at.
+- `WIDTHS="1280 1000 400"` picks the widths instead of the default pair; one under 500 is measured inside the iframe.
 - Output: one JSON line per run (1280/400 × light/dark), then PASS or FAIL. FAIL means contrast failures, overlaps (SVG text on text or dots, HTML text over a figure's boxes), shapes clipped at their svg's edge (`clipped`), or anything wider than the viewport. `tiny` (rendered text under 9 px) is listed but not counted; a 16:9 deck at phone width will always show it.
-
-Pages that `fetch()` JSON files next to them work as-is (the run allows file access from files). Pages that load claude.ai artifact `db` data render empty locally: make a test copy that defines a mock (e.g. `window.claude={use:async n=>n==='db'?mockDb:null}`) before the page script, fed with the real rows exported via `ArtifactData list` with `out_dir`. Either way, also check a stress copy with many extra rows piled on one place and one month.
-
-The checker jumps finite CSS/Web animations to their end before measuring: mid-animation (bars growing in) labels sit on the wrong background, and headless Chrome sometimes never starts an animation clock, so waiting can hang. If a result flips between runs, suspect timing first.
-
-For interactions (filters, popovers, drag), inject a small script into a test copy that clicks or dispatches `PointerEvent`s, then writes what the page shows into a `<pre>` for `--dump-dom` to read.
-
-For a slide deck that mounts each slide in a shadow root, the checker sees nothing inside the slides: write one flat page per
-view (the slide's markup in the light DOM, scaled to the window as the deck scales it, the view's class set, the stage layer's
-hide rule), and in it finish the entry animations (`document.getAnimations()`, `finish()`) and set `display:none` on whatever
-is still at opacity 0, so the other views stacked in the same slide do not join the count. Run the check per page, four at a time.
-Case: a pitch deck, 2026-10-26: the first flat pages, every view left in place, counted 05b's map labels on 05a.
-
-For a PDF made with Chrome `--print-to-pdf`, look at chosen pages without installing anything: render them through PDFKit from JavaScript for Automation (`osascript -l JavaScript`, `ObjC.import('PDFKit')`, `page.thumbnailOfSizeForBox(...)`, write PNG). The Swift toolchain can lag the SDK; JXA has no compile step.
 
 ## Gotchas
 
@@ -89,6 +76,65 @@ For a PDF made with Chrome `--print-to-pdf`, look at chosen pages without instal
 - A narrowed desktop window is not a phone: check at a true 400 px viewport.
 - Contrast computed against the CSS background misses text over images or gradients: measure against what is painted.
 - Text legible on desktop and too small on a phone ("text a bit larger, maybe 20%"): the tiny-text check runs at phone width.
+
+## The figure lint
+
+A second script, for the figures themselves rather than the page's contrast and overlaps.
+
+```bash
+NODE_PATH=<dir holding playwright> node ${CLAUDE_SKILL_DIR}/scripts/figure-lint.cjs <page.html> [options]
+```
+
+- `--pass figures` runs the figure-text rules at one width (`--width`, default 1000).
+- `--pass clip` sweeps `--widths LO:HI:STEP` (default 360:1440:40) in light and dark, every `<details>` open and
+  every hover card opened in turn. Clipping shows up between the widths people usually test.
+- `--expect` makes a fixture check itself: each `<figure>` declares in `data-expect` the rules it should trip, and
+  the run fails if a rule stops firing or fires where it should not. `scripts/fixtures/figure-lint-fixture.html`
+  has one known case per rule plus a clean control figure.
+- `--json PATH` writes every finding; `--max N` caps what is printed per rule.
+
+What it measures: text far from any mark it could name, a sentence where a label belongs, instruction and meta
+lines, a label repeating its own caption, figure titles that are not findings and panel titles that are not noun
+phrases, more than three rendered label sizes in one drawing, a key row repeating an in-place label, a name said
+twice in one block, an axis with no unit, a chart with no n, an arrow or mark crossing a label, text clipped by an
+ancestor or its own svg or truncated by an ellipsis, text over text, and figures whose text could not be measured.
+
+**Every rule here cost a false-positive round or two, and the pattern is always the same: the first version
+measured something other than what a reader sees.** The comments in `figure-lint-rules.js` say which, at the rule
+that learned it. The ones that generalise beyond this script:
+
+- A label belongs to a mark by **alignment** as well as proximity. An annotation column 30-60 px right of each
+  shape, centred on it, reads correctly; a flat distance rule called all 19 of them floaters.
+- **A cell in a table of text belongs to its table.** Half of a figure set is part table, and every cell was a hit.
+- A **heading** names a panel, a row or a column, so its distance to the nearest mark says nothing about it.
+- Only an **unstroked** shape behind a label is its backing. A drawn pill is a mark the label names, and skipping
+  it reported labels inside their own pills as far from anything.
+- A `dx`/`dy` **tspan starts its own run**: gluing them together hides a panel letter inside its own title.
+- The block for "said twice" is the **smallest self-contained unit** (a callout, a panel), not the drawing. A cell
+  map names one thing in four callouts because each callout has to stand alone, and panels sit side by side as
+  well as stacked.
+- A name match stops at a **word boundary**: `GLP-1R` is its own name, not a second mention of `GLP-1`.
+- A figure whose text **cannot be measured is not a clean figure**. One checker read a figure with its fold shut,
+  got zero painted nodes, and concluded the labels were not drawn; the rule now says so instead of staying silent.
+
+One rule is deliberately absent. Text running out of the box drawn around it is worth catching, but "a container"
+resisted three definitions: the smallest enclosing `<rect>` read every bead as a box, `<path>` made it worse, and
+requiring the rect to hold another mark still left a highlight band behind a run of beads holding the beads. The
+reasoning sits where the rule would go. A container probably has to be declared, not inferred.
+
+Pages that `fetch()` JSON files next to them work as-is (the run allows file access from files). Pages that load claude.ai artifact `db` data render empty locally: make a test copy that defines a mock (e.g. `window.claude={use:async n=>n==='db'?mockDb:null}`) before the page script, fed with the real rows exported via `ArtifactData list` with `out_dir`. Either way, also check a stress copy with many extra rows piled on one place and one month.
+
+The checker jumps finite CSS/Web animations to their end before measuring: mid-animation (bars growing in) labels sit on the wrong background, and headless Chrome sometimes never starts an animation clock, so waiting can hang. If a result flips between runs, suspect timing first.
+
+For interactions (filters, popovers, drag), inject a small script into a test copy that clicks or dispatches `PointerEvent`s, then writes what the page shows into a `<pre>` for `--dump-dom` to read.
+
+For a slide deck that mounts each slide in a shadow root, the checker sees nothing inside the slides: write one flat page per
+view (the slide's markup in the light DOM, scaled to the window as the deck scales it, the view's class set, the stage layer's
+hide rule), and in it finish the entry animations (`document.getAnimations()`, `finish()`) and set `display:none` on whatever
+is still at opacity 0, so the other views stacked in the same slide do not join the count. Run the check per page, four at a time.
+Case: a pitch deck, 2026-10-26: the first flat pages, every view left in place, counted 05b's map labels on 05a.
+
+For a PDF made with Chrome `--print-to-pdf`, look at chosen pages without installing anything: render them through PDFKit from JavaScript for Automation (`osascript -l JavaScript`, `ObjC.import('PDFKit')`, `page.thumbnailOfSizeForBox(...)`, write PNG). The Swift toolchain can lag the SDK; JXA has no compile step.
 
 ## Fonts actually rendered
 
