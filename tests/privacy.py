@@ -2,8 +2,10 @@
   python3 tests/privacy.py      exits 1 and prints file:line and the kind of each hit, never the line itself, so a
                                 public CI log shows no word
 Private words (names, places, accounts) live outside the repo, one per line or comma-separated: in $PRIVATE_WORDS (in
-CI, the repository secret of that name) or in ~/.config/claude-code-learns/private-words. Locally your login name is
-one too. LICENSE holds the one name the repo keeps, and the repo's own address holds its owner's, so both are skipped.
+CI, the repository secret of that name) or in ~/.config/claude-code-learns/private-words. A line starting with # is a
+note, not a word, so the list can explain itself. Locally your login name is one too. LICENSE holds the one name the
+repo keeps, and the repo's own address holds its owner's, so both are skipped.
+  python3 tests/privacy.py --test   checks the list parses as intended, then exits
 """
 import os, re, subprocess, sys
 from pathlib import Path
@@ -17,7 +19,8 @@ def private_words():
     text = os.environ.get('PRIVATE_WORDS', '')
     if WORDS_FILE.exists():
         text += '\n' + WORDS_FILE.read_text()
-    words = {w.strip().lower() for w in re.split(r'[,\n]', text) if w.strip()}
+    lines = [l for l in text.splitlines() if not l.lstrip().startswith('#')]   # a note, not a word
+    words = {w.strip().lower() for l in lines for w in l.split(',') if w.strip()}
     if not os.environ.get('CI') and os.environ.get('USER'):
         words.add(os.environ['USER'].lower())
     return words
@@ -25,6 +28,34 @@ def private_words():
 
 def git(*args):
     return subprocess.run(['git', *args], capture_output=True, text=True, check=True).stdout
+
+
+def self_test():
+    """A comment is dropped whole, commas and all, so a note never becomes something to hunt for."""
+    import tempfile
+    sample = ('# one per line. Deliberately not here: "widget", which the repo uses\n'
+              'Acme, Zarco\n'
+              '  # an indented note, with a comma\n'
+              'bluesky\n\n')
+    with tempfile.TemporaryDirectory() as d:
+        f = Path(d) / 'private-words'
+        f.write_text(sample)
+        global WORDS_FILE
+        WORDS_FILE, keep = f, WORDS_FILE
+        env = {k: os.environ.pop(k) for k in ('PRIVATE_WORDS', 'USER') if k in os.environ}
+        os.environ['CI'] = '1'
+        try:
+            got = private_words()
+        finally:
+            WORDS_FILE = keep
+            os.environ.update(env)
+            os.environ.pop('CI', None)
+    want = {'acme', 'zarco', 'bluesky'}
+    if got != want:
+        print(f'self-test failed: parsed {sorted(got)}, wanted {sorted(want)}')
+        return 1
+    print(f'self-test ok: {len(want)} words, 2 notes dropped')
+    return 0
 
 
 def main():
@@ -54,4 +85,4 @@ def main():
 
 
 if __name__ == '__main__':
-    sys.exit(main())
+    sys.exit(self_test() if '--test' in sys.argv else main())
