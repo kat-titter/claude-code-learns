@@ -34,17 +34,18 @@ one() {
     printf '# clean\nRun `ok.py`.\n' > "$r/README.md"; printf '"""Say hello."""\nprint("hello")\n' > "$r/ok.py"
     git -C "$r" add -A
     python3 "$A" "$r" >/dev/null || { say "code_audit flagged a clean repo:"; python3 "$A" "$r"; return 1; }
-    # a backticked path in a folder the repo's own .gitignore ignores passes; a link into it, a path only
-    # .git/info/exclude covers, a path only a file rule (*.png) covers and a negated (!) path stay flagged
-    printf 'build/\ncache/\n' > "$r/.gitignore"; printf 'secret/\n' >> "$r/.git/info/exclude"
-    printf '# clean\nRun `ok.py`; it writes `build/out.html` and fills `results/cache/`.\n' > "$r/README.md"
-    git -C "$r" add -A
+    # a backticked path in a folder the repo's own .gitignore ignores passes (build/, cache/, data/* beside a kept
+    # .gitkeep), as does a line marked gitignored; a link into an ignored folder, a path only .git/info/exclude covers,
+    # a path only a file rule (*.png) covers and a path under a negated folder (!logs/) are each named as missing
+    printf 'build/\ncache/\ndata/*\n!data/.gitkeep\n*.png\nlogs/\n!logs/\n' > "$r/.gitignore"
+    printf 'secret/\n' >> "$r/.git/info/exclude"; touch "$r/data/.gitkeep" 2>/dev/null || { mkdir "$r/data"; touch "$r/data/.gitkeep"; }
+    clean='# clean\nRun `ok.py`; it writes `build/out.html`, fills `results/cache/` and `data/raw.csv`.\nShots, gitignored: `shots/a.png`.\n'
+    printf "$clean" > "$r/README.md"; git -C "$r" add -A
     python3 "$A" "$r" >/dev/null || { say "code_audit flagged a path .gitignore covers:"; python3 "$A" "$r"; return 1; }
-    printf '*.png\nlogs/\n!logs/\n' >> "$r/.gitignore"
-    for line in '[x](build/y.html)' '`secret/z.txt`' '`review/gone.png`' '`logs/today.txt`'; do
-      printf '%s\n' "$line" >> "$r/README.md"; git -C "$r" add -A
-      python3 "$A" "$r" >/dev/null && { say "code_audit passed $line"; return 1; }
-      printf '# clean\nRun `ok.py`; it writes `build/out.html` and fills `results/cache/`.\n' > "$r/README.md"
+    for ref in 'build/y.html' 'secret/z.txt' 'review/gone.png' 'logs/today.txt'; do
+      case "$ref" in build/*) line="[x]($ref)" ;; *) line="\`$ref\`" ;; esac
+      { printf "$clean"; printf '%s\n' "$line"; } > "$r/README.md"; git -C "$r" add -A
+      case "$(python3 "$A" "$r" --detail 9)" in *"names $ref,"*) ;; *) say "code_audit did not name $ref as missing"; return 1 ;; esac
     done
     t=$(mktemp -d)
     printf '%s\n' '{"tools":[{"name":"Skill","description":"Invoke a skill"}]}' > "$t/defs.jsonl"
