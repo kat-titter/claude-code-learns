@@ -34,6 +34,17 @@ one() {
     printf '# clean\nRun `ok.py`.\n' > "$r/README.md"; printf '"""Say hello."""\nprint("hello")\n' > "$r/ok.py"
     git -C "$r" add -A
     python3 "$A" "$r" >/dev/null || { say "code_audit flagged a clean repo:"; python3 "$A" "$r"; return 1; }
+    # a backticked path that the repo's own .gitignore covers passes, as file or folder; a link into it, and a path
+    # only .git/info/exclude covers, stay flagged
+    printf 'build/\ncache/\n' > "$r/.gitignore"; printf 'secret/\n' >> "$r/.git/info/exclude"
+    printf '# clean\nRun `ok.py`; it writes `build/out.html` and fills `results/cache/`.\n' > "$r/README.md"
+    git -C "$r" add -A
+    python3 "$A" "$r" >/dev/null || { say "code_audit flagged a path .gitignore covers:"; python3 "$A" "$r"; return 1; }
+    for line in '[x](build/y.html)' '`secret/z.txt`'; do
+      printf '%s\n' "$line" >> "$r/README.md"; git -C "$r" add -A
+      python3 "$A" "$r" >/dev/null && { say "code_audit passed $line"; return 1; }
+      printf '# clean\nRun `ok.py`; it writes `build/out.html` and fills `results/cache/`.\n' > "$r/README.md"
+    done
     t=$(mktemp -d)
     printf '%s\n' '{"tools":[{"name":"Skill","description":"Invoke a skill"}]}' > "$t/defs.jsonl"
     printf '%s\n' '{"type":"user","message":{"content":[{"type":"text","text":"a regex: \"Base directory for this skill\""}]}}' > "$t/quoted.jsonl"
