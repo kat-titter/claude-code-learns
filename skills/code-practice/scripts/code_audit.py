@@ -35,7 +35,7 @@ PROSE_RUN = re.compile(r"\b[a-zA-Z]+(?: [a-zA-Z]+){3}\b")  # four bare words in 
 WRITES = re.compile(r"write_text\(|\.write\(|open\([^)]*['\"]w|>\s*\S+\.html")
 BUILT_README = re.compile(r"built pages|generated|do not edit|written by", re.I)
 GENERATED_HEAD = re.compile(r"generated|do not edit", re.I)
-LOCAL_ONLY = re.compile(r"local only|not in git|out of git", re.I)
+LOCAL_ONLY = re.compile(r"local only|not in git|out of git|gitignored|ignored by git", re.I)
 SCRIPT_RE = re.compile(r"<script(?![^>]*\bsrc=)[^>]*>(.*?)</script>", re.S | re.I)
 STYLE_RE = re.compile(r"<style[^>]*>(.*?)</style>", re.S | re.I)
 JS_FN_START = re.compile(r"(?:function\s+(\w+)\s*\(|(?:const|let|var)\s+(\w+)\s*=\s*(?:async\s*)?(?:function\b|\([^)]*\)\s*=>|\w+\s*=>))")
@@ -179,20 +179,22 @@ def check_once(units, min_lines):
     return hits
 
 
-def in_ignored_folder(repo, path, tracked, is_folder=False):
-    """True if a .gitignore tracked in the repo ignores path as a folder, or a folder above it: a README may name what a
-    script writes into an ignored folder (data/, build/), which need not exist yet. The path itself is asked about as
-    a folder only when the README wrote it with a trailing slash (is_folder), so a file rule (`*.png`) never excuses a
-    stale image in a folder that is gone; a negated (!) rule never excuses either. Rules
-    outside the commit (.git/info/exclude, a global excludes file) do not count; git reports one rule per path, so a
-    local rule on a parent folder can still hide a tracked one and make the answer False on that machine. False when
-    git cannot answer (exit 128, e.g. a path behind a symlink), so the path still counts as missing."""
-    folders = [path + "/"] * is_folder + [path.rsplit("/", k)[0] + "/" for k in range(1, path.count("/") + 1)]
-    for folder in folders:
-        r = subprocess.run(["git", "-C", repo, "check-ignore", "-v", "--", folder], capture_output=True, text=True)
-        source, _, rest = r.stdout.partition(":")  # .gitignore:3:build/<TAB>build/
-        _line, _, pattern = rest.partition(":")
-        if r.returncode == 0 and source in tracked and not pattern.startswith("!"):
+def in_ignored_folder(repo, path, tracked):
+    """True if a folder rule in a .gitignore tracked in the repo ignores path: a README may name what a script writes
+    into an ignored folder (`data/`, `build/`, or `data/*` beside `!data/.gitkeep`), which need not exist yet. git is
+    asked about the path, the path as a folder and each folder above it; a rule counts only if it names a folder (a
+    slash in its pattern) or lives in a nested .gitignore, so a file rule (`*.png`) never excuses a stale image in a
+    folder that is gone, and a negated (!) rule never excuses. Rules outside the commit (.git/info/exclude, a global
+    excludes file) do not count; git reports one rule per path, so a local rule on a parent folder can still hide a
+    tracked one on that machine. False when git cannot answer (exit 128, e.g. a path behind a symlink)."""
+    path = path.rstrip("/")
+    asks = [path, path + "/"] + [path.rsplit("/", k)[0] + "/" for k in range(1, path.count("/") + 1)]
+    for ask in asks:
+        r = subprocess.run(["git", "-C", repo, "check-ignore", "-v", "--", ask], capture_output=True, text=True)
+        rule = r.stdout.split("\t")[0]  # .gitignore:3:build/<TAB>build/out.html
+        source, _line, pattern = (rule.split(":", 2) + ["", ""])[:3]
+        folder_rule = "/" in pattern or "/" in source
+        if r.returncode == 0 and source in tracked and folder_rule and not pattern.startswith("!"):
             return True
     return False
 
@@ -217,7 +219,7 @@ def check_front(repo, files):
             # `results/e16` may name a family of files (e16-*.json), so a prefix match counts
             in_git = ref in tracked or any(f.startswith(ref) or f.endswith("/" + ref) for f in files)
             # a backticked path may name what a script writes into a folder git ignores; a link must resolve
-            if ref and not in_git and not (ticked and in_ignored_folder(repo, ref, tracked, ticked.endswith("/"))):
+            if ref and not in_git and not (ticked and in_ignored_folder(repo, ticked, tracked)):
                 hits.append((readme, n, f"names {ref}, which is not in the repo"))
     top_code = [f for f in files if "/" not in f and os.path.splitext(f)[1] in CODE_EXT]
     hits += [(readme, 1, f"top-level {f} not mentioned") for f in top_code if f not in text]
