@@ -77,21 +77,24 @@ def nudge(d):
     # four calls at most, 3 s each: 12 s inside the 15 s hook timeout
     run = lambda *cmd: subprocess.run(cmd, cwd=where, capture_output=True, text=True, timeout=3)
     view = run("gh", "pr", "view", *([selector] if selector else []), "--json",
-               "number,url,isDraft,state,headRefOid,headRefName,statusCheckRollup")
+               "number,url,isDraft,state,headRefOid,headRefName,headRepository,headRepositoryOwner,statusCheckRollup")
     if view.returncode:
         return None
     pr = json.loads(view.stdout)
     repo = "/".join(pr["url"].split("/")[3:5])
     owner = run("gh", "config", "get", "user", "-h", "github.com").stdout.strip()
-    ref = run("gh", "api", f"repos/{repo}/git/ref/heads/{pr['headRefName']}", "--jq", ".object.sha")
-    branch_sha = ref.stdout.strip() if ref.returncode == 0 else None
+    branch_sha = None  # a deleted fork has no branch to read: the head's own status decides
+    if pr.get("headRepository"):  # the head repo's branch: a fork's can share its name with another in the base repo
+        head_repo = f"{pr['headRepositoryOwner']['login']}/{pr['headRepository']['name']}"
+        ref = run("gh", "api", f"repos/{head_repo}/git/ref/heads/{pr['headRefName']}", "--jq", ".object.sha")
+        branch_sha = ref.stdout.strip() if ref.returncode == 0 else None
     if not needs_review(pr, owner, branch_sha):
         return None
     head, top = branch_sha or pr["headRefOid"], run("git", "rev-parse", "--show-toplevel").stdout.strip() or where
     return (f"review-3: {pr['url']} head {head[:7]} has no review-3 status (code-practice, Review by "
             f"three). Run `python3 {shlex.quote(str(REVIEW3))} prep {repo} {pr['number']} --repo-dir "
-            f"{shlex.quote(top)}` and do what it prints. Pushing again soon? Review after the last push: the merge "
-            f"waits for the review-3 check on the head either way.")
+            f"{shlex.quote(top)}` and do what it prints. Pushing again soon? `gh pr ready {pr['number']} --undo` keeps "
+            f"this quiet, and `gh pr ready {pr['number']}` after the last push starts the review.")
 
 
 def selftest():
