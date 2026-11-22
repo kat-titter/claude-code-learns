@@ -179,6 +179,12 @@ def check_once(units, min_lines):
     return hits
 
 
+def git_ignores(repo, path):
+    """True if git ignores path: a README may name what a script writes into an ignored folder (data/, build/)."""
+    return subprocess.run(["git", "-C", repo, "check-ignore", "-q", "--no-index", "--", path],
+                          stderr=subprocess.DEVNULL).returncode == 0
+
+
 def check_front(repo, files):
     readme = next((f for f in files if f.lower() in {"readme.md", "readme"}), None)
     if not readme:
@@ -197,7 +203,8 @@ def check_front(repo, files):
             ref = (ref[0] or ref[1]).split("#")[0].replace("%20", " ").rstrip("/")
             ref = ref[2:] if ref.startswith("./") else ref
             # `results/e16` may name a family of files (e16-*.json), so a prefix match counts
-            if ref and ref not in tracked and not any(f.startswith(ref) or f.endswith("/" + ref) for f in files):
+            if ref and ref not in tracked and not any(f.startswith(ref) or f.endswith("/" + ref) for f in files) \
+                    and not git_ignores(repo, ref):
                 hits.append((readme, n, f"names {ref}, which is not in the repo"))
     top_code = [f for f in files if "/" not in f and os.path.splitext(f)[1] in CODE_EXT]
     hits += [(readme, 1, f"top-level {f} not mentioned") for f in top_code if f not in text]
